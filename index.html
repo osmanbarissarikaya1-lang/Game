@@ -29,7 +29,7 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,se
 .auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.authbox{width:min(430px,100%);background:var(--panel);padding:24px;border-radius:16px;border:1px solid var(--line)}.error{color:#ff8188;font-size:13px;margin-top:10px;white-space:pre-wrap}.success{color:#54e2b4;font-size:13px;margin-top:10px;white-space:pre-wrap}
 @media(max-width:800px){.grid,.cards{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.top{position:static}.container{padding:12px}.brand{font-size:18px}}
 
-/* YENİ SEKME (ACCORDION) TASARIMLARI */
+/* SEKME (ACCORDION) TASARIMLARI */
 .sec-header { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; background: #1a2536; padding: 14px 18px; border-radius: 10px; margin: 24px 0 12px; border: 1px solid var(--line); font-weight: bold; color: var(--gold); font-size: 17px; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .sec-header:hover { background: #23324a; border-color: var(--gold); }
 .sec-content { margin-bottom: 20px; transition: all 0.3s ease; }
@@ -214,9 +214,14 @@ function renderHome(){
  }
  
  box.innerHTML=visibleStates.map(s=>{
-  const accent=s.color||"#3d82f6", army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
+  // Asker hesabı
+  let army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
+  if(db.settings.customItems) {
+     db.settings.customItems.filter(x=>x.category==='asker' && (!x.faction || x.faction===s.id)).forEach(x => army += (s[x.id]||0));
+  }
   const guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
   const isMine = s.ownerEmail === currentUserEmail;
+  const accent=s.color||"#3d82f6";
   return `<div class="card state-card" style="--accent:${esc(accent)}; ${isMine ? 'box-shadow: 0 0 15px rgba(22, 199, 154, 0.2);' : ''}">
    <div class="state-head"><div><h2>${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"")} ${isMine ? '<span style="color:var(--green)">(Senin Devletin)</span>' : ''}</div></div><span class="badge">${esc(s.title||"Devlet")}</span></div>
    <div class="stats">
@@ -244,7 +249,7 @@ function openDetail(id){
  const canManage = isAdmin || isOwner;
  const editBtn = isAdmin ? `<button class="btn blue" onclick="openStateForm('${s.id}')">✎ Verileri Düzenle</button>` : ``;
 
- // 1. FERMANLAR (Sekme)
+ // 1. FERMANLAR
  let innerFerman = `<p class="sub" style="margin-top:0">Hazineden harcama yaparak halkın gönlünü alın.</p><div class="grid">` +
     EDICTS.map(e => `
         <div class="item">
@@ -256,16 +261,15 @@ function openDetail(id){
     `).join('') + `</div>`;
  let fermanHtml = buildSec('sec_ferman', '📜 FERMANLAR & SOSYAL POLİTİKALAR', innerFerman);
 
- // 2. ÖZEL BİRİMLER (Sekme - Devlete Özel Filtresi)
+ // 2. ÖZEL BİRİMLER
  let customItemsHtml = "";
- // YENİ: Sadece bu devlete özel olanlar VEYA faction'u boş olanlar (herkese açık) listelenir
  const visibleCustomItems = (db.settings.customItems || []).filter(item => !item.faction || item.faction === s.id);
  if(visibleCustomItems.length > 0) {
     let innerCustom = `<div class="grid">` + visibleCustomItems.map(item => purchaseBlockCustom(s, item, canManage)).join('') + `</div>`;
     customItemsHtml = buildSec('sec_ozel', '🌟 ÖZEL BİRİMLER / ÜRÜNLER', innerCustom);
  }
 
- // 3. TEMEL ASKER (Sekme)
+ // 3. TEMEL ASKER
  let innerTemel = `<div class="grid">${purchaseBlock(s,"piyade","🪖","Piyade",1,"eligible", canManage, p)}
  ${purchaseBlock(s,"suvari","🐎","Süvari",1,"eligible", canManage, p)}
  ${purchaseBlock(s,"nisanci","🏹","Nişancı",1,"eligible", canManage, p)}
@@ -277,7 +281,7 @@ function openDetail(id){
  ${purchaseBlock(s,"buyuk_gemi","🚢","Büyük Gemi",1,"ship", canManage, p)}</div>`;
  let temelHtml = buildSec('sec_temel', '⚔ TEMEL ASKER & DONANMA', innerTemel);
 
- // 4. ALTYAPI (Sekme)
+ // 4. ALTYAPI
  let innerAltyapi = `<div class="grid">${infraBlock(s,"kucuk_liman","⚓","Küçük Liman","Limandaki gemi kapasitesini artırır.", canManage)}
  ${infraBlock(s,"orta_liman","⚓","Orta Liman","Daha büyük donanmalar için orta boy tersane.", canManage)}
  ${infraBlock(s,"buyuk_liman","⚓","Büyük Liman","Devasa kalyonlara ev sahipliği yapacak tersane.", canManage)}
@@ -287,7 +291,7 @@ function openDetail(id){
  ${infraBlock(s,"okul","🏫","Okul","Halkın eğitim seviyesini artırıp elit tabakayı çoğaltır.", canManage)}</div>`;
  let altyapiHtml = buildSec('sec_altyapi', '🏗 ALTYAPI (BİNALAR)', innerAltyapi);
 
- // 5. HAZİNE İŞLEMLERİ (Sekme)
+ // 5. HAZİNE İŞLEMLERİ
  let tActs = ``;
  if (isAdmin) tActs = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
  else if (isOwner) tActs = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
@@ -305,14 +309,15 @@ function openDetail(id){
   <div class="card"><h2>👥 Nüfus & Sınıflar</h2>
    <div class="item">Toplam Nüfus <b>${num(s.population)}</b></div>
    <div class="item">Eğitimli Sınıf (%${num(p.eduRate)}) <b>${num(p.edu)}</b><div class="sub" style="color:var(--gold)">Devletin aydın kesimidir. Hazineye en büyük vergi katkısını onlar sağlar.</div></div>
-   <div class="item">Sıradan Halk (%${num(s.population > 0 ? (p.other/s.population*100).toFixed(0) : 0)}) <b>${num(p.other)}</b><div class="sub">Tarlada ve tezgâhta çalışan normal tebaa. Temel vergiyi öderler.</div></div>
-   <div class="item">Elverişli Askerler (%${num(p.eligRate)}) <b>${num(p.elig)}</b><div class="sub">Silahaltına alınmayı bekleyen siviller. Celp gelene dek üretip vergi verirler.</div></div>
+   <div class="item">Sıradan Halk <b>${num(p.other)}</b><div class="sub">Tarlada ve tezgâhta çalışan normal tebaa. Temel vergiyi öderler.</div></div>
+   <div class="item">Boştaki Elverişli Asker <b>${num(p.elig)}</b> / ${num(p.maxElig)}<div class="sub">Askere alınmayı bekleyenler. Sivil oldukları için vergi öderler.</div></div>
+   <div class="item">Silahaltındaki Ordu <b>${num(p.armySize)}</b><div class="sub">Kışladaki aktif askerler. Nüfustan düşmez ama vergi vermezler.</div></div>
    <div class="item" style="${p.anar > 0 ? 'border-color:#ff6970' : ''}">Anarşistler (%${num(p.anarRate)}) <b style="color:#ff6970">${num(p.anar)}</b><div class="sub">Devlete başkaldıran öfkeli güruh. Vergi ödemez, nizamı bozarlar.</div></div>
    <div class="item">Halk Mutluluğu <b>%${num(s.happiness)}</b><div class="progress"><i style="width:${Math.max(0,Math.min(100,s.happiness))}%"></i></div></div>
    <div class="item">Vergi Oranı <b>%${num(s.tax)}</b></div>
   </div>
   <div class="card"><h2>💰 Ekonomi Detayı</h2>
-   <div class="item">Toplam Vergi Geliri <b class="money">${money(annualIncome)}</b><div class="sub">Eğitimliler, Siviller ve Elverişlilerden toplanan meblağ.</div></div>
+   <div class="item">Toplam Vergi Geliri <b class="money">${money(annualIncome)}</b><div class="sub">Eğitimliler, Siviller ve Boştaki Elverişlilerden toplanan meblağ.</div></div>
    <div class="item">Ordu Bakımı <b style="color:#ff6970">${money(calcMilitaryUpkeep(s))}</b></div>
    <div class="item">Topçu Bakımı <b style="color:#ff6970">${money(calcArtilleryUpkeep(s))}</b></div>
    <div class="item">Donanma Bakımı <b style="color:#ff6970">${money(calcNavyUpkeep(s))}</b></div>
@@ -330,7 +335,7 @@ function openDetail(id){
  `;
 }
 
-// ---------------- HESAPLAMALAR ----------------
+// ---------------- YENİ NÜFUS HESAPLAMALARI ----------------
 
 function calcPop(s){
   let hap = Number(s.happiness) || 0;
@@ -341,20 +346,38 @@ function calcPop(s){
   if(hap < 0) anarRate = 60; 
   let anarCount = Math.floor(pop * (anarRate/100));
   
+  // Askerleri sayalım
+  let armySize = (s.piyade||0) + (s.suvari||0) + (s.nisanci||0);
+  if(db.settings.customItems) {
+     db.settings.customItems.filter(x=>x.category==='asker' && (!x.faction || x.faction===s.id)).forEach(x => armySize += (s[x.id]||0));
+  }
+  
+  // Maksimum %30 Sınırı (Mutluluk * 0.3)
   let eligRate = hap * 0.3;
-  let eligCount = Math.floor(pop * (eligRate/100));
+  let maxElig = Math.floor(pop * (eligRate/100));
   
-  let remCount = Math.max(0, pop - anarCount - eligCount);
+  // Boştaki Elverişli
+  let availableElig = Math.max(0, maxElig - armySize);
+  
+  // Kalan Pasta (Anarşistler ve Asker kapasitesi çıktıktan sonra)
+  let remCount = Math.max(0, pop - anarCount - Math.max(maxElig, armySize));
+  
   let eduCount = Math.floor(remCount * (edu/100));
-  
   let otherCount = remCount - eduCount;
   
-  return { anar: anarCount, anarRate, elig: eligCount, eligRate: eligRate.toFixed(1), edu: eduCount, eduRate: edu, other: otherCount, remaining: remCount };
+  return { 
+      anar: anarCount, anarRate, 
+      elig: availableElig, maxElig, eligRate: eligRate.toFixed(1),
+      armySize: armySize,
+      edu: eduCount, eduRate: edu, 
+      other: otherCount, remaining: remCount 
+  };
 }
 
 function calcIncome(s){
   const p = calcPop(s);
   const baseTax = (Number(s.baseTaxPerPerson)||5) * ((Number(s.tax)||0)/100);
+  // Vergi verenler: Boştaki Elverişliler, Sıradan Halk, Eğitimliler
   const total = (p.elig * baseTax) + (p.other * baseTax) + (p.edu * baseTax * 1.5);
   return Math.floor(total);
 }
@@ -387,7 +410,7 @@ function addLog(stateName, itemLabel, qty, totalCost) {
 function buyEdict(id, edictId) {
     const s = getState(id);
     if(!s) return;
-    if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; }
+    if(!isAdmin && s.ownerEmail !== currentUserEmail) return;
     
     let edict = EDICTS.find(e => e.id === edictId);
     let edictCost = db.settings.edictCost[edictId] || 0;
@@ -478,7 +501,7 @@ function gunCapMax(s){return (s.kucuk_ocak||0)*db.settings.capacity.kucuk_ocak+(
 async function buyBulk(id,key, labelName){
  const s=getState(id);
  if(!s) return;
- if(!isAdmin && s.ownerEmail !== currentUserEmail) return;
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) return; 
  
  const price=db.settings.prices[key]||0;
  const qty = Math.floor(Number(document.getElementById(`qty_${id}_${key}`).value)) || 0;
@@ -494,7 +517,7 @@ async function buyBulk(id,key, labelName){
  
  s.treasury -= totalCost;
  s[key] = (s[key]||0) + qty;
- if(["piyade","suvari","nisanci"].includes(key)) s.population = Math.max(0, s.population - qty);
+ // DİKKAT: Artık s.population -= qty YOK! Askerler de nüfusun bir parçası, kışladalar.
  
  addLog(s.name, labelName, qty, totalCost);
  queueSave(); openDetail(id);
@@ -519,7 +542,7 @@ async function buyInfraBulk(id,key, labelName){
 async function buyCustomBulk(id, itemId, labelName){
  const s = getState(id);
  if(!s) return;
- if(!isAdmin && s.ownerEmail !== currentUserEmail) return;
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) return; 
 
  const item = (db.settings.customItems||[]).find(x=>x.id===itemId);
  if(!item) return;
@@ -533,7 +556,7 @@ async function buyCustomBulk(id, itemId, labelName){
  
  s.treasury -= totalCost;
  s[item.id] = (s[item.id]||0) + qty;
- if(item.category === 'asker') s.population = Math.max(0, s.population - qty);
+ // DİKKAT: Artık s.population -= qty YOK! Askerler de nüfusun bir parçası, kışladalar.
  
  addLog(s.name, labelName, qty, totalCost);
  queueSave(); openDetail(id);
@@ -543,17 +566,25 @@ async function buyCustomBulk(id, itemId, labelName){
 function calcCampCost(id) {
     const s = getState(id);
     if(!s) return;
-    const cc = db.settings.campaignCost || {};
     let total = 0;
-    ['piyade','suvari','nisanci','kucuk_top','orta_top','buyuk_top'].forEach(k => {
-        let el = document.getElementById('camp_'+k);
-        if(!el) return;
+    
+    // Tüm sefer inputlarını bulup hesapla
+    document.querySelectorAll('input[id^="camp_"]').forEach(el => {
+        let k = el.id.replace('camp_','');
         let val = Number(el.value) || 0;
         let max = Number(el.max) || 0;
         if(val > max) { val = max; el.value = max; }
         if(val < 0) { val = 0; el.value = 0; }
-        total += val * (cc[k]||0);
+        
+        let cost = 0;
+        if(db.settings.campaignCost[k] !== undefined) cost = db.settings.campaignCost[k];
+        else {
+            let ci = (db.settings.customItems||[]).find(x=>x.id===k);
+            if(ci) cost = ci.campCost || 0;
+        }
+        total += val * cost;
     });
+    
     document.getElementById('campTotalCost').innerHTML = money(total);
 }
 
@@ -561,6 +592,7 @@ function openCampaign(id) {
     const s = getState(id);
     if(!s) return;
     const cc = db.settings.campaignCost || {};
+    
     const units = [
         {key: 'piyade', label: 'Piyade', max: s.piyade||0, cost: cc.piyade||0},
         {key: 'suvari', label: 'Süvari', max: s.suvari||0, cost: cc.suvari||0},
@@ -570,9 +602,23 @@ function openCampaign(id) {
         {key: 'buyuk_top', label: 'Büyük Top', max: s.buyuk_top||0, cost: cc.buyuk_top||0}
     ];
 
+    // ÖZEL BİRİMLERİ (Sadece asker olanları) SEFERE EKLE
+    if(db.settings.customItems) {
+        db.settings.customItems.forEach(ci => {
+            if(ci.category === 'asker' && (!ci.faction || ci.faction === s.id)) {
+                units.push({
+                    key: ci.id,
+                    label: ci.icon + ' ' + ci.name,
+                    max: s[ci.id] || 0,
+                    cost: ci.campCost || 0
+                });
+            }
+        });
+    }
+
     let html = `<h2>⚔️ Sefer Hazırlığı (Lojistik)</h2><p class="sub">Ordunuzu sefere çıkarmak için gereken ikmal masrafı peşin ödenir.</p><div class="grid" style="margin-bottom:15px; max-height:40vh; overflow:auto;">`;
     units.forEach(u => {
-        html += `<div class="item"><div class="row"><div><b>${u.label}</b><div class="sub">Mevcut: ${num(u.max)} | İkmal: ${money(u.cost)}/adet</div></div>
+        html += `<div class="item"><div class="row"><div><b>${u.label}</b><div class="sub">Mevcut: ${num(u.max)} | İkmal: <span style="color:var(--gold)">${money(u.cost)}</span>/adet</div></div>
                 <input type="number" id="camp_${u.key}" min="0" max="${u.max}" value="0" style="width:80px; padding:8px;" oninput="calcCampCost('${id}')"></div></div>`;
     });
     html += `</div><div style="background:var(--panel2); padding:15px; border-radius:10px; text-align:center; font-size:18px;">
@@ -584,16 +630,26 @@ function openCampaign(id) {
 function startCampaign(id) {
     const s = getState(id);
     if(!s) return;
-    const cc = db.settings.campaignCost || {};
+    
     let total = 0; let details = [];
-    ['piyade','suvari','nisanci','kucuk_top','orta_top','buyuk_top'].forEach(k => {
-        let el = document.getElementById('camp_'+k);
-        if(!el) return;
+    document.querySelectorAll('input[id^="camp_"]').forEach(el => {
+        let k = el.id.replace('camp_','');
         let val = Number(el.value) || 0;
-        if(val > 0) { total += val * (cc[k]||0); details.push(`${num(val)} ${k.replace('_',' ')}`); }
+        if(val > 0) {
+            let cost = 0;
+            let name = k.replace('_',' ');
+            if(db.settings.campaignCost[k] !== undefined) cost = db.settings.campaignCost[k];
+            else {
+                let ci = (db.settings.customItems||[]).find(x=>x.id===k);
+                if(ci) { cost = ci.campCost || 0; name = ci.name; }
+            }
+            total += val * cost; 
+            details.push(`${num(val)} ${name}`); 
+        }
     });
+
     if(total <= 0) { alert("Birlik seçmelisiniz."); return; }
-    if(s.treasury < total) { alert("Hazine yetersiz!"); return; }
+    if(s.treasury < total) { alert("Hazine yetersiz! Gerekli: " + money(total)); return; }
     s.treasury -= total;
     addLog(s.name, `Sefer Ordusu: ${details.join(', ')}`, 1, total);
     closeModal(); queueSave(); openDetail(id);
@@ -700,13 +756,12 @@ function openAdmin(){
  if(!isAdmin) return; 
  const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost;
  
- // YENİ: Özel birimleri filtrelerken devlet adını da gösteriyoruz
  const stateOpts = `<option value="">🌍 Tümü (Herkes Görebilir)</option>` + db.states.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
  
  let customHtml = (db.settings.customItems||[]).map(x => {
     let fName = x.faction ? (getState(x.faction)?.name || "Silinmiş Devlet") : "Tümü";
     return `<div class="item" style="display:flex;justify-content:space-between;align-items:center;">
-      <div><b>${esc(x.icon)} ${esc(x.name)}</b> <span class="badge" style="background:#2d3b52">${esc(fName)}</span><br><span class="sub">(${x.category}) - Fiyat: ${money(x.price)} | Bakım: ${money(x.upkeep)}</span></div>
+      <div><b>${esc(x.icon)} ${esc(x.name)}</b> <span class="badge" style="background:#2d3b52">${esc(fName)}</span><br><span class="sub">(${x.category}) - Fiyat: ${money(x.price)} | Bakım: ${money(x.upkeep)} | İkmal: ${money(x.campCost||0)}</span></div>
       <button class="btn red small" onclick="removeCustomItem('${x.id}')">Sil</button>
     </div>`
  }).join("");
@@ -722,6 +777,7 @@ function openAdmin(){
     <div><label>Kategori</label><select id="f_ci_cat"><option value="asker">Asker / Birlik (Nüfus harcar)</option><option value="altyapi">Altyapı / Bina</option><option value="diger">Diğer / Kaynak</option></select></div>
     ${field("ci_price", "Birim Fiyatı", "0", "number")}
     ${field("ci_upkeep", "Yıllık Bakım Masrafı", "0", "number")}
+    ${field("ci_campCost", "Sefer İkmal Maliyeti", "0", "number")}
     ${field("ci_icon", "İkon (Örn: ⚔️)", "⚔️", "text")}
     <div class="full actions"><button class="btn green" onclick="addCustomItem()">➕ Yeni Ürünü Ekle</button></div>
  </div>
@@ -736,11 +792,11 @@ function openAdmin(){
 
 function addCustomItem(){
    const name = document.getElementById("f_ci_name").value.trim(), cat = document.getElementById("f_ci_cat").value, faction = document.getElementById("f_ci_faction").value;
-   const price = Number(document.getElementById("f_ci_price").value)||0, upkeep = Number(document.getElementById("f_ci_upkeep").value)||0, icon = document.getElementById("f_ci_icon").value.trim()||"📦";
+   const price = Number(document.getElementById("f_ci_price").value)||0, upkeep = Number(document.getElementById("f_ci_upkeep").value)||0, campCost = Number(document.getElementById("f_ci_campCost").value)||0, icon = document.getElementById("f_ci_icon").value.trim()||"📦";
    if(!name){alert("Ürün adı boş olamaz!"); return;}
    const id = "c_" + crypto.randomUUID().split("-")[0];
    db.settings.customItems = db.settings.customItems || [];
-   db.settings.customItems.push({id, name, category: cat, price, upkeep, icon, faction});
+   db.settings.customItems.push({id, name, category: cat, price, upkeep, campCost, icon, faction});
    saveAdmin(false);
 }
 function removeCustomItem(id){
