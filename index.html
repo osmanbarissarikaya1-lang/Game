@@ -191,8 +191,10 @@ async function loadDB(){
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
-    // Devletlerde customLedger dizisi yoksa ekle
-    db.states.forEach(s => { s.customLedger = s.customLedger || []; });
+    db.states.forEach(s => { 
+        s.customLedger = s.customLedger || []; 
+        s.permanentLedger = s.permanentLedger || []; // YENİ: Uzun süreli kontratlar/anlaşmalar
+    });
  }
  else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};await saveDB()}
  toast("Çevrimiçi ve otomatik kayıt açık",true);
@@ -292,10 +294,29 @@ function openDetail(id){
  ${infraBlock(s,"okul","🏫","Okul","Halkın eğitim seviyesini artırıp elit tabakayı çoğaltır.", canManage)}</div>`;
  let altyapiHtml = buildSec('sec_altyapi', '🏗 ALTYAPI (BİNALAR)', innerAltyapi);
 
- // 5. MALİYE DEFTERİ (ADİSYON) - YENİ SEKME
- let ledgerHtmlContent = `<p class="sub" style="margin-top:0">Yıl içinde devletin kasasına giren ve çıkan özel ticaret, gümrük, vergi veya yardım kalemleri.</p>`;
+ // 5. MALİYE DEFTERİ (SABİT / UZUN SÜRELİ + TEK SEFERLİK)
+ let ledgerHtmlContent = `<p class="sub" style="margin-top:0">Devletin kasasına giren ve çıkan uzun süreli ticaret antlaşmaları ile anlık kalemler.</p>`;
+ 
+ // A. Sabit / Uzun Süreli Anlaşmalar Listesi
+ ledgerHtmlContent += `<h3 style="font-size:15px; color:var(--gold); margin-top:10px;">📜 Uzun Süreli Antlaşmalar & Sabit Kalemler (Her Yıl Yenilenir)</h3>`;
+ if(s.permanentLedger && s.permanentLedger.length > 0) {
+    ledgerHtmlContent += `<div style="max-height:200px; overflow:auto; margin-bottom:15px;">` + s.permanentLedger.map((item, index) => {
+        let isPos = item.amount >= 0;
+        let col = isPos ? 'var(--green)' : '#ff6970';
+        let adminDel = isAdmin ? `<button class="btn red small" style="padding:2px 6px; font-size:11px;" onclick="removePermLedgerItem('${s.id}', ${index})">İptal Et</button>` : '';
+        return `<div class="item" style="padding:10px; margin-bottom:6px;"><div class="row">
+            <div><b>${esc(item.desc)}</b> <span class="sub" style="font-size:11px;">(Yıllık Sabit)</span></div>
+            <div style="text-align:right;"><span style="color:${col}; font-weight:bold;">${isPos?'+':''}${money(item.amount)}/yıl</span> ${adminDel}</div>
+        </div></div>`;
+    }).join('') + `</div>`;
+ } else {
+    ledgerHtmlContent += `<p class='muted' style="margin-bottom:15px;">Aktif uzun süreli antlaşma bulunmuyor.</p>`;
+ }
+
+ // B. Tek Seferlik Kalemler Listesi
+ ledgerHtmlContent += `<h3 style="font-size:15px; color:var(--gold); margin-top:10px;">⚡ Bu Yıla Mahsus Tek Seferlik Kalemler</h3>`;
  if(s.customLedger && s.customLedger.length > 0) {
-    ledgerHtmlContent += `<div style="max-height:300px; overflow:auto;">` + s.customLedger.map((item, index) => {
+    ledgerHtmlContent += `<div style="max-height:200px; overflow:auto;">` + s.customLedger.map((item, index) => {
         let isPos = item.amount >= 0;
         let col = isPos ? 'var(--green)' : '#ff6970';
         let adminDel = isAdmin ? `<button class="btn red small" style="padding:2px 6px; font-size:11px;" onclick="removeLedgerItem('${s.id}', ${index})">Sil</button>` : '';
@@ -305,19 +326,21 @@ function openDetail(id){
         </div></div>`;
     }).join('') + `</div>`;
  } else {
-    ledgerHtmlContent += `<p class='muted'>Bu yıla ait kayıtlı özel ticaret veya ek kalem bulunmuyor.</p>`;
+    ledgerHtmlContent += `<p class='muted'>Bu yıla ait tek seferlik ek kalem bulunmuyor.</p>`;
  }
+
  if(isAdmin) {
-    ledgerHtmlContent += `<div style="margin-top:12px; background:var(--panel2); padding:12px; border-radius:8px; border:1px solid var(--line);">
-        <b style="font-size:13px; color:var(--gold);">Admin: Yeni Kalem Ekle</b>
+    ledgerHtmlContent += `<div style="margin-top:15px; background:var(--panel2); padding:14px; border-radius:8px; border:1px solid var(--line);">
+        <b style="font-size:14px; color:var(--gold);">Admin: Yeni Kalem veya Antlaşma Ekle</b>
         <div class="formgrid" style="margin-top:8px;">
-            <div><label>Açıklama</label><input id="ledger_desc_${s.id}" type="text" placeholder="Örn: Venedik Gümrük Vergisi"></div>
-            <div><label>Tutar (Eksi(-) gider, artı gelir)</label><input id="ledger_amt_${s.id}" type="number" placeholder="Örn: 50000 veya -20000"></div>
-            <div class="full"><button class="btn green small" onclick="addLedgerItem('${s.id}')">➕ Kalem Ekle</button></div>
+            <div><label>Açıklama / Antlaşma Adı</label><input id="ledger_desc_${s.id}" type="text" placeholder="Örn: Venedik Ticaret Antlaşması"></div>
+            <div><label>Tutar (Yıllık veya Tek Seferlik)</label><input id="ledger_amt_${s.id}" type="number" placeholder="Örn: 50000 veya -20000"></div>
+            <div><label>Tür Seçimi</label><select id="ledger_type_${s.id}"><option value="temp">Tek Seferlik (Sadece bu yıl)</option><option value="perm">Uzun Süreli / Sabit (Her yıl otomatik gelir)</option></select></div>
+            <div style="display:flex; align-items:flex-end;"><button class="btn green small" style="width:100%; height:41px;" onclick="addLedgerItem('${s.id}')">➕ Kalem Ekle</button></div>
         </div>
     </div>`;
  }
- let ledgerHtml = buildSec('sec_ledger', '📜 MALİYE DEFTERİ & TİCARET KALEMLERİ', ledgerHtmlContent);
+ let ledgerHtml = buildSec('sec_ledger', '📜 MALİYE DEFTERİ & ANTLAŞMALAR', ledgerHtmlContent);
 
  // 6. HAZİNE İŞLEMLERİ
  let tActs = ``;
@@ -326,11 +349,11 @@ function openDetail(id){
  let hazineHtml = buildSec('sec_hazine', '💸 HAZİNE İŞLEMLERİ & DİPLOMASİ', `<div class="actions">${tActs}</div>`);
 
  document.getElementById("detail").innerHTML=`
- <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button>${editBtn}</div></div>
+ <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button><button class="btn blue" onclick="openStateForm('${s.id}')">✎ Verileri Düzenle</button></div></div>
  ${!canManage ? '<div class="notice">Sadece görüntüleme modundasınız. Bu devlette işlem yapabilmek için yetkiniz bulunmuyor.</div>' : ''}
  <div class="cards" style="margin-top:14px">
   <div class="card"><div class="sub">HAZİNE</div><div class="kpi money">${money(s.treasury)}</div></div>
-  <div class="card"><div class="sub">YILLIK GELİR (VERGİ)</div><div class="kpi">${money(annualIncome)}</div></div>
+  <div class="card"><div class="sub">YILLIK NET GELİR (VERGİ + SABİT TİCARET)</div><div class="kpi">${money(annualIncome + calcPermIncome(s))}</div></div>
   <div class="card"><div class="sub">YILLIK GİDER</div><div class="kpi" style="color:#ff6970">${money(calcExpenses(s))}</div></div>
  </div>
  <div class="grid" style="margin-top:14px">
@@ -345,7 +368,8 @@ function openDetail(id){
    <div class="item">Vergi Oranı <b>%${num(s.tax)}</b></div>
   </div>
   <div class="card"><h2>💰 Ekonomi Detayı</h2>
-   <div class="item">Toplam Vergi Geliri <b class="money">${money(annualIncome)}</b><div class="sub">Eğitimliler, Siviller ve Boştaki Elverişlilerden toplanan meblağ.</div></div>
+   <div class="item">Vergi Geliri <b class="money">${money(annualIncome)}</b></div>
+   <div class="item">Uzun Süreli Sabit Ticaret/Antlaşmalar <b class="money">${money(calcPermIncome(s))}</b></div>
    <div class="item">Ordu Bakımı <b style="color:#ff6970">${money(calcMilitaryUpkeep(s))}</b></div>
    <div class="item">Topçu Bakımı <b style="color:#ff6970">${money(calcArtilleryUpkeep(s))}</b></div>
    <div class="item">Donanma Bakımı <b style="color:#ff6970">${money(calcNavyUpkeep(s))}</b></div>
@@ -371,10 +395,16 @@ function addLedgerItem(stateId) {
     if(!s) return;
     let desc = document.getElementById('ledger_desc_'+stateId).value.trim();
     let amt = Number(document.getElementById('ledger_amt_'+stateId).value) || 0;
+    let type = document.getElementById('ledger_type_'+stateId).value;
     if(!desc) { alert("Açıklama yazmalısınız."); return; }
     
-    s.customLedger = s.customLedger || [];
-    s.customLedger.push({ desc, amount: amt });
+    if(type === 'perm') {
+        s.permanentLedger = s.permanentLedger || [];
+        s.permanentLedger.push({ desc, amount: amt });
+    } else {
+        s.customLedger = s.customLedger || [];
+        s.customLedger.push({ desc, amount: amt });
+    }
     queueSave();
     openDetail(stateId);
 }
@@ -384,6 +414,15 @@ function removeLedgerItem(stateId, index) {
     let s = getState(stateId);
     if(!s || !s.customLedger) return;
     s.customLedger.splice(index, 1);
+    queueSave();
+    openDetail(stateId);
+}
+
+function removePermLedgerItem(stateId, index) {
+    if(!isAdmin) return;
+    let s = getState(stateId);
+    if(!s || !s.permanentLedger) return;
+    s.permanentLedger.splice(index, 1);
     queueSave();
     openDetail(stateId);
 }
@@ -425,6 +464,14 @@ function calcIncome(s){
   const baseTax = (Number(s.baseTaxPerPerson)||5) * ((Number(s.tax)||0)/100);
   const total = (p.elig * baseTax) + (p.other * baseTax) + (p.edu * baseTax * 1.5);
   return Math.floor(total);
+}
+
+function calcPermIncome(s){
+  let total = 0;
+  if(s.permanentLedger && s.permanentLedger.length > 0) {
+      s.permanentLedger.forEach(item => { total += item.amount; });
+  }
+  return total;
 }
 
 function calcMilitaryUpkeep(s){return (s.piyade||0)*db.settings.upkeep.piyade+(s.suvari||0)*db.settings.upkeep.suvari+(s.nisanci||0)*db.settings.upkeep.nisanci;}
@@ -726,11 +773,13 @@ function saveState(id){
  o.happiness = Math.max(0, Math.min(100, Number(document.getElementById("f_happiness").value||0) + hapChange));
  if(id){ 
     let existing = getState(id);
-    o.customLedger = existing.customLedger || []; // Eskisini koru
+    o.customLedger = existing.customLedger || [];
+    o.permanentLedger = existing.permanentLedger || [];
     Object.assign(existing,o); 
     if(diff !== 0) alert(`Vergi değişimi sebebiyle halk mutluluğu ${hapChange > 0 ? '+'+hapChange.toFixed(1) : hapChange.toFixed(1)} puan etkilendi.`); 
  } else { 
     o.customLedger = [];
+    o.permanentLedger = [];
     db.states.push({id:crypto.randomUUID(),...o}) 
  }
  closeModal();queueSave();renderHome()
@@ -774,31 +823,32 @@ function openPurchaseLogs(){
 
 function passOneYear(){
     if(!isAdmin) return;
-    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, otomatik giderler ve Maliye Defterindeki (Adisyondaki) tüm artı-eksi kalemler hazineye işlenecek.\n\nOnaylıyor musunuz?")) return;
+    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler, uzun süreli sabit antlaşmalar, otomatik giderler ve bu yıla mahsus tek seferlik kalemler hazineye işlenecek.\n\nOnaylıyor musunuz?")) return;
     
     let summaryHtml = "<h3>⏳ 1. Yıl Sonu Finansal Raporu</h3><div style='max-height:60vh; overflow:auto;'><div class='grid' style='grid-template-columns:1fr;'>";
     
     db.states.forEach(s => {
         let inc = calcIncome(s);
+        let permInc = calcPermIncome(s); // Uzun süreli sabit gelir/gider
         let exp = calcExpenses(s);
         
-        // Maliye defterindeki (adisyondaki) özel kalemlerin toplamını hesapla ve hazineye yansıt
-        let ledgerTotal = 0;
+        let tempLedgerTotal = 0;
         if(s.customLedger && s.customLedger.length > 0) {
-            s.customLedger.forEach(item => { ledgerTotal += item.amount; });
+            s.customLedger.forEach(item => { tempLedgerTotal += item.amount; });
         }
         
-        let net = inc - exp + ledgerTotal;
+        // Net = Vergi + Uzun Süreli Sabitler - Giderler + Bu yıla özel tek seferlikler
+        let net = inc + permInc - exp + tempLedgerTotal;
         s.treasury += net;
         
-        // Yıl bittiği için adisyonu (maliye defterini) sıfırlıyoruz ki yeni yıla temiz başlansın
+        // Sadece tek seferlik kalemleri sıfırlıyoruz. Uzun süreli (permanent) olanlar kalmaya devam eder!
         s.customLedger = []; 
         
         let color = net >= 0 ? 'var(--green)' : '#ff6970';
         let netSign = net >= 0 ? '+' : '';
         
         summaryHtml += `<div class="item"><div style="border-bottom:1px solid var(--line); margin-bottom:5px; padding-bottom:5px;"><b>${esc(s.name)}</b></div>
-            <div class="row" style="font-size:13px;"><div>Gelir: <span style="color:var(--green)">${money(inc)}</span><br>Gider: <span style="color:#ff6970">${money(exp)}</span><br>Ticaret/Özel Kalemler: <span style="color:${ledgerTotal>=0?'var(--green)':'#ff6970'}">${ledgerTotal>=0?'+':''}${money(ledgerTotal)}</span></div>
+            <div class="row" style="font-size:13px;"><div>Vergi Geliri: <span style="color:var(--green)">${money(inc)}</span><br>Sabit Antlaşmalar: <span style="color:var(--green)">${money(permInc)}</span><br>Gider: <span style="color:#ff6970">${money(exp)}</span><br>Tek Seferlik Kalemler: <span style="color:${tempLedgerTotal>=0?'var(--green)':'#ff6970'}">${tempLedgerTotal>=0?'+':''}${money(tempLedgerTotal)}</span></div>
             <div style="text-align:right;">Net: <b style="color:${color}">${netSign}${money(net)}</b><br>Yeni Hazine: ${money(s.treasury)}</div></div></div>`;
     });
     
