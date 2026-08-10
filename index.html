@@ -1,70 +1,263 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Devlet Yönetim Paneli</title>
-<meta name="app-version" content="v5-supabase-embedded">
 <style>
-*{box-sizing:border-box}body{margin:0;background:#07111f;color:#f5f7fb;font-family:Arial,sans-serif}.wrap{max-width:1200px;margin:auto;padding:16px}.box{background:#132238;border:1px solid #30435e;border-radius:12px;padding:20px;margin:14px 0}.top{display:flex;justify-content:space-between;gap:12px;align-items:center}.actions{display:flex;gap:8px;flex-wrap:wrap}button{border:0;border-radius:7px;padding:11px 15px;font-weight:bold;cursor:pointer}.green{background:#12c98b;color:#06140f}.blue{background:#347ff3;color:#fff}.gray{background:#3b4d68;color:#fff}.red{background:#e54848;color:#fff}.orange{background:#e8a100;color:#171000}.hidden{display:none!important}.muted{color:#9eacc0}.money{color:#12c98b;font-weight:bold;font-size:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.state{border:3px solid #347ff3}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.unit{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#22354d;border-radius:7px;padding:12px;margin:7px 0}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form div{display:flex;flex-direction:column;gap:5px}input,select,textarea{padding:11px;background:#0a1728;color:#fff;border:1px solid #43556e;border-radius:7px;width:100%}textarea{min-height:90px;resize:vertical}.modal{position:fixed;inset:0;background:#000b;display:flex;justify-content:center;align-items:center;padding:15px;z-index:20}.modalbox{width:min(850px,100%);max-height:92vh;overflow:auto;background:#122035;border-radius:12px;padding:22px}.status{padding:8px 11px;border-radius:7px;background:#22354d;margin-top:8px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{background:#1d3048;border-radius:9px;padding:14px}.metric b{display:block;font-size:19px;margin-top:6px}.danger{color:#ff6b6b}.success{color:#12c98b}.warning{color:#ffcc66}.bar{height:9px;background:#31445f;border-radius:10px;overflow:hidden;margin-top:7px}.bar>i{display:block;height:100%;background:#12c98b}.small{font-size:13px}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#203552;color:#b9c7db;font-size:12px}.log{border-left:3px solid #347ff3;padding:8px 12px;background:#102035;margin:7px 0;border-radius:5px}.sale-admin{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:10px;background:#1c3049;border-radius:8px;margin:8px 0}@media(max-width:800px){.grid,.form,.cards,.sale-admin,.row{grid-template-columns:1fr}.top{display:block}}
+:root{
+ --bg:#0b1220;--panel:#151f31;--panel2:#1b2940;--line:#30415c;--text:#edf3ff;--muted:#9aabc4;
+ --green:#16c79a;--blue:#3d82f6;--red:#f0444c;--gold:#ffb000;--purple:#a970ff;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
+.container{max-width:1200px;margin:auto;padding:20px}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;background:#101a2b;border:1px solid var(--line);padding:16px 18px;border-radius:12px;position:sticky;top:10px;z-index:10}
+h1,h2,h3{margin:0 0 10px}.brand{font-size:22px;font-weight:800}.sub{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:10px 14px;border-radius:8px;color:#fff;background:#33445e}.btn.green{background:var(--green);color:#061b15}.btn.blue{background:var(--blue)}.btn.red{background:var(--red)}.btn.gold{background:var(--gold);color:#221600}.btn.small{padding:7px 10px;font-size:13px}
+.screen{margin-top:18px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}.state-card{border:3px solid var(--accent,#30415c);min-height:220px}
+.state-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}.badge{border:1px solid var(--accent,#30415c);padding:7px 10px;border-radius:6px;color:var(--accent,#fff);font-size:12px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;color:#dfe8f8}.money{color:var(--green);font-weight:700}.muted{color:var(--muted)}.section-title{margin:24px 0 12px;color:var(--gold);font-size:19px}
+.notice{padding:12px;border-radius:9px;background:#211b1d;border:1px solid #71343b;color:#ffb6bc;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.item{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:13px;margin-bottom:10px}
+.kpi{font-size:22px;font-weight:800}.kpi small{font-size:12px;color:var(--muted);font-weight:400}
+.progress{height:9px;background:#2d3b52;border-radius:9px;overflow:hidden}.progress>i{display:block;height:100%;background:var(--green)}
+label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:#0e1726;color:var(--text);outline:none}textarea{min-height:80px;resize:vertical}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:16px;z-index:50}.modal.show{display:flex}.modalbox{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}.tabs{display:flex;gap:8px;margin-bottom:14px}.hidden{display:none!important}.empty{padding:35px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.authbox{width:min(430px,100%);background:var(--panel);padding:24px;border-radius:16px;border:1px solid var(--line)}.error{color:#ff8188;font-size:13px;margin-top:10px;white-space:pre-wrap}.success{color:#54e2b4;font-size:13px;margin-top:10px;white-space:pre-wrap}
+@media(max-width:800px){.grid,.cards{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.top{position:static}.container{padding:12px}.brand{font-size:18px}}
 </style>
 </head>
-<body><div class="wrap">
-<section id="auth" class="box"><h1>⚜ DEVLET YÖNETİM</h1><p class="muted">Online kayıtlı sürüm</p><div class="form"><div><label>E-posta</label><input id="email" type="email"></div><div><label>Şifre</label><input id="password" type="password"></div></div><div class="actions" style="margin-top:14px"><button class="green" id="login">GİRİŞ YAP</button><button class="blue" id="signup">HESAP OLUŞTUR</button></div><div id="authMsg" class="status muted"></div></section>
-<section id="app" class="hidden"><div class="box top"><div><h2>⚜ DEVLET YÖNETİM PANELİ</h2><div id="user" class="muted"></div><div id="saveStatus" class="status">☁ Hazır</div></div><div class="actions"><button class="green" id="add">＋ Devlet Ekle</button><button class="blue" id="admin">⚙ Admin Paneli</button><button class="gray" id="logout">Çıkış</button></div></div>
-<div id="home"><h2>DEVLETLER</h2><div id="states" class="grid"></div></div><div id="detail" class="hidden"></div></section></div>
-<div id="modal" class="modal hidden"><div class="modalbox"><div class="top"><h2 id="mt"></h2><button class="gray" id="close">×</button></div><div id="mb"></div></div></div>
+<body>
+<div id="auth" class="auth">
+ <div class="authbox">
+  <h1>⚔️ Devlet Yönetim Paneli</h1><p class="sub">Supabase hesabınla giriş yap.</p>
+  <div class="tabs"><button id="loginTab" class="btn blue small">Giriş Yap</button><button id="signupTab" class="btn small">Kayıt Ol</button></div>
+  <label>E-posta</label><input id="email" type="email" autocomplete="email">
+  <label>Şifre</label><input id="password" type="password" autocomplete="current-password">
+  <button id="authBtn" class="btn green" style="width:100%;margin-top:14px">Giriş Yap</button>
+  <div id="authMsg"></div>
+ </div>
+</div>
+
+<div id="app" class="hidden">
+<div class="container">
+<header class="top">
+ <div><div class="brand">⚔️ DEVLET YÖNETİM PANELİ</div><div id="syncText" class="sub">Supabase'e bağlanılıyor…</div></div>
+ <div class="actions"><button class="btn green" onclick="openStateForm()">＋ Devlet Ekle</button><button class="btn blue" onclick="openAdmin()">⚙ Admin</button><button class="btn" onclick="logout()">Çıkış</button></div>
+</header>
+<div id="home" class="screen">
+ <div class="section-title">OLAN DEVLETLER</div>
+ <div id="stateGrid" class="grid"></div>
+</div>
+<div id="detail" class="screen hidden"></div>
+</div></div>
+
+<div id="modal" class="modal"><div class="modalbox"><div id="modalContent"></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>window.SUPABASE_URL="https://jizagbzzpofdjblbuaps.supabase.co";window.SUPABASE_KEY="sb_publishable_LYqDkZuUlVJa9_8SQ0uNdQ_xAeHfEJ";</script>
 <script>
-const SUPABASE_URL=window.SUPABASE_URL, SUPABASE_KEY=window.SUPABASE_KEY;
-let sb=null, uid=null, token=null, selected=-1, timer=null;
-const DEFAULT_PR={Piyade:100,Süvari:250,Nişancı:150,"Küçük Top":5000,"Orta Top":12000,"Büyük Top":25000,"Küçük Gemi":50000,"Orta Gemi":150000,"Büyük Gemi":500000,"Küçük Liman":100000,"Orta Liman":200000,"Büyük Liman":350000,"Küçük Top Ocağı":80000,"Orta Top Ocağı":150000,"Büyük Top Ocağı":250000,"Okul":120000};
-const DEFAULT_MA={Piyade:100,Süvari:180,Nişancı:130,"Küçük Top":500,"Orta Top":1000,"Büyük Top":2000,"Küçük Gemi":5000,"Orta Gemi":15000,"Büyük Gemi":30000};
-const DEFAULT_FAC={port:{small:5,medium:7,large:10},foundry:{small:5,medium:7,large:10}};
-const DEFAULT_CFG={baseTaxPerCapita:6,educationTaxBonusMax:0.5,happinessEligibleBonusMax:0.20,schoolEducationGain:2,schoolMax:100};
-let db={states:[],prices:{...DEFAULT_PR},maint:{...DEFAULT_MA},facilities:structuredClone(DEFAULT_FAC),rules:{...DEFAULT_CFG},customSales:[]};
-const $=id=>document.getElementById(id),fmt=x=>(Number(x)||0).toLocaleString("tr-TR"),money=x=>fmt(x)+" TL",esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])),key=x=>x.replace(/[^a-zA-Z0-9]/g,"_");
-function stat(t){if($("saveStatus"))$("saveStatus").textContent=t}
-function friendlyError(e){return e?.message||e?.error_description||String(e)||"Bilinmeyen hata"}
-function ensureClient(){
-  if(!SUPABASE_URL||!SUPABASE_KEY) throw new Error("Supabase URL veya publishable key bulunamadı. config.js dosyasını kontrol et.");
-  if(!window.supabase?.createClient) throw new Error("Supabase kütüphanesi yüklenemedi. İnternet bağlantısını ve CDN erişimini kontrol et.");
-  if(!sb) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  return sb;
+const SUPABASE_URL="https://jizagbzzpofdjblbuaps.supabase.co";
+const SUPABASE_KEY="sb_publishable_LYqDkZuUlVJa9_8SQ0uNdQ_xAeHfEJ";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let db={states:[],settings:null,transfers:[]}, currentId=null, authMode="login", saveTimer=null;
+
+const defaultSettings={
+ prices:{piyade:100,suvari:250,nisanci:160,kucuk_top:3000,orta_top:6000,buyuk_top:10000,kucuk_gemi:15000,orta_gemi:30000,buyuk_gemi:60000,kucuk_liman:100000,orta_liman:180000,buyuk_liman:300000,kucuk_ocak:80000,orta_ocak:150000,buyuk_ocak:250000,okul:120000},
+ capacity:{kucuk_liman:5,orta_liman:7,buyuk_liman:10,kucuk_ocak:10,orta_ocak:20,buyuk_ocak:35},
+ upkeep:{piyade:10,suvari:25,nisanci:15,kucuk_top:250,orta_top:450,buyuk_top:800,kucuk_gemi:1200,orta_gemi:2200,buyuk_gemi:4000},
+ schoolEducation:2, educationTaxBonus:0.75, happinessEligibleBonus:0.20
+};
+
+function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function money(n){return Number(n||0).toLocaleString("tr-TR")+" TL"}
+function num(n){return Number(n||0).toLocaleString("tr-TR")}
+function getState(id){return db.states.find(s=>s.id===id)}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function modal(html){document.getElementById("modalContent").innerHTML=html;document.getElementById("modal").classList.add("show")}
+function toast(msg,ok=false){document.getElementById("syncText").textContent=(ok?"✓ ":"⚠ ")+msg}
+
+async function init(){
+ const {data:{session}}=await sb.auth.getSession();
+ sb.auth.onAuthStateChange((_e,s)=>{if(s) showApp(); else showAuth()});
+ if(session) showApp(); else showAuth();
 }
-async function loginUser(){try{ensureClient();$("authMsg").textContent="Giriş yapılıyor...";const {data,error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)throw error;if(!data.session||!data.user)throw new Error("Oturum oluşturulamadı.");uid=data.user.id;token=data.session.access_token;await enterApp(data.user.email)}catch(e){$("authMsg").textContent="❌ "+friendlyError(e)}}
-async function signupUser(){try{ensureClient();const email=$("email").value.trim(),password=$("password").value;if(!email||!password)throw new Error("E-posta ve şifre gir.");if(password.length<6)throw new Error("Şifre en az 6 karakter olmalı.");$("authMsg").textContent="Hesap oluşturuluyor...";const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.href}});if(error)throw error;if(data.session&&data.user){uid=data.user.id;token=data.session.access_token;await enterApp(data.user.email)}else{$("authMsg").textContent="✅ Hesap oluşturuldu. E-posta doğrulaması açıksa mailindeki bağlantıya tıkla, sonra giriş yap."}}catch(e){$("authMsg").textContent="❌ "+friendlyError(e)}}
-async function enterApp(email){$("auth").classList.add("hidden");$("app").classList.remove("hidden");$("user").textContent=email||"";try{await load()}catch(e){stat("❌ "+friendlyError(e))}}
-async function restore(){try{ensureClient();const {data:{session}}=await sb.auth.getSession();if(!session?.user)return;uid=session.user.id;token=session.access_token;await enterApp(session.user.email)}catch(e){console.error(e);$("authMsg").textContent="❌ "+friendlyError(e)}}
-async function logout(){try{ensureClient();await sb.auth.signOut()}catch(e){}uid=null;token=null;location.reload()}
-async function load(){ensureClient();if(!uid)throw new Error("Oturum bulunamadı.");const {data,error}=await sb.from("game_data").select("data").eq("owner_id",uid).maybeSingle();if(error)throw new Error("Supabase veri okuma hatası: "+error.message);if(data?.data)db=data.data;normalize();if(!data)await writeDb(true);render()}
-async function writeDb(silent=false){ensureClient();if(!uid)return;if(!silent)stat("☁ Kaydediliyor...");normalize();const {error}=await sb.from("game_data").upsert({owner_id:uid,data:db,updated_at:new Date().toISOString()},{onConflict:"owner_id"});if(error)throw new Error("Supabase kayıt hatası: "+error.message);stat("☁ Online kaydedildi")}
-function normalize(){db.states=Array.isArray(db.states)?db.states:[];db.prices={...DEFAULT_PR,...(db.prices||{})};db.maint={...DEFAULT_MA,...(db.maint||{})};db.facilities={...DEFAULT_FAC,...(db.facilities||{}),port:{...DEFAULT_FAC.port,...(db.facilities?.port||{})},foundry:{...DEFAULT_FAC.foundry,...(db.facilities?.foundry||{})}};db.rules={...DEFAULT_CFG,...(db.rules||{})};db.customSales=Array.isArray(db.customSales)?db.customSales:[];db.states.forEach(s=>{s.logs=Array.isArray(s.logs)?s.logs:[];s.happiness=Number.isFinite(Number(s.happiness))?Number(s.happiness):70;s.education=Number.isFinite(Number(s.education))?Number(s.education):30;s.taxRate=Number.isFinite(Number(s.taxRate))?Number(s.taxRate):20;s.baseEligibleRate=Number.isFinite(Number(s.baseEligibleRate))?Number(s.baseEligibleRate):20;s.ports=s.ports||{small:0,medium:0,large:0};s.foundries=s.foundries||{small:0,medium:0,large:0};s.schools=Number(s.schools)||0;s.vergiGeliri=Number(s.vergiGeliri)||0;s.ticaretGeliri=Number(s.ticaretGeliri)||0;s.digerGelir=Number(s.digerGelir)||0;s.sivilGider=Number(s.sivilGider)||0;s.digerGider=Number(s.digerGider)||0})}
-async function load(){const r=await fetch(REST_URL+"/game_data?owner_id=eq."+encodeURIComponent(uid)+"&select=data",{headers:authHeaders()});const d=await r.json();if(!r.ok)throw new Error(d?.message||d?.hint||"Supabase veri okuma hatası");if(d.length)db=d[0].data||db;normalize();if(!d.length)await writeDb(true);render()}
-async function writeDb(silent=false){if(!token||!uid)return;if(!silent)stat("☁ Kaydediliyor...");normalize();const r=await fetch(REST_URL+"/game_data?on_conflict=owner_id",{method:"POST",headers:authHeaders({Prefer:"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify({owner_id:uid,data:db,updated_at:new Date().toISOString()})});if(!r.ok){let x={};try{x=await r.json()}catch(_){}throw new Error(x.message||x.hint||"Supabase kayıt hatası")}stat("☁ Online kaydedildi")}
-function modal(t,h){$("mt").textContent=t;$("mb").innerHTML=h;$("modal").classList.remove("hidden")}function close(){$("modal").classList.add("hidden")}
-function totalArmy(s){return (s.piyade||0)+(s.suvari||0)+(s.nisanci||0)}function totalGuns(s){return (s.kucukTop||0)+(s.ortaTop||0)+(s.buyukTop||0)}function totalShips(s){return (s.kucukGemi||0)+(s.ortaGemi||0)+(s.buyukGemi||0)}
-function effectiveRate(s){return Math.min(100,Math.max(0,(Number(s.baseEligibleRate)||0)+(Number(s.happiness||0)/100)*(Number(db.rules.happinessEligibleBonusMax)||0)*100))}
-function effectivePop(s){return Math.floor((Number(s.nufus)||0)*effectiveRate(s)/100)}
-function taxIncome(s){const base=Number(db.rules.baseTaxPerCapita)||0,edu=1+(Number(s.education)||0)/100*(Number(db.rules.educationTaxBonusMax)||0);return Math.floor((Number(s.nufus)||0)*base*(Number(s.taxRate)||0)/20*edu)}
-function portCap(s){return (s.ports.small||0)*db.facilities.port.small+(s.ports.medium||0)*db.facilities.port.medium+(s.ports.large||0)*db.facilities.port.large}function foundryCap(s){return (s.foundries.small||0)*db.facilities.foundry.small+(s.foundries.medium||0)*db.facilities.foundry.medium+(s.foundries.large||0)*db.facilities.foundry.large}
-function render(){const a=$("states");a.innerHTML=db.states.length?"":"<div class='box'><h3>Henüz devlet yok.</h3><p class='muted'>＋ Devlet Ekle ile başlayabilirsin.</p></div>";db.states.forEach((s,i)=>{const d=document.createElement("div");d.className="box state";d.style.borderColor=s.renk||"#347ff3";d.innerHTML=`<div class=top><h2>${esc(s.ad)}</h2><span class=pill>${esc(s.hukumdar||"")}</span></div><p class=money>💰 ${money(s.hazine)}</p><div class=row><div>👥 Nüfus<br><b>${fmt(s.nufus)}</b></div><div>⚔ Ordu<br><b>${fmt(totalArmy(s))}</b></div><div>💣 Top<br><b>${fmt(totalGuns(s))}</b></div><div>⚓ Gemi<br><b>${fmt(totalShips(s))}</b></div></div><div class=small muted style='margin-top:10px'>😊 Mutluluk %${s.happiness} · 🎓 Eğitim %${s.education}</div><button class='blue' style='width:100%;margin-top:15px' onclick='detail(${i})'>DETAY / YÖNET</button>`;a.appendChild(d)})}
-const fields=[["ad","Devlet adı","text"],["hukumdar","Taht sahibi","text"],["renk","Çerçeve rengi","color"],["hazine","Hazine","number"],["nufus","Toplam nüfus","number"],["baseEligibleRate","Temel elverişli nüfus oranı (%)","number"],["happiness","Halk mutluluğu (%)","number"],["education","Eğitim seviyesi (%)","number"],["taxRate","Vergi oranı (%)","number"],["piyade","Piyade","number"],["suvari","Süvari","number"],["nisanci","Nişancı","number"],["kucukTop","Küçük top","number"],["ortaTop","Orta top","number"],["buyukTop","Büyük top","number"],["kucukGemi","Küçük gemi","number"],["ortaGemi","Orta gemi","number"],["buyukGemi","Büyük gemi","number"],["vergiGeliri","Ek vergi geliri","number"],["ticaretGeliri","Ticaret geliri","number"],["digerGelir","Diğer gelir","number"],["sivilGider","Sivil gider","number"],["digerGider","Diğer gider","number"]];
-function stateForm(i=-1){const s=i<0?{}:db.states[i];let h="<div class=form>";fields.forEach(f=>h+=`<div><label>${f[1]}</label><input id=f_${f[0]} type=${f[2]} value='${esc(s[f[0]]??(f[0]=="renk"?"#347ff3":0))}'></div>`);h+=`</div><p class=small muted>Elverişli nüfus artık mutluluk bonusuyla otomatik hesaplanır. Formdaki temel oran başlangıç oranıdır.</p><div class=actions><button class=green onclick='saveState(${i})'>KAYDET</button>${i>=0?`<button class=red onclick='delState(${i})'>SİL</button>`:""}</div>`;modal(i<0?"DEVLET EKLE":"DEVLETİ DÜZENLE",h)}
-async function saveState(i){try{const s={};fields.forEach(f=>s[f[0]]=["ad","hukumdar","renk"].includes(f[0])?$("f_"+f[0]).value:Number($("f_"+f[0]).value)||0);if(!s.ad.trim())return alert("Devlet adı gerekli.");if(s.happiness>100||s.education>100||s.taxRate>100||s.baseEligibleRate>100)return alert("Yüzde değerleri 0-100 arasında olmalı.");if(i>=0){s.ports=db.states[i].ports||{small:0,medium:0,large:0};s.foundries=db.states[i].foundries||{small:0,medium:0,large:0};s.schools=db.states[i].schools||0;s.logs=db.states[i].logs||[]}else{s.ports={small:0,medium:0,large:0};s.foundries={small:0,medium:0,large:0};s.schools=0;s.logs=[]}i<0?db.states.push(s):db.states[i]=s;await writeDb();close();render()}catch(e){alert("Kayıt hatası: "+e.message)}}
-async function delState(i){if(!confirm(db.states[i].ad+" silinsin mi?"))return;try{db.states.splice(i,1);await writeDb();close();render()}catch(e){alert("Silme hatası: "+e.message)}}
-function home(){$("detail").classList.add("hidden");$("home").classList.remove("hidden");render()}function unit(a,b){return `<div class=unit><span>${a}</span><b>${fmt(b)}</b></div>`}
-function detail(i){selected=i;const s=db.states[i];$("home").classList.add("hidden");$("detail").classList.remove("hidden");const ac=(s.piyade||0)*db.maint.Piyade+(s.suvari||0)*db.maint.Süvari+(s.nisanci||0)*db.maint.Nişancı,tc=(s.kucukTop||0)*db.maint["Küçük Top"]+(s.ortaTop||0)*db.maint["Orta Top"]+(s.buyukTop||0)*db.maint["Büyük Top"],gc=(s.kucukGemi||0)*db.maint["Küçük Gemi"]+(s.ortaGemi||0)*db.maint["Orta Gemi"]+(s.buyukGemi||0)*db.maint["Büyük Gemi"],ot=(s.sivilGider||0)+(s.digerGider||0),income=taxIncome(s)+Number(s.vergiGeliri||0)+Number(s.ticaretGeliri||0)+Number(s.digerGelir||0),totalG=ac+tc+gc+ot;$("detail").innerHTML=`<div class=box><div class=top><div><h1>${esc(s.ad)}</h1><div class=money>💰 ${money(s.hazine)}</div></div><button class=gray onclick=home()>← Geri</button></div></div><div class=actions><button class=green onclick=buyModal()>🛒 SATIN AL</button><button class=blue onclick=stateForm(${i})>✎ VERİLERİ DÜZENLE</button><button class=blue onclick=transfer()>💸 PARA AKTAR</button><button class=red onclick=expenseModal()>💸 HAZİNEDEN PARA KES</button></div><div class=cards><div class=metric>😊 Halk mutluluğu<b>%${fmt(s.happiness)}</b><div class=bar><i style='width:${s.happiness}%'></i></div></div><div class=metric>🎓 Eğitim<b>%${fmt(s.education)}</b><div class=bar><i style='width:${s.education}%'></i></div></div><div class=metric>👥 Elverişli nüfus<b>${fmt(effectivePop(s))}</b><span class=small muted>Oran %${effectiveRate(s).toFixed(1)}</span></div></div><div class=box><div class=section-title><h3>💰 GELİR DETAYLARI</h3><span class=pill>Yıllık</span></div><p>Vergi (otomatik): <b class=success>${money(taxIncome(s))}</b></p><p>Ek vergi: ${money(s.vergiGeliri)}</p><p>Ticaret: ${money(s.ticaretGeliri)}</p><p>Diğer: ${money(s.digerGelir)}</p><hr><b>TOPLAM GELİR: ${money(income)}</b></div><div class=box><div class=section-title><h3>📉 GİDER DETAYLARI</h3></div><p>⚔ Ordu: ${money(ac)}</p><p>💣 Topçu: ${money(tc)}</p><p>⚓ Donanma: ${money(gc)}</p><p>🏛 Sivil + diğer: ${money(ot)}</p><hr><b>TOPLAM YILLIK BAKIM/GİDER: ${money(totalG)}</b></div><div class=box><h3>🏗 TESİSLER</h3><div class=row><div class=metric>⚓ Liman kapasitesi<b>${fmt(totalShips(s))} / ${fmt(portCap(s))}</b><span class=small muted>Gemi kapasitesi</span></div><div class=metric>💣 Top ocağı kapasitesi<b>${fmt(totalGuns(s))} / ${fmt(foundryCap(s))}</b><span class=small muted>Top kapasitesi</span></div><div class=metric>🏫 Okul<b>${fmt(s.schools)}</b><span class=small muted>+${db.rules.schoolEducationGain} eğitim / okul</span></div></div><p class=small muted>Liman ve top ocağı kapasitesi doluysa yeni ilgili birlik alınamaz.</p></div><div class=box><h3>🪖 BİRLİKLER</h3>${unit("🪖 Piyade",s.piyade)}${unit("🐎 Süvari",s.suvari)}${unit("🏹 Nişancı",s.nisanci)}${unit("💣 Küçük Top",s.kucukTop)}${unit("💣 Orta Top",s.ortaTop)}${unit("💣 Büyük Top",s.buyukTop)}${unit("⚓ Küçük Gemi",s.kucukGemi)}${unit("⚓ Orta Gemi",s.ortaGemi)}${unit("⚓ Büyük Gemi",s.buyukGemi)}</div><div class=box><h3>📜 HAZİNE İŞLEM GEÇMİŞİ</h3>${(s.logs||[]).slice().reverse().slice(0,30).map(l=>`<div class=log><b>${l.type}</b> · ${money(l.amount)}<br><span class=small>${esc(l.note||"")} · ${esc(l.date||"")}</span></div>`).join("")||"<span class=muted>Henüz işlem yok.</span>"}</div>`}
-function buyModal(){const s=db.states[selected];let h=`<p>Hazine: <b class=money>${money(s.hazine)}</b> · Elverişli: <b>${fmt(effectivePop(s))}</b> · Gemi kapasitesi: <b>${fmt(totalShips(s))}/${fmt(portCap(s))}</b> · Top kapasitesi: <b>${fmt(totalGuns(s))}/${fmt(foundryCap(s))}</b></p>`;const items=[...Object.keys(db.prices),...db.customSales.map(x=>x.name)];items.forEach(k=>{let price=db.prices[k]??db.customSales.find(x=>x.name===k)?.price??0;let kind=db.customSales.find(x=>x.name===k)?.kind||"genel";h+=`<div class=unit><span>${esc(k)}<small class=muted><br>${money(price)}/adet ${kind!=="genel"?"· "+kind:""}</small></span><input id=b_${key(k)} type=number min=1 placeholder=Adet style='width:90px'><button class=green onclick='buy("${esc(k)}")'>AL</button></div>`});modal("🛒 SATIN AL",h)}
-function facilityNeed(k){const s=db.states[selected];if(k==="Küçük Liman")return [s.ports,"small","port",db.facilities.port.small];if(k==="Orta Liman")return [s.ports,"medium","port",db.facilities.port.medium];if(k==="Büyük Liman")return [s.ports,"large","port",db.facilities.port.large];if(k==="Küçük Top Ocağı")return [s.foundries,"small","foundry",db.facilities.foundry.small];if(k==="Orta Top Ocağı")return [s.foundries,"medium","foundry",db.facilities.foundry.medium];if(k==="Büyük Top Ocağı")return [s.foundries,"large","foundry",db.facilities.foundry.large];return null}
-async function buy(k){try{const s=db.states[selected],q=Number($("b_"+key(k)).value)||0,price=db.prices[k]??db.customSales.find(x=>x.name===k)?.price??0,c=q*price;if(q<1||s.hazine<c)return alert("Geçersiz adet veya hazine yetersiz.");const human=["Piyade","Süvari","Nişancı"].includes(k);const map={Piyade:"piyade",Süvari:"suvari",Nişancı:"nisanci","Küçük Top":"kucukTop","Orta Top":"ortaTop","Büyük Top":"buyukTop","Küçük Gemi":"kucukGemi","Orta Gemi":"ortaGemi","Büyük Gemi":"buyukGemi"};if(human&&effectivePop(s)<q)return alert("Elverişli nüfus yetersiz.");if(k.includes("Gemi")&&totalShips(s)+q>portCap(s))return alert("Liman kapasitesi yetersiz. Önce liman yapmalısın.");if(k.includes("Top")&&!k.includes("Ocağı")&&totalGuns(s)+q>foundryCap(s))return alert("Top ocağı kapasitesi yetersiz. Önce top ocağı yapmalısın.");if(k==="Okul"){s.schools=(s.schools||0)+q;s.education=Math.min(db.rules.schoolMax,s.education+q*db.rules.schoolEducationGain)}else{const fac=facilityNeed(k);if(fac){fac[0][fac[1]]=(fac[0][fac[1]]||0)+q}else if(map[k]){s[map[k]]=(s[map[k]]||0)+q;if(human)s.elverisli=Math.max(0,effectivePop(s)-q)}}s.hazine-=c;s.logs.push({type:"Satın alma",amount:c,note:`${q} adet ${k}`,date:new Date().toLocaleString("tr-TR")});await writeDb();close();detail(selected)}catch(e){alert("Satın alma hatası: "+e.message)}}
-function expenseModal(){modal("💸 HAZİNEDEN PARA KES",`<div><label>Tutar (TL)</label><input id=expenseAmount type=number min=1></div><div style='margin-top:10px'><label>Açıklama</label><textarea id=expenseNote placeholder='Örn: Savaş tazminatı, özel harcama, saray masrafı...'></textarea></div><button class=red style='margin-top:12px' onclick='doExpense()'>KESİNTİYİ UYGULA</button>`)}
-async function doExpense(){try{const s=db.states[selected],a=Number($("expenseAmount").value)||0,n=$("expenseNote").value.trim();if(a<=0||a>s.hazine)return alert("Tutar hazineyi aşamaz.");if(!n)return alert("Açıklama yazmalısın.");s.hazine-=a;s.logs.push({type:"Hazine kesintisi",amount:a,note:n,date:new Date().toLocaleString("tr-TR")});await writeDb();close();detail(selected)}catch(e){alert(e.message)}}
-function transfer(){let o=db.states.map((s,i)=>i!==selected?`<option value=${i}>${esc(s.ad)}</option>`:"").join("");if(!o)return alert("En az iki devlet gerekli.");modal("💸 PARA AKTAR",`<select id=target>${o}</select><input id=amt type=number placeholder=Tutar style='margin-top:10px'><textarea id=transferNote placeholder='Açıklama (opsiyonel)' style='margin-top:10px'></textarea><button class=green style='margin-top:10px' onclick=doTransfer()>AKTAR</button>`)}
-async function doTransfer(){try{let j=Number($("target").value),a=Number($("amt").value)||0,s=db.states[selected],n=$("transferNote").value.trim();if(!db.states[j]||a<=0||a>s.hazine)return alert("Geçersiz tutar veya hazine yetersiz.");s.hazine-=a;db.states[j].hazine+=a;s.logs.push({type:"Para aktarımı",amount:a,note:`${db.states[j].ad} → ${n||"Açıklama yok"}`,date:new Date().toLocaleString("tr-TR")});await writeDb();close();detail(selected)}catch(e){alert("Aktarım hatası: "+e.message)}}
-function admin(){let h=`<h3>💰 Fiyatlar</h3><div class=form>`;Object.keys(db.prices).forEach(k=>h+=`<div><label>${esc(k)}</label><input id=p_${key(k)} type=number value=${db.prices[k]}></div>`);h+=`</div><h3>🏗 Kapasiteler / Kurallar</h3><div class=form><div><label>Küçük liman gemi kapasitesi</label><input id=cap_ps type=number value=${db.facilities.port.small}></div><div><label>Orta liman gemi kapasitesi</label><input id=cap_pm type=number value=${db.facilities.port.medium}></div><div><label>Büyük liman gemi kapasitesi</label><input id=cap_pl type=number value=${db.facilities.port.large}></div><div><label>Küçük top ocağı kapasitesi</label><input id=cap_fs type=number value=${db.facilities.foundry.small}></div><div><label>Orta top ocağı kapasitesi</label><input id=cap_fm type=number value=${db.facilities.foundry.medium}></div><div><label>Büyük top ocağı kapasitesi</label><input id=cap_fl type=number value=${db.facilities.foundry.large}></div><div><label>Okul eğitim artışı</label><input id=schoolGain type=number step=.1 value=${db.rules.schoolEducationGain}></div><div><label>Okul eğitim üst sınırı</label><input id=schoolMax type=number value=${db.rules.schoolMax}></div><div><label>Nüfus başı temel vergi</label><input id=baseTax type=number step=.01 value=${db.rules.baseTaxPerCapita}></div><div><label>Eğitim %100'de vergi bonusu</label><input id=eduBonus type=number step=.01 value=${db.rules.educationTaxBonusMax}></div><div><label>Mutluluk bonusu (maks. oran)</label><input id=happyBonus type=number step=.01 value=${db.rules.happinessEligibleBonusMax}></div></div><h3>➕ Yeni satış ürünü</h3><p class=small muted>Özel ürünler de satın alma ekranına eklenir. İstersen tesis, asker, kaynak veya başka bir kalem ekleyebilirsin.</p><div class=sale-admin><input id=newSaleName placeholder=Ürün adı><input id=newSalePrice type=number placeholder=Fiyat><input id=newSaleKind placeholder=Tür (genel/tesis/asker)></div><button class=orange onclick=addSale()>＋ SATIŞ ÜRÜNÜ EKLE</button><div id=customList>${db.customSales.map((x,i)=>`<div class=unit><span>${esc(x.name)} · ${money(x.price)} · ${esc(x.kind||"genel")}</span><button class=red onclick='removeSale(${i})'>SİL</button></div>`).join("")}</div><hr><h3>🛠 Bakım giderleri</h3><div class=form>`;Object.keys(db.maint).forEach(k=>h+=`<div><label>${esc(k)} yıllık bakım</label><input id=m_${key(k)} type=number value=${db.maint[k]}></div>`);h+=`</div><button class=green style='margin-top:15px' onclick=saveAdmin()>KAYDET</button>`;modal("⚙ ADMİN PANELİ",h)}
-async function addSale(){const n=$("newSaleName").value.trim(),p=Number($("newSalePrice").value)||0,k=$("newSaleKind").value.trim()||"genel";if(!n||p<=0)return alert("Ürün adı ve fiyat gerekli.");if(db.prices[n]||db.customSales.some(x=>x.name===n))return alert("Bu isim zaten var.");db.customSales.push({name:n,price:p,kind:k});await writeDb();admin()}
-async function removeSale(i){if(!confirm("Bu satış ürününü kaldır?"))return;db.customSales.splice(i,1);await writeDb();admin()}
-async function saveAdmin(){try{Object.keys(db.prices).forEach(k=>db.prices[k]=Number($("p_"+key(k)).value)||0);Object.keys(db.maint).forEach(k=>db.maint[k]=Number($("m_"+key(k)).value)||0);db.facilities.port.small=Number($("cap_ps").value)||0;db.facilities.port.medium=Number($("cap_pm").value)||0;db.facilities.port.large=Number($("cap_pl").value)||0;db.facilities.foundry.small=Number($("cap_fs").value)||0;db.facilities.foundry.medium=Number($("cap_fm").value)||0;db.facilities.foundry.large=Number($("cap_fl").value)||0;db.rules.schoolEducationGain=Number($("schoolGain").value)||0;db.rules.schoolMax=Number($("schoolMax").value)||100;db.rules.baseTaxPerCapita=Number($("baseTax").value)||0;db.rules.educationTaxBonusMax=Number($("eduBonus").value)||0;db.rules.happinessEligibleBonusMax=Number($("happyBonus").value)||0;await writeDb();close();if(selected>=0)detail(selected)}catch(e){alert("Admin kayıt hatası: "+e.message)}}
-$("close").addEventListener("click",close);$("login").addEventListener("click",loginUser);$("signup").addEventListener("click",signupUser);$("add").addEventListener("click",()=>stateForm());$("admin").addEventListener("click",admin);$("logout").addEventListener("click",logout);window.addEventListener("error",e=>{console.error(e);if($("authMsg"))$("authMsg").textContent="❌ JavaScript hatası: "+e.message});if(!SUPABASE_URL||!SUPABASE_KEY)$("authMsg").textContent="❌ Supabase ayarları bulunamadı. config.js kontrol edilmeli.";restore();
-</script></body></html>
+function showAuth(){document.getElementById("app").classList.add("hidden");document.getElementById("auth").classList.remove("hidden")}
+async function showApp(){document.getElementById("auth").classList.add("hidden");document.getElementById("app").classList.remove("hidden");await loadDB();renderHome()}
+function setAuthMode(m){authMode=m;document.getElementById("authBtn").textContent=m==="login"?"Giriş Yap":"Kayıt Ol";document.getElementById("loginTab").className="btn "+(m==="login"?"blue":"")+" small";document.getElementById("signupTab").className="btn "+(m==="signup"?"blue":"")+" small"}
+document.getElementById("loginTab").onclick=()=>setAuthMode("login");document.getElementById("signupTab").onclick=()=>setAuthMode("signup");
+document.getElementById("authBtn").onclick=async()=>{
+ const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
+ const msg=document.getElementById("authMsg");msg.className="";msg.textContent="İşleniyor…";
+ try{
+  if(authMode==="signup"){const r=await sb.auth.signUp({email,password});if(r.error)throw r.error;msg.className="success";msg.textContent=r.data.session?"Hesap oluşturuldu.":"Hesap oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et."}
+  else {const r=await sb.auth.signInWithPassword({email,password});if(r.error)throw r.error}
+ }catch(e){msg.className="error";msg.textContent="❌ "+(e.message||e)}
+};
+async function logout(){await sb.auth.signOut()}
+
+async function loadDB(){
+ toast("Veriler yükleniyor…");
+ const {data,error}=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+ if(error){toast("Supabase okuma hatası: "+error.message);return}
+ if(data?.data){db=data.data;db.settings={...defaultSettings,...(db.settings||{}),prices:{...defaultSettings.prices,...(db.settings?.prices||{})},capacity:{...defaultSettings.capacity,...(db.settings?.capacity||{})},upkeep:{...defaultSettings.upkeep,...(db.settings?.upkeep||{})}}}
+ else {db={states:[],settings:structuredClone(defaultSettings),transfers:[]};await saveDB()}
+ toast("Çevrimiçi ve otomatik kayıt açık",true);
+}
+async function saveDB(){
+ const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
+ if(error){toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
+}
+function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
+function renderHome(){
+ currentId=null;document.getElementById("detail").classList.add("hidden");document.getElementById("home").classList.remove("hidden");
+ const box=document.getElementById("stateGrid");
+ if(!db.states.length){box.innerHTML='<div class="empty">Henüz devlet yok.<br><br><button class="btn green" onclick="openStateForm()">＋ İlk Devleti Ekle</button></div>';return}
+ box.innerHTML=db.states.map(s=>{
+  const accent=s.color||"#3d82f6", army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
+  const guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
+  return `<div class="card state-card" style="--accent:${esc(accent)}">
+   <div class="state-head"><div><h2>${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"")}</div></div><span class="badge">${esc(s.title||"Devlet")}</span></div>
+   <div class="stats">
+    <div>💰 Hazine<br><span class="money">${money(s.treasury)}</span></div><div>👥 Nüfus<br>${num(s.population)}</div>
+    <div>⚔ Ordu<br>${num(army)}</div><div>🛡 Top<br>${num(guns)}</div><div>⚓ Gemi<br>${num(ships)}</div><div>😊 Mutluluk<br>${num(s.happiness)}%</div>
+   </div>
+   <div style="margin-top:14px"><button class="btn blue" onclick="openDetail('${s.id}')">Devlet Detayı →</button></div>
+  </div>`
+ }).join("")
+}
+function openDetail(id){
+ const s=getState(id);if(!s)return;currentId=id;document.getElementById("home").classList.add("hidden");document.getElementById("detail").classList.remove("hidden");
+ const st=db.settings, army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
+ const eligible=calcEligible(s), guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
+ const annualUpkeep=calcUpkeep(s);
+ document.getElementById("detail").innerHTML=`
+ <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Devletler</button><button class="btn blue" onclick="openStateForm('${s.id}')">✎ Verileri Düzenle</button></div></div>
+ <div class="cards" style="margin-top:14px">
+  <div class="card"><div class="sub">HAZİNE</div><div class="kpi money">${money(s.treasury)}</div></div>
+  <div class="card"><div class="sub">YILLIK GELİR</div><div class="kpi">${money(calcIncome(s))}</div></div>
+  <div class="card"><div class="sub">YILLIK GİDER</div><div class="kpi" style="color:#ff6970">${money(calcExpenses(s))}</div></div>
+ </div>
+ <div class="grid" style="margin-top:14px">
+  <div class="card"><h2>👥 Nüfus & Sosyal</h2>
+   <div class="item">Toplam Nüfus <b>${num(s.population)}</b></div>
+   <div class="item">Elverişli Nüfus <b>${num(eligible)}</b><div class="progress"><i style="width:${Math.min(100,eligible/Math.max(1,s.population)*100)}%"></i></div></div>
+   <div class="item">Halk Mutluluğu <b>${num(s.happiness)}%</b><div class="progress"><i style="width:${Math.max(0,Math.min(100,s.happiness))}%"></i></div></div>
+   <div class="item">Eğitim Seviyesi <b>${num(s.education)}%</b><div class="progress"><i style="width:${Math.max(0,Math.min(100,s.education))}%"></i></div></div>
+   <div class="item">Vergi Oranı <b>${num(s.tax)}%</b></div>
+  </div>
+  <div class="card"><h2>💰 Ekonomi</h2>
+   <div class="item">Vergi Geliri <b class="money">${money(calcIncome(s))}</b><div class="sub">Eğitim bonusu dahil</div></div>
+   <div class="item">Ordu Bakımı <b style="color:#ff6970">${money(calcMilitaryUpkeep(s))}</b></div>
+   <div class="item">Topçu Bakımı <b style="color:#ff6970">${money(calcArtilleryUpkeep(s))}</b></div>
+   <div class="item">Donanma Bakımı <b style="color:#ff6970">${money(calcNavyUpkeep(s))}</b></div>
+   <div class="item">Sivil Gider <b style="color:#ff6970">${money(s.civilExpense)}</b></div>
+   <div class="item">Toplam Otomatik Gider <b style="color:#ff6970">${money(annualUpkeep)}</b></div>
+  </div>
+ </div>
+ <div class="section-title">⚔ SATIN ALMA</div>
+ <div class="grid">${purchaseBlock(s,"piyade","🪖","Piyade",1,"eligible")}
+ ${purchaseBlock(s,"suvari","🐎","Süvari",1,"eligible")}
+ ${purchaseBlock(s,"nisanci","🏹","Nişancı",1,"eligible")}
+ ${purchaseBlock(s,"kucuk_top","🔫","Küçük Top",1,"gun")}
+ ${purchaseBlock(s,"orta_top","💣","Orta Top",1,"gun")}
+ ${purchaseBlock(s,"buyuk_top","💥","Büyük Top",1,"gun")}
+ ${purchaseBlock(s,"kucuk_gemi","🚤","Küçük Gemi",1,"ship")}
+ ${purchaseBlock(s,"orta_gemi","⛵","Orta Gemi",1,"ship")}
+ ${purchaseBlock(s,"buyuk_gemi","🚢","Büyük Gemi",1,"ship")}</div>
+ <div class="section-title">🏗 ALTYAPI</div>
+ <div class="grid">${infraBlock(s,"kucuk_liman","⚓","Küçük Liman","5 gemi kapasitesi")}
+ ${infraBlock(s,"orta_liman","⚓","Orta Liman","7 gemi kapasitesi")}
+ ${infraBlock(s,"buyuk_liman","⚓","Büyük Liman","10 gemi kapasitesi")}
+ ${infraBlock(s,"kucuk_ocak","🔥","Küçük Top Ocağı","10 top kapasitesi")}
+ ${infraBlock(s,"orta_ocak","🔥","Orta Top Ocağı","20 top kapasitesi")}
+ ${infraBlock(s,"buyuk_ocak","🔥","Büyük Top Ocağı","35 top kapasitesi")}
+ ${infraBlock(s,"okul","🏫","Okul","Eğitim +${st.schoolEducation}%")}</div>
+ <div class="section-title">💸 HAZİNE İŞLEMLERİ</div>
+ <div class="actions"><button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button></div>
+ <div class="section-title">📋 DETAYLAR</div>
+ <div class="card"><h3>Gelir Detayları</h3><p class="muted">Nüfus × temel vergi × vergi oranı + eğitim verim bonusu.</p><p>Hesaplanan yıllık gelir: <b class="money">${money(calcIncome(s))}</b></p>
+ <h3 style="margin-top:18px">Gider Detayları</h3><p class="muted">Asker, top ve gemi bakım giderleri mevcut adetlere göre otomatik değişir. Sivil gider ayrıca eklenir.</p>
+ <p>Toplam: <b style="color:#ff6970">${money(calcExpenses(s))}</b></p></div>`;
+}
+function calcEligible(s){let base=(s.population||0)*(s.eligibleRate||0)/100;return Math.min(s.population||0,Math.floor(base*(1+(s.happiness||0)/100*db.settings.happinessEligibleBonus)))}
+function calcIncome(s){let base=s.population*(s.baseTaxPerPerson||5)*(s.tax/100);return Math.floor(base*(1+(s.education||0)/100*db.settings.educationTaxBonus))}
+function calcMilitaryUpkeep(s){let p=s.piyade*db.settings.upkeep.piyade+s.suvari*db.settings.upkeep.suvari+s.nisanci*db.settings.upkeep.nisanci;return p}
+function calcArtilleryUpkeep(s){return s.kucuk_top*db.settings.upkeep.kucuk_top+s.orta_top*db.settings.upkeep.orta_top+s.buyuk_top*db.settings.upkeep.buyuk_top}
+function calcNavyUpkeep(s){return s.kucuk_gemi*db.settings.upkeep.kucuk_gemi+s.orta_gemi*db.settings.upkeep.orta_gemi+s.buyuk_gemi*db.settings.upkeep.buyuk_gemi}
+function calcUpkeep(s){return calcMilitaryUpkeep(s)+calcArtilleryUpkeep(s)+calcNavyUpkeep(s)+Number(s.civilExpense||0)}
+function calcExpenses(s){return calcUpkeep(s)}
+function purchaseBlock(s,key,icon,label,unit,type){
+ let count=s[key]||0, price=db.settings.prices[key]||0, cap="";
+ if(type==="ship") cap=`Kapasite: ${num(shipCapacity(s))} / ${num(shipCapMax(s))}`;
+ if(type==="gun") cap=`Kapasite: ${num(gunCapacity(s))} / ${num(gunCapMax(s))}`;
+ return `<div class="item"><div class="row"><div><b>${icon} ${label}</b><div class="sub">Mevcut: ${num(count)} • ${money(price)} / adet ${cap? "• "+cap:""}</div></div><button class="btn green" onclick="buy('${s.id}','${key}')">+1 AL</button></div></div>`
+}
+function infraBlock(s,key,icon,label,desc){return `<div class="item"><div class="row"><div><b>${icon} ${label}</b><div class="sub">${desc} • Mevcut: ${num(s[key]||0)} • ${money(db.settings.prices[key])}</div></div><button class="btn green" onclick="buyInfra('${s.id}','${key}')">YAP</button></div></div>`}
+function shipCapacity(s){return s.kucuk_gemi+s.orta_gemi+s.buyuk_gemi}
+function shipCapMax(s){return s.kucuk_liman*db.settings.capacity.kucuk_liman+s.orta_liman*db.settings.capacity.orta_liman+s.buyuk_liman*db.settings.capacity.buyuk_liman}
+function gunCapacity(s){return s.kucuk_top+s.orta_top+s.buyuk_top}
+function gunCapMax(s){return s.kucuk_ocak*db.settings.capacity.kucuk_ocak+s.orta_ocak*db.settings.capacity.orta_ocak+s.buyuk_ocak*db.settings.capacity.buyuk_ocak}
+async function buy(id,key){
+ const s=getState(id), price=db.settings.prices[key]||0;
+ if(!s||s.treasury<price){alert("Hazine yetersiz.");return}
+ if(["piyade","suvari","nisanci"].includes(key) && calcEligible(s)<1){alert("Elverişli nüfus yetersiz.");return}
+ if(key.includes("gemi") && shipCapacity(s)>=shipCapMax(s)){alert("Limanda boş gemi kapasitesi yok.");return}
+ if(key.includes("top") && gunCapacity(s)>=gunCapMax(s)){alert("Top ocağında boş kapasite yok.");return}
+ s.treasury-=price;s[key]=(s[key]||0)+1;
+ if(["piyade","suvari","nisanci"].includes(key)) s.population=Math.max(0,s.population-1);
+ queueSave();openDetail(id)
+}
+async function buyInfra(id,key){const s=getState(id),price=db.settings.prices[key]||0;if(s.treasury<price){alert("Hazine yetersiz.");return}s.treasury-=price;s[key]=(s[key]||0)+1;if(key==="okul")s.education=Math.min(100,(s.education||0)+db.settings.schoolEducation);queueSave();openDetail(id)}
+function openStateForm(id=null){
+ const s=id?getState(id):{name:"",ruler:"",title:"Devlet",color:"#3d82f6",treasury:0,population:0,eligibleRate:20,happiness:75,education:30,tax:20,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
+ modal(`<h2>${id?"Devlet Verilerini Düzenle":"Devlet Ekle"}</h2><div class="formgrid">
+ ${field("name","Devlet Adı",s.name,"text")}${field("ruler","Taht Sahibi",s.ruler,"text")}${field("title","Unvan",s.title,"text")}${field("color","Çerçeve Rengi",s.color,"color")}
+ ${field("treasury","Hazine",s.treasury,"number")}${field("population","Toplam Nüfus",s.population,"number")}${field("eligibleRate","Elverişli Nüfus %",s.eligibleRate,"number")}${field("tax","Vergi %",s.tax,"number")}
+ ${field("happiness","Halk Mutluluğu %",s.happiness,"number")}${field("education","Eğitim %",s.education,"number")}${field("baseTaxPerPerson","Kişi Başına Temel Vergi",s.baseTaxPerPerson,"number")}${field("civilExpense","Sivil Gider",s.civilExpense,"number")}
+ ${field("piyade","Piyade",s.piyade,"number")}${field("suvari","Süvari",s.suvari,"number")}${field("nisanci","Nişancı",s.nisanci,"number")}
+ ${field("kucuk_top","Küçük Top",s.kucuk_top,"number")}${field("orta_top","Orta Top",s.orta_top,"number")}${field("buyuk_top","Büyük Top",s.buyuk_top,"number")}
+ ${field("kucuk_gemi","Küçük Gemi",s.kucuk_gemi,"number")}${field("orta_gemi","Orta Gemi",s.orta_gemi,"number")}${field("buyuk_gemi","Büyük Gemi",s.buyuk_gemi,"number")}
+ ${field("kucuk_liman","Küçük Liman",s.kucuk_liman,"number")}${field("orta_liman","Orta Liman",s.orta_liman,"number")}${field("buyuk_liman","Büyük Liman",s.buyuk_liman,"number")}
+ ${field("kucuk_ocak","Küçük Top Ocağı",s.kucuk_ocak,"number")}${field("orta_ocak","Orta Top Ocağı",s.orta_ocak,"number")}${field("buyuk_ocak","Büyük Top Ocağı",s.buyuk_ocak,"number")}${field("okul","Okul",s.okul,"number")}
+ <div class="full actions"><button class="btn" onclick="closeModal()">Vazgeç</button><button class="btn green" onclick="saveState('${id||""}')">KAYDET</button>${id?`<button class="btn red" onclick="deleteState('${id}')">DEVLETİ SİL</button>`:""}</div></div>`);
+}
+function field(k,l,v,t="text"){return `<div><label>${l}</label><input id="f_${k}" type="${t}" value="${esc(v)}"></div>`}
+function saveState(id){
+ const keys=["name","ruler","title","color","treasury","population","eligibleRate","tax","happiness","education","baseTaxPerPerson","civilExpense","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul"];
+ const o={};keys.forEach(k=>o[k]=["name","ruler","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
+ if(!o.name){alert("Devlet adı gerekli.");return}
+ if(id){Object.assign(getState(id),o)}else{db.states.push({id:crypto.randomUUID(),...o})}
+ closeModal();queueSave();renderHome()
+}
+function deleteState(id){if(confirm("Bu devlet silinsin mi?")){db.states=db.states.filter(x=>x.id!==id);closeModal();queueSave();renderHome()}}
+function openDeduct(id){
+ modal(`<h2>Hazineden Para Kes</h2><label>Tutar</label><input id="deductAmt" type="number" min="0"><label>Açıklama</label><textarea id="deductDesc" placeholder="Örn: Saray masrafı, olağanüstü ödeme..."></textarea><div class="actions" style="margin-top:12px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn red" onclick="deduct('${id}')">KES VE KAYDET</button></div>`)
+}
+function deduct(id){let s=getState(id),a=Number(document.getElementById("deductAmt").value||0),d=document.getElementById("deductDesc").value.trim();if(a<=0||a>s.treasury){alert("Tutar geçersiz veya hazine yetersiz.");return}s.treasury-=a;s.expenseLog=s.expenseLog||[];s.expenseLog.unshift({amount:a,description:d||"Açıklamasız",date:new Date().toISOString()});closeModal();queueSave();openDetail(id)}
+function openTransfer(id){
+ const opts=db.states.filter(x=>x.id!==id).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
+ modal(`<h2>Devletler Arası Para Aktarımı</h2><label>Hedef Devlet</label><select id="transferTarget">${opts}</select><label>Tutar</label><input id="transferAmt" type="number" min="0"><label>Açıklama</label><textarea id="transferDesc"></textarea><div class="actions" style="margin-top:12px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn blue" onclick="transfer('${id}')">AKTAR</button></div>`)
+}
+function transfer(id){let s=getState(id),t=getState(document.getElementById("transferTarget").value),a=Number(document.getElementById("transferAmt").value||0),d=document.getElementById("transferDesc").value.trim();if(!t||a<=0||a>s.treasury){alert("Tutar geçersiz.");return}s.treasury-=a;t.treasury+=a;db.transfers.unshift({from:s.name,to:t.name,amount:a,description:d,date:new Date().toISOString()});closeModal();queueSave();openDetail(id)}
+function openAdmin(){
+ const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity;
+ modal(`<h2>⚙ Admin Paneli</h2><p class="sub">Fiyat, kapasite ve bakım giderlerini buradan değiştir. Değişiklikler tüm kullanıcılar için ortak kaydedilir.</p>
+ <h3>Satın Alma Fiyatları</h3><div class="formgrid">${Object.keys(p).map(k=>field("p_"+k,k,p[k],"number")).join("")}</div>
+ <h3 style="margin-top:18px">Kapasiteler</h3><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
+ <h3 style="margin-top:18px">Bakım Giderleri / Adet</h3><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
+ <h3 style="margin-top:18px">Sosyal Kurallar</h3><div class="formgrid">${field("schoolEducation","Okul başına eğitim artışı %",db.settings.schoolEducation,"number")}${field("educationTaxBonus","Eğitimin vergi bonusu",db.settings.educationTaxBonus,"number")}${field("happinessEligibleBonus","Mutluluğun elverişli nüfus bonusu",db.settings.happinessEligibleBonus,"number")}</div>
+ <div class="actions" style="margin-top:18px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn green" onclick="saveAdmin()">AYARLARI KAYDET</button></div>`)
+}
+function saveAdmin(){
+ Object.keys(db.settings.prices).forEach(k=>db.settings.prices[k]=Number(document.getElementById("f_p_"+k).value||0));
+ Object.keys(db.settings.capacity).forEach(k=>db.settings.capacity[k]=Number(document.getElementById("f_c_"+k).value||0));
+ Object.keys(db.settings.upkeep).forEach(k=>db.settings.upkeep[k]=Number(document.getElementById("f_u_"+k).value||0));
+ db.settings.schoolEducation=Number(document.getElementById("f_schoolEducation").value||0);db.settings.educationTaxBonus=Number(document.getElementById("f_educationTaxBonus").value||0);db.settings.happinessEligibleBonus=Number(document.getElementById("f_happinessEligibleBonus").value||0);
+ closeModal();queueSave();if(currentId)openDetail(currentId)
+}
+init();
+</script>
+</body>
+</html>
