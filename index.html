@@ -62,7 +62,6 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,se
 <script src="config.js"></script>
 <script>
 // ---------- YETKİLENDİRME AYARLARI ----------
-// BURAYA KENDİ E-POSTA ADRESİNİ YAZMALISIN. (Süper Admin)
 const SUPER_ADMINS = ["osman.baris.sarikaya1@gmail.com"]; 
 let currentUserEmail = null;
 let isAdmin = false;
@@ -112,8 +111,9 @@ async function init(){
 function showAuth(){document.getElementById("app").classList.add("hidden");document.getElementById("auth").classList.remove("hidden")}
 
 async function showApp(session){
- currentUserEmail = session?.user?.email || "";
- isAdmin = SUPER_ADMINS.includes(currentUserEmail);
+ // KESİN GÜVENLİK: Gelen maili ve Admin listesini tamamen küçük harfe çevirip boşlukları siliyoruz
+ currentUserEmail = (session?.user?.email || "").trim().toLowerCase();
+ isAdmin = SUPER_ADMINS.map(m => m.trim().toLowerCase()).includes(currentUserEmail);
  
  document.getElementById("auth").classList.add("hidden");
  document.getElementById("app").classList.remove("hidden");
@@ -123,6 +123,7 @@ async function showApp(session){
  if(isAdmin){
     actionsDiv.innerHTML = `<button class="btn green" onclick="openStateForm()">＋ Devlet Ekle</button><button class="btn blue" onclick="openAdmin()">⚙ Admin</button><button class="btn" onclick="logout()">Çıkış</button>`;
  } else {
+    // Admin değilse (oyuncuysa) sadece kendi mailini ve çıkış butonunu görür
     actionsDiv.innerHTML = `<span style="color:var(--muted); font-size:12px; margin-right:10px;">👤 ${esc(currentUserEmail)}</span><button class="btn" onclick="logout()">Çıkış</button>`;
  }
 
@@ -401,7 +402,7 @@ async function buyCustomBulk(id, itemId){
 
 // DEVLET FORMU
 function openStateForm(id=null){
- if(!isAdmin) return; // Sadece admin açabilir
+ if(!isAdmin) return; // KESİN GÜVENLİK
  
  const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",title:"Devlet",color:"#3d82f6",treasury:0,population:0,eligibleRate:20,happiness:75,education:30,tax:20,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
  
@@ -434,7 +435,7 @@ function saveState(id){
  if(db.settings.customItems) { db.settings.customItems.forEach(item => keys.push(item.id)); }
  const o={};keys.forEach(k=>o[k]=["name","ownerEmail","ruler","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
  if(!o.name){alert("Devlet adı gerekli.");return}
- o.ownerEmail = o.ownerEmail.trim().toLowerCase(); // Mail hatasını önlemek için
+ o.ownerEmail = (o.ownerEmail || "").trim().toLowerCase(); // KESİN GÜVENLİK
  if(id){Object.assign(getState(id),o)}else{db.states.push({id:crypto.randomUUID(),...o})}
  closeModal();queueSave();renderHome()
 }
@@ -451,7 +452,7 @@ function transfer(id){let s=getState(id),t=getState(document.getElementById("tra
 
 // ADMİN PANELİ (SADECE SUPER_ADMIN GÖREBİLİR)
 function openAdmin(){
- if(!isAdmin) return;
+ if(!isAdmin) return; // KESİN GÜVENLİK
  const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity;
  
  let customHtml = (db.settings.customItems||[]).map(x => 
