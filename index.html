@@ -29,7 +29,7 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,se
 .auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.authbox{width:min(430px,100%);background:var(--panel);padding:24px;border-radius:16px;border:1px solid var(--line)}.error{color:#ff8188;font-size:13px;margin-top:10px;white-space:pre-wrap}.success{color:#54e2b4;font-size:13px;margin-top:10px;white-space:pre-wrap}
 @media(max-width:800px){.grid,.cards{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.top{position:static}.container{padding:12px}.brand{font-size:18px}}
 
-/* SEKME (ACCORDION) TASARIMLARI */
+/* SEKME TASARIMLARI */
 .sec-header { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; background: #1a2536; padding: 14px 18px; border-radius: 10px; margin: 24px 0 12px; border: 1px solid var(--line); font-weight: bold; color: var(--gold); font-size: 17px; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .sec-header:hover { background: #23324a; border-color: var(--gold); }
 .sec-content { margin-bottom: 20px; transition: all 0.3s ease; }
@@ -69,8 +69,8 @@ const SUPER_ADMINS = ["osman.baris.sarikaya1@gmail.com"];
 let currentUserEmail = null;
 let isAdmin = false;
 
-// SEKME AÇIK/KAPALI HAFIZASI
-let toggled = { sec_ferman: false, sec_ozel: true, sec_temel: false, sec_altyapi: false, sec_hazine: false };
+// SEKME HAFIZASI
+let toggled = { sec_ferman: false, sec_ozel: true, sec_temel: false, sec_altyapi: false, sec_ledger: false, sec_hazine: false };
 
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
@@ -191,6 +191,8 @@ async function loadDB(){
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
+    // Devletlerde customLedger dizisi yoksa ekle
+    db.states.forEach(s => { s.customLedger = s.customLedger || []; });
  }
  else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};await saveDB()}
  toast("Çevrimiçi ve otomatik kayıt açık",true);
@@ -214,7 +216,6 @@ function renderHome(){
  }
  
  box.innerHTML=visibleStates.map(s=>{
-  // Asker hesabı
   let army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
   if(db.settings.customItems) {
      db.settings.customItems.filter(x=>x.category==='asker' && (!x.faction || x.faction===s.id)).forEach(x => army += (s[x.id]||0));
@@ -291,7 +292,34 @@ function openDetail(id){
  ${infraBlock(s,"okul","🏫","Okul","Halkın eğitim seviyesini artırıp elit tabakayı çoğaltır.", canManage)}</div>`;
  let altyapiHtml = buildSec('sec_altyapi', '🏗 ALTYAPI (BİNALAR)', innerAltyapi);
 
- // 5. HAZİNE İŞLEMLERİ
+ // 5. MALİYE DEFTERİ (ADİSYON) - YENİ SEKME
+ let ledgerHtmlContent = `<p class="sub" style="margin-top:0">Yıl içinde devletin kasasına giren ve çıkan özel ticaret, gümrük, vergi veya yardım kalemleri.</p>`;
+ if(s.customLedger && s.customLedger.length > 0) {
+    ledgerHtmlContent += `<div style="max-height:300px; overflow:auto;">` + s.customLedger.map((item, index) => {
+        let isPos = item.amount >= 0;
+        let col = isPos ? 'var(--green)' : '#ff6970';
+        let adminDel = isAdmin ? `<button class="btn red small" style="padding:2px 6px; font-size:11px;" onclick="removeLedgerItem('${s.id}', ${index})">Sil</button>` : '';
+        return `<div class="item" style="padding:10px; margin-bottom:6px;"><div class="row">
+            <div><b>${esc(item.desc)}</b></div>
+            <div style="text-align:right;"><span style="color:${col}; font-weight:bold;">${isPos?'+':''}${money(item.amount)}</span> ${adminDel}</div>
+        </div></div>`;
+    }).join('') + `</div>`;
+ } else {
+    ledgerHtmlContent += `<p class='muted'>Bu yıla ait kayıtlı özel ticaret veya ek kalem bulunmuyor.</p>`;
+ }
+ if(isAdmin) {
+    ledgerHtmlContent += `<div style="margin-top:12px; background:var(--panel2); padding:12px; border-radius:8px; border:1px solid var(--line);">
+        <b style="font-size:13px; color:var(--gold);">Admin: Yeni Kalem Ekle</b>
+        <div class="formgrid" style="margin-top:8px;">
+            <div><label>Açıklama</label><input id="ledger_desc_${s.id}" type="text" placeholder="Örn: Venedik Gümrük Vergisi"></div>
+            <div><label>Tutar (Eksi(-) gider, artı gelir)</label><input id="ledger_amt_${s.id}" type="number" placeholder="Örn: 50000 veya -20000"></div>
+            <div class="full"><button class="btn green small" onclick="addLedgerItem('${s.id}')">➕ Kalem Ekle</button></div>
+        </div>
+    </div>`;
+ }
+ let ledgerHtml = buildSec('sec_ledger', '📜 MALİYE DEFTERİ & TİCARET KALEMLERİ', ledgerHtmlContent);
+
+ // 6. HAZİNE İŞLEMLERİ
  let tActs = ``;
  if (isAdmin) tActs = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
  else if (isOwner) tActs = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
@@ -331,11 +359,36 @@ function openDetail(id){
  ${customItemsHtml}
  ${temelHtml}
  ${altyapiHtml}
+ ${ledgerHtml}
  ${hazineHtml}
  `;
 }
 
-// ---------------- YENİ NÜFUS HESAPLAMALARI ----------------
+// ---------------- MALİYE DEFTERİ FONKSİYONLARI ----------------
+function addLedgerItem(stateId) {
+    if(!isAdmin) return;
+    let s = getState(stateId);
+    if(!s) return;
+    let desc = document.getElementById('ledger_desc_'+stateId).value.trim();
+    let amt = Number(document.getElementById('ledger_amt_'+stateId).value) || 0;
+    if(!desc) { alert("Açıklama yazmalısınız."); return; }
+    
+    s.customLedger = s.customLedger || [];
+    s.customLedger.push({ desc, amount: amt });
+    queueSave();
+    openDetail(stateId);
+}
+
+function removeLedgerItem(stateId, index) {
+    if(!isAdmin) return;
+    let s = getState(stateId);
+    if(!s || !s.customLedger) return;
+    s.customLedger.splice(index, 1);
+    queueSave();
+    openDetail(stateId);
+}
+
+// ---------------- HESAPLAMALAR ----------------
 
 function calcPop(s){
   let hap = Number(s.happiness) || 0;
@@ -346,22 +399,15 @@ function calcPop(s){
   if(hap < 0) anarRate = 60; 
   let anarCount = Math.floor(pop * (anarRate/100));
   
-  // Askerleri sayalım
   let armySize = (s.piyade||0) + (s.suvari||0) + (s.nisanci||0);
   if(db.settings.customItems) {
      db.settings.customItems.filter(x=>x.category==='asker' && (!x.faction || x.faction===s.id)).forEach(x => armySize += (s[x.id]||0));
   }
   
-  // Maksimum %30 Sınırı (Mutluluk * 0.3)
   let eligRate = hap * 0.3;
   let maxElig = Math.floor(pop * (eligRate/100));
-  
-  // Boştaki Elverişli
   let availableElig = Math.max(0, maxElig - armySize);
-  
-  // Kalan Pasta (Anarşistler ve Asker kapasitesi çıktıktan sonra)
   let remCount = Math.max(0, pop - anarCount - Math.max(maxElig, armySize));
-  
   let eduCount = Math.floor(remCount * (edu/100));
   let otherCount = remCount - eduCount;
   
@@ -377,7 +423,6 @@ function calcPop(s){
 function calcIncome(s){
   const p = calcPop(s);
   const baseTax = (Number(s.baseTaxPerPerson)||5) * ((Number(s.tax)||0)/100);
-  // Vergi verenler: Boştaki Elverişliler, Sıradan Halk, Eğitimliler
   const total = (p.elig * baseTax) + (p.other * baseTax) + (p.edu * baseTax * 1.5);
   return Math.floor(total);
 }
@@ -517,7 +562,6 @@ async function buyBulk(id,key, labelName){
  
  s.treasury -= totalCost;
  s[key] = (s[key]||0) + qty;
- // DİKKAT: Artık s.population -= qty YOK! Askerler de nüfusun bir parçası, kışladalar.
  
  addLog(s.name, labelName, qty, totalCost);
  queueSave(); openDetail(id);
@@ -556,7 +600,6 @@ async function buyCustomBulk(id, itemId, labelName){
  
  s.treasury -= totalCost;
  s[item.id] = (s[item.id]||0) + qty;
- // DİKKAT: Artık s.population -= qty YOK! Askerler de nüfusun bir parçası, kışladalar.
  
  addLog(s.name, labelName, qty, totalCost);
  queueSave(); openDetail(id);
@@ -567,15 +610,12 @@ function calcCampCost(id) {
     const s = getState(id);
     if(!s) return;
     let total = 0;
-    
-    // Tüm sefer inputlarını bulup hesapla
     document.querySelectorAll('input[id^="camp_"]').forEach(el => {
         let k = el.id.replace('camp_','');
         let val = Number(el.value) || 0;
         let max = Number(el.max) || 0;
         if(val > max) { val = max; el.value = max; }
         if(val < 0) { val = 0; el.value = 0; }
-        
         let cost = 0;
         if(db.settings.campaignCost[k] !== undefined) cost = db.settings.campaignCost[k];
         else {
@@ -584,7 +624,6 @@ function calcCampCost(id) {
         }
         total += val * cost;
     });
-    
     document.getElementById('campTotalCost').innerHTML = money(total);
 }
 
@@ -592,7 +631,6 @@ function openCampaign(id) {
     const s = getState(id);
     if(!s) return;
     const cc = db.settings.campaignCost || {};
-    
     const units = [
         {key: 'piyade', label: 'Piyade', max: s.piyade||0, cost: cc.piyade||0},
         {key: 'suvari', label: 'Süvari', max: s.suvari||0, cost: cc.suvari||0},
@@ -602,16 +640,10 @@ function openCampaign(id) {
         {key: 'buyuk_top', label: 'Büyük Top', max: s.buyuk_top||0, cost: cc.buyuk_top||0}
     ];
 
-    // ÖZEL BİRİMLERİ (Sadece asker olanları) SEFERE EKLE
     if(db.settings.customItems) {
         db.settings.customItems.forEach(ci => {
             if(ci.category === 'asker' && (!ci.faction || ci.faction === s.id)) {
-                units.push({
-                    key: ci.id,
-                    label: ci.icon + ' ' + ci.name,
-                    max: s[ci.id] || 0,
-                    cost: ci.campCost || 0
-                });
+                units.push({ key: ci.id, label: ci.icon + ' ' + ci.name, max: s[ci.id] || 0, cost: ci.campCost || 0 });
             }
         });
     }
@@ -630,21 +662,18 @@ function openCampaign(id) {
 function startCampaign(id) {
     const s = getState(id);
     if(!s) return;
-    
     let total = 0; let details = [];
     document.querySelectorAll('input[id^="camp_"]').forEach(el => {
         let k = el.id.replace('camp_','');
         let val = Number(el.value) || 0;
         if(val > 0) {
-            let cost = 0;
-            let name = k.replace('_',' ');
+            let cost = 0; let name = k.replace('_',' ');
             if(db.settings.campaignCost[k] !== undefined) cost = db.settings.campaignCost[k];
             else {
                 let ci = (db.settings.customItems||[]).find(x=>x.id===k);
                 if(ci) { cost = ci.campCost || 0; name = ci.name; }
             }
-            total += val * cost; 
-            details.push(`${num(val)} ${name}`); 
+            total += val * cost; details.push(`${num(val)} ${name}`); 
         }
     });
 
@@ -695,8 +724,15 @@ function saveState(id){
  let diff = oldTax - o.tax;
  let hapChange = diff * 0.4;
  o.happiness = Math.max(0, Math.min(100, Number(document.getElementById("f_happiness").value||0) + hapChange));
- if(id){ Object.assign(getState(id),o); if(diff !== 0) alert(`Vergi değişimi sebebiyle halk mutluluğu ${hapChange > 0 ? '+'+hapChange.toFixed(1) : hapChange.toFixed(1)} puan etkilendi.`); }
- else{ db.states.push({id:crypto.randomUUID(),...o}) }
+ if(id){ 
+    let existing = getState(id);
+    o.customLedger = existing.customLedger || []; // Eskisini koru
+    Object.assign(existing,o); 
+    if(diff !== 0) alert(`Vergi değişimi sebebiyle halk mutluluğu ${hapChange > 0 ? '+'+hapChange.toFixed(1) : hapChange.toFixed(1)} puan etkilendi.`); 
+ } else { 
+    o.customLedger = [];
+    db.states.push({id:crypto.randomUUID(),...o}) 
+ }
  closeModal();queueSave();renderHome()
 }
 function deleteState(id){if(confirm("Bu devlet silinsin mi?")){db.states=db.states.filter(x=>x.id!==id);closeModal();queueSave();renderHome()}}
@@ -738,15 +774,34 @@ function openPurchaseLogs(){
 
 function passOneYear(){
     if(!isAdmin) return;
-    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nNet kâr/zarar hazinelerine yansıtılacak. Onaylıyor musunuz?")) return;
+    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, otomatik giderler ve Maliye Defterindeki (Adisyondaki) tüm artı-eksi kalemler hazineye işlenecek.\n\nOnaylıyor musunuz?")) return;
+    
     let summaryHtml = "<h3>⏳ 1. Yıl Sonu Finansal Raporu</h3><div style='max-height:60vh; overflow:auto;'><div class='grid' style='grid-template-columns:1fr;'>";
+    
     db.states.forEach(s => {
-        let inc = calcIncome(s), exp = calcExpenses(s), net = inc - exp;
+        let inc = calcIncome(s);
+        let exp = calcExpenses(s);
+        
+        // Maliye defterindeki (adisyondaki) özel kalemlerin toplamını hesapla ve hazineye yansıt
+        let ledgerTotal = 0;
+        if(s.customLedger && s.customLedger.length > 0) {
+            s.customLedger.forEach(item => { ledgerTotal += item.amount; });
+        }
+        
+        let net = inc - exp + ledgerTotal;
         s.treasury += net;
+        
+        // Yıl bittiği için adisyonu (maliye defterini) sıfırlıyoruz ki yeni yıla temiz başlansın
+        s.customLedger = []; 
+        
+        let color = net >= 0 ? 'var(--green)' : '#ff6970';
+        let netSign = net >= 0 ? '+' : '';
+        
         summaryHtml += `<div class="item"><div style="border-bottom:1px solid var(--line); margin-bottom:5px; padding-bottom:5px;"><b>${esc(s.name)}</b></div>
-            <div class="row" style="font-size:13px;"><div>Gelir: <span style="color:var(--green)">${money(inc)}</span><br>Gider: <span style="color:#ff6970">${money(exp)}</span></div>
-            <div style="text-align:right;">Net: <b style="color:${net>=0?'var(--green)':'#ff6970'}">${net>=0?'+':''}${money(net)}</b><br>Yeni Hazine: ${money(s.treasury)}</div></div></div>`;
+            <div class="row" style="font-size:13px;"><div>Gelir: <span style="color:var(--green)">${money(inc)}</span><br>Gider: <span style="color:#ff6970">${money(exp)}</span><br>Ticaret/Özel Kalemler: <span style="color:${ledgerTotal>=0?'var(--green)':'#ff6970'}">${ledgerTotal>=0?'+':''}${money(ledgerTotal)}</span></div>
+            <div style="text-align:right;">Net: <b style="color:${color}">${netSign}${money(net)}</b><br>Yeni Hazine: ${money(s.treasury)}</div></div></div>`;
     });
+    
     summaryHtml += "</div></div><div class='actions' style='margin-top:15px;'><button class='btn blue' onclick='closeModal()'>Kapat</button></div>";
     queueSave(); modal(summaryHtml);
     if(currentId) openDetail(currentId); else renderHome();
