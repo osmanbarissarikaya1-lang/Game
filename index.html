@@ -46,12 +46,10 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,se
 <div class="container">
 <header class="top">
  <div><div class="brand">⚔️ DEVLET YÖNETİM PANELİ</div><div id="syncText" class="sub">Supabase'e bağlanılıyor…</div></div>
- <div class="actions" id="topActions">
-    <!-- Butonlar JS ile yetkiye göre buraya eklenecek -->
- </div>
+ <div class="actions" id="topActions"></div>
 </header>
 <div id="home" class="screen">
- <div class="section-title">OLAN DEVLETLER</div>
+ <div class="section-title">DEVLETLER</div>
  <div id="stateGrid" class="grid"></div>
 </div>
 <div id="detail" class="screen hidden"></div>
@@ -111,19 +109,16 @@ async function init(){
 function showAuth(){document.getElementById("app").classList.add("hidden");document.getElementById("auth").classList.remove("hidden")}
 
 async function showApp(session){
- // KESİN GÜVENLİK: Gelen maili ve Admin listesini tamamen küçük harfe çevirip boşlukları siliyoruz
  currentUserEmail = (session?.user?.email || "").trim().toLowerCase();
  isAdmin = SUPER_ADMINS.map(m => m.trim().toLowerCase()).includes(currentUserEmail);
  
  document.getElementById("auth").classList.add("hidden");
  document.getElementById("app").classList.remove("hidden");
  
- // Üst bar butonlarını yetkiye göre çiz
  const actionsDiv = document.getElementById("topActions");
  if(isAdmin){
     actionsDiv.innerHTML = `<button class="btn green" onclick="openStateForm()">＋ Devlet Ekle</button><button class="btn blue" onclick="openAdmin()">⚙ Admin</button><button class="btn" onclick="logout()">Çıkış</button>`;
  } else {
-    // Admin değilse (oyuncuysa) sadece kendi mailini ve çıkış butonunu görür
     actionsDiv.innerHTML = `<span style="color:var(--muted); font-size:12px; margin-right:10px;">👤 ${esc(currentUserEmail)}</span><button class="btn" onclick="logout()">Çıkış</button>`;
  }
 
@@ -169,8 +164,16 @@ function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
 function renderHome(){
  currentId=null;document.getElementById("detail").classList.add("hidden");document.getElementById("home").classList.remove("hidden");
  const box=document.getElementById("stateGrid");
- if(!db.states.length){box.innerHTML=`<div class="empty">Henüz devlet yok.<br><br>${isAdmin ? '<button class="btn green" onclick="openStateForm()">＋ İlk Devleti Ekle</button>' : ''}</div>`;return}
- box.innerHTML=db.states.map(s=>{
+ 
+ // KESİN GÜVENLİK: Adminse tüm devletler, değilse sadece kendisine atanmış devletleri listele
+ const visibleStates = isAdmin ? db.states : db.states.filter(s => s.ownerEmail === currentUserEmail);
+ 
+ if(!visibleStates.length){
+    box.innerHTML=`<div class="empty">Henüz görebileceğiniz bir devlet yok.<br><br>${isAdmin ? '<button class="btn green" onclick="openStateForm()">＋ İlk Devleti Ekle</button>' : '<span style="color:var(--muted)">Adminin size bir devlet atamasını bekleyin.</span>'}</div>`;
+    return
+ }
+ 
+ box.innerHTML=visibleStates.map(s=>{
   const accent=s.color||"#3d82f6", army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
   const guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
   const isMine = s.ownerEmail === currentUserEmail;
@@ -180,22 +183,29 @@ function renderHome(){
     <div>💰 Hazine<br><span class="money">${money(s.treasury)}</span></div><div>👥 Nüfus<br>${num(s.population)}</div>
     <div>⚔ Ordu<br>${num(army)}</div><div>🛡 Top<br>${num(guns)}</div><div>⚓ Gemi<br>${num(ships)}</div><div>😊 Mutluluk<br>${num(s.happiness)}%</div>
    </div>
-   <div style="margin-top:14px"><button class="btn blue" onclick="openDetail('${s.id}')">Devlet Detayı →</button></div>
+   <div style="margin-top:14px"><button class="btn blue" onclick="openDetail('${s.id}')">Devlet Yönetimi →</button></div>
   </div>`
  }).join("")
 }
 
 function openDetail(id){
- const s=getState(id);if(!s)return;currentId=id;document.getElementById("home").classList.add("hidden");document.getElementById("detail").classList.remove("hidden");
+ const s=getState(id);
+ if(!s) return;
+ 
+ // KESİN GÜVENLİK DUVARI: Başka oyuncunun verisine giriş engelleniyor
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) {
+    alert("Bu devleti görüntüleme yetkiniz yok!");
+    return;
+ }
+ 
+ currentId=id;document.getElementById("home").classList.add("hidden");document.getElementById("detail").classList.remove("hidden");
  const st=db.settings, army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
  const eligible=calcEligible(s), guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
  const annualUpkeep=calcUpkeep(s);
  
- // YETKİ KONTROLÜ
  const isOwner = (s.ownerEmail === currentUserEmail);
  const canManage = isAdmin || isOwner;
 
- // Sadece süper admin devleti düzenleyebilir
  const editBtn = isAdmin ? `<button class="btn blue" onclick="openStateForm('${s.id}')">✎ Verileri Düzenle</button>` : ``;
  
  let customItemsHtml = "";
@@ -207,14 +217,16 @@ function openDetail(id){
     customItemsHtml += `</div>`;
  }
 
- // Hazine işlemleri butonları
- const treasuryActions = canManage 
-    ? `<button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`
-    : `<p class="muted">Bu devletin hazinesini yönetme yetkiniz yok.</p>`;
+ // YETKİLENDİRME: Hazine işlemleri butonları
+ let treasuryActions = ``;
+ if (isAdmin) {
+    treasuryActions = `<button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
+ } else if (isOwner) {
+    treasuryActions = `<button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
+ }
 
  document.getElementById("detail").innerHTML=`
- <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Devletler</button>${editBtn}</div></div>
- ${!canManage ? '<div class="notice">Sadece görüntüleme modundasınız. Bu devlette işlem yapabilmek için yetkiniz bulunmuyor.</div>' : ''}
+ <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button>${editBtn}</div></div>
  <div class="cards" style="margin-top:14px">
   <div class="card"><div class="sub">HAZİNE</div><div class="kpi money">${money(s.treasury)}</div></div>
   <div class="card"><div class="sub">YILLIK GELİR</div><div class="kpi">${money(calcIncome(s))}</div></div>
@@ -288,7 +300,7 @@ function updateTotal(id, key, price) {
  document.getElementById(`total_${id}_${key}`).innerHTML = `Toplam: <b style="color:var(--gold)">${money(price * qty)}</b>`;
 }
 
-// SATIN ALMA BLOKLARI (YETKİYE GÖRE GİZLE/GÖSTER)
+// SATIN ALMA BLOKLARI
 function purchaseBlock(s,key,icon,label,unit,type, canManage){
  let count=s[key]||0, price=db.settings.prices[key]||0, cap="";
  if(type==="ship") cap=`Kapasite: ${num(shipCapacity(s))} / ${num(shipCapMax(s))}`;
@@ -361,11 +373,15 @@ function gunCapacity(s){return (s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0)
 function gunCapMax(s){return (s.kucuk_ocak||0)*db.settings.capacity.kucuk_ocak+(s.orta_ocak||0)*db.settings.capacity.orta_ocak+(s.buyuk_ocak||0)*db.settings.capacity.buyuk_ocak}
 
 async function buyBulk(id,key){
- const s=getState(id), price=db.settings.prices[key]||0;
+ const s=getState(id);
+ if(!s) return;
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
+ 
+ const price=db.settings.prices[key]||0;
  const qty = Math.floor(Number(document.getElementById(`qty_${id}_${key}`).value)) || 0;
  if(qty <= 0) { alert("Lütfen geçerli bir miktar girin."); return; }
  const totalCost = price * qty;
- if(!s||s.treasury<totalCost){alert(`Hazine yetersiz! Toplam maliyet: ${money(totalCost)}`);return}
+ if(s.treasury<totalCost){alert(`Hazine yetersiz! Toplam maliyet: ${money(totalCost)}`);return}
  if(["piyade","suvari","nisanci"].includes(key) && calcEligible(s)<qty){alert("Elverişli nüfus yetersiz.");return}
  if(key.includes("gemi") && (shipCapacity(s) + qty) > shipCapMax(s)){alert("Limanda boş gemi kapasitesi yok.");return}
  if(key.includes("top") && (gunCapacity(s) + qty) > gunCapMax(s)){alert("Top ocağında boş kapasite yok.");return}
@@ -375,7 +391,11 @@ async function buyBulk(id,key){
  queueSave(); openDetail(id);
 }
 async function buyInfraBulk(id,key){
- const s=getState(id),price=db.settings.prices[key]||0;
+ const s=getState(id);
+ if(!s) return;
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; }
+
+ const price=db.settings.prices[key]||0;
  const qty = Math.floor(Number(document.getElementById(`qty_${id}_${key}`).value)) || 0;
  if(qty <= 0) { alert("Lütfen geçerli bir miktar girin."); return; }
  const totalCost = price * qty;
@@ -387,6 +407,9 @@ async function buyInfraBulk(id,key){
 }
 async function buyCustomBulk(id, itemId){
  const s = getState(id);
+ if(!s) return;
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
+
  const item = (db.settings.customItems||[]).find(x=>x.id===itemId);
  if(!item) return;
  const qty = Math.floor(Number(document.getElementById(`qty_${id}_${itemId}`).value)) || 0;
@@ -435,24 +458,40 @@ function saveState(id){
  if(db.settings.customItems) { db.settings.customItems.forEach(item => keys.push(item.id)); }
  const o={};keys.forEach(k=>o[k]=["name","ownerEmail","ruler","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
  if(!o.name){alert("Devlet adı gerekli.");return}
- o.ownerEmail = (o.ownerEmail || "").trim().toLowerCase(); // KESİN GÜVENLİK
+ o.ownerEmail = (o.ownerEmail || "").trim().toLowerCase();
  if(id){Object.assign(getState(id),o)}else{db.states.push({id:crypto.randomUUID(),...o})}
  closeModal();queueSave();renderHome()
 }
 function deleteState(id){if(confirm("Bu devlet silinsin mi?")){db.states=db.states.filter(x=>x.id!==id);closeModal();queueSave();renderHome()}}
 
 // HAZİNE & TRANSFER
-function openDeduct(id){ modal(`<h2>Hazineden Para Kes</h2><label>Tutar</label><input id="deductAmt" type="number" min="0"><label>Açıklama</label><textarea id="deductDesc" placeholder="Örn: Saray masrafı, olağanüstü ödeme..."></textarea><div class="actions" style="margin-top:12px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn red" onclick="deduct('${id}')">KES VE KAYDET</button></div>`) }
-function deduct(id){let s=getState(id),a=Number(document.getElementById("deductAmt").value||0),d=document.getElementById("deductDesc").value.trim();if(a<=0||a>s.treasury){alert("Tutar geçersiz veya hazine yetersiz.");return}s.treasury-=a;s.expenseLog=s.expenseLog||[];s.expenseLog.unshift({amount:a,description:d||"Açıklamasız",date:new Date().toISOString()});closeModal();queueSave();openDetail(id)}
+function openDeduct(id){ 
+ if(!isAdmin) { alert("Sadece admin hazineden para silebilir."); return; } 
+ modal(`<h2>Hazineden Para Kes</h2><label>Tutar</label><input id="deductAmt" type="number" min="0"><label>Açıklama</label><textarea id="deductDesc" placeholder="Örn: Saray masrafı, olağanüstü ödeme..."></textarea><div class="actions" style="margin-top:12px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn red" onclick="deduct('${id}')">KES VE KAYDET</button></div>`) 
+}
+function deduct(id){
+ if(!isAdmin) return;
+ let s=getState(id),a=Number(document.getElementById("deductAmt").value||0),d=document.getElementById("deductDesc").value.trim();
+ if(a<=0||a>s.treasury){alert("Tutar geçersiz veya hazine yetersiz.");return}
+ s.treasury-=a;s.expenseLog=s.expenseLog||[];s.expenseLog.unshift({amount:a,description:d||"Açıklamasız",date:new Date().toISOString()});closeModal();queueSave();openDetail(id)
+}
 function openTransfer(id){
+ const s = getState(id);
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
  const opts=db.states.filter(x=>x.id!==id).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
  modal(`<h2>Devletler Arası Para Aktarımı</h2><label>Hedef Devlet</label><select id="transferTarget">${opts}</select><label>Tutar</label><input id="transferAmt" type="number" min="0"><label>Açıklama</label><textarea id="transferDesc"></textarea><div class="actions" style="margin-top:12px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn blue" onclick="transfer('${id}')">AKTAR</button></div>`)
 }
-function transfer(id){let s=getState(id),t=getState(document.getElementById("transferTarget").value),a=Number(document.getElementById("transferAmt").value||0),d=document.getElementById("transferDesc").value.trim();if(!t||a<=0||a>s.treasury){alert("Tutar geçersiz.");return}s.treasury-=a;t.treasury+=a;db.transfers.unshift({from:s.name,to:t.name,amount:a,description:d,date:new Date().toISOString()});closeModal();queueSave();openDetail(id)}
+function transfer(id){
+ let s=getState(id);
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
+ let t=getState(document.getElementById("transferTarget").value),a=Number(document.getElementById("transferAmt").value||0),d=document.getElementById("transferDesc").value.trim();
+ if(!t||a<=0||a>s.treasury){alert("Tutar geçersiz.");return}
+ s.treasury-=a;t.treasury+=a;db.transfers.unshift({from:s.name,to:t.name,amount:a,description:d,date:new Date().toISOString()});closeModal();queueSave();openDetail(id)
+}
 
 // ADMİN PANELİ (SADECE SUPER_ADMIN GÖREBİLİR)
 function openAdmin(){
- if(!isAdmin) return; // KESİN GÜVENLİK
+ if(!isAdmin) return; 
  const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity;
  
  let customHtml = (db.settings.customItems||[]).map(x => 
