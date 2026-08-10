@@ -1,7 +1,0 @@
-1. schema.sql daha önce Supabase SQL Editor'da başarıyla çalıştırıldıysa tekrar çalıştırma.
-2. index.html ve config.js aynı klasörde kalmalı.
-3. Bu klasörü GitHub Pages, Netlify veya Cloudflare Pages gibi statik hosting'e yükle.
-4. Siteyi açıp Hesap Oluştur ile hesap aç.
-5. Giriş yaptıktan sonra devlet ekleme, satın alma, para aktarımı ve admin değişiklikleri game_data tablosuna otomatik kaydolur.
-6. Aynı hesapla başka cihazdan girildiğinde veriler gelir.
-7. Service Role key kullanma. config.js yalnızca Publishable key içerir.
