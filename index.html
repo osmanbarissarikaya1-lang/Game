@@ -85,14 +85,14 @@ const defaultSettings={
  customItems: [] 
 };
 
-// FERMANLAR
+// FERMANLAR (Puanlar gizli, açıklamalar hikayesel)
 const EDICTS = [
-    { id: 'erzak', name: 'Erzak Dağıtımı', pts: 10, costPerPop: 2, icon: '🍞' },
-    { id: 'karakol', name: 'Karakol İnşası', pts: 8, costPerPop: 1.5, icon: '🛡️' },
-    { id: 'panayir', name: 'Panayır Düzenle', pts: 7, costPerPop: 1, icon: '🎪' },
-    { id: 'ibadethane', name: 'İbadethane / Hamam', pts: 7, costPerPop: 3, icon: '🕌' },
-    { id: 'anit', name: 'Anıt İnşası', pts: 5, costPerPop: 2.5, icon: '🏛️' },
-    { id: 'denetim', name: 'Pazar Denetimi', pts: '5-9', costPerPop: 0.5, icon: '⚖️' }
+    { id: 'erzak', name: 'Erzak Dağıtımı', desc: 'Devlet ambarlarını açarak halkın karnını doyur ve duasını al.', pts: 10, costPerPop: 2, icon: '🍞' },
+    { id: 'karakol', name: 'Karakol İnşası', desc: 'Eşkıyaları temizle, yollarda ve şehirlerde güvenliği sağla.', pts: 8, costPerPop: 1.5, icon: '🛡️' },
+    { id: 'panayir', name: 'Panayır Düzenle', desc: 'Ülke genelinde şenlikler ve eğlenceler tertip ederek moralleri yükselt.', pts: 7, costPerPop: 1, icon: '🎪' },
+    { id: 'ibadethane', name: 'İbadethane / Hamam', desc: 'Halkın manevi ve bedeni temizliği için ulu yapılar inşa et.', pts: 7, costPerPop: 3, icon: '🕌' },
+    { id: 'anit', name: 'Anıt İnşası', desc: 'Devletin haşmetini gösterecek görkemli anıtlar dikerek gurur ver.', pts: 5, costPerPop: 2.5, icon: '🏛️' },
+    { id: 'denetim', name: 'Pazar Denetimi', desc: 'Karaborsacılara göz açtırmamak için pazarlara baskınlar düzenle.', pts: '5-9', costPerPop: 0.5, icon: '⚖️' }
 ];
 
 function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
@@ -165,7 +165,7 @@ async function loadDB(){
     db.settings.capacity={...defaultSettings.capacity,...(db.settings?.capacity||{})};
     db.settings.upkeep={...defaultSettings.upkeep,...(db.settings?.upkeep||{})};
     db.settings.customItems = db.settings.customItems || [];
-    db.purchaseLog = db.purchaseLog || []; // LOG SİSTEMİ İÇİN
+    db.purchaseLog = db.purchaseLog || []; 
  }
  else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};await saveDB()}
  toast("Çevrimiçi ve otomatik kayıt açık",true);
@@ -245,15 +245,15 @@ function openDetail(id){
  <div class="grid" style="margin-top:14px">
   <div class="card"><h2>👥 Nüfus & Sınıflar (Yeni Sistem)</h2>
    <div class="item">Toplam Nüfus <b>${num(s.population)}</b></div>
-   <div class="item">Eğitimli Sınıf (%${num(p.eduRate)}) <b>${num(p.edu)}</b><div class="sub" style="color:var(--gold)">1.5x Vergi öderler</div></div>
-   <div class="item">Diğer / Sivil Halk <b>${num(p.other)}</b><div class="sub">1x Vergi öderler</div></div>
-   <div class="item">Elverişli Askerler (%${num(p.eligRate)}) <b>${num(p.elig)}</b><div class="sub">1x Vergi öderler (Mutluluğun yarısı)</div></div>
-   <div class="item" style="${p.anar > 0 ? 'border-color:#ff6970' : ''}">Anarşistler (%${num(p.anarRate)}) <b style="color:#ff6970">${num(p.anar)}</b><div class="sub">İsyancıdır, vergi ödemezler</div></div>
+   <div class="item">Eğitimli Sınıf (%${num(p.eduRate)}) <b>${num(p.edu)}</b><div class="sub" style="color:var(--gold)">Devletin aydın kesimidir. Hazineye en büyük vergi katkısını onlar sağlar.</div></div>
+   <div class="item">Sıradan Halk (%${num(s.population > 0 ? (p.other/s.population*100).toFixed(0) : 0)}) <b>${num(p.other)}</b><div class="sub">Tarlada ve tezgâhta çalışan normal tebaa. Temel vergiyi öderler.</div></div>
+   <div class="item">Elverişli Askerler (%${num(p.eligRate)}) <b>${num(p.elig)}</b><div class="sub">Silahaltına alınmayı bekleyen siviller. Celp gelene dek üretip vergi verirler.</div></div>
+   <div class="item" style="${p.anar > 0 ? 'border-color:#ff6970' : ''}">Anarşistler (%${num(p.anarRate)}) <b style="color:#ff6970">${num(p.anar)}</b><div class="sub">Devlete başkaldıran öfkeli güruh. Vergi ödemez, nizamı bozarlar.</div></div>
    <div class="item">Halk Mutluluğu <b>%${num(s.happiness)}</b><div class="progress"><i style="width:${Math.max(0,Math.min(100,s.happiness))}%"></i></div></div>
    <div class="item">Vergi Oranı <b>%${num(s.tax)}</b></div>
   </div>
   <div class="card"><h2>💰 Ekonomi Detayı</h2>
-   <div class="item">Toplam Vergi Geliri <b class="money">${money(annualIncome)}</b><div class="sub">Eğitimliler, Siviller ve Elverişlilerden alınır.</div></div>
+   <div class="item">Toplam Vergi Geliri <b class="money">${money(annualIncome)}</b><div class="sub">Eğitimliler, Siviller ve Elverişlilerden toplanan meblağ.</div></div>
    <div class="item">Ordu Bakımı <b style="color:#ff6970">${money(calcMilitaryUpkeep(s))}</b></div>
    <div class="item">Topçu Bakımı <b style="color:#ff6970">${money(calcArtilleryUpkeep(s))}</b></div>
    <div class="item">Donanma Bakımı <b style="color:#ff6970">${money(calcNavyUpkeep(s))}</b></div>
@@ -264,14 +264,14 @@ function openDetail(id){
  </div>
  
  <div class="section-title">📜 FERMANLAR & SOSYAL POLİTİKALAR</div>
- <p class="sub">Hazineden harcama yaparak halkın mutluluğunu anında artırın.</p>
+ <p class="sub">Hazineden harcama yaparak halkın gönlünü alın.</p>
  <div class="grid">
     ${EDICTS.map(e => `
         <div class="item">
             <div class="row" style="align-items:flex-start">
                 <div>
                     <b>${e.icon} ${e.name}</b>
-                    <div class="sub">+${e.pts} Puan (+%${e.pts==='5-9'?'0.5-0.9':e.pts/10} Mutluluk)<br>Maliyet: ${money(s.population * e.costPerPop)}</div>
+                    <div class="sub">${e.desc}<br>Maliyet: <span style="color:var(--gold)">${money(s.population * e.costPerPop)}</span></div>
                 </div>
                 <div style="text-align:right">
                     ${canManage ? `<button class="btn gold" onclick="buyEdict('${s.id}', '${e.id}')">YAYINLA</button>` : `<span class="sub" style="color:#f0444c">Yetki Yok</span>`}
@@ -294,13 +294,13 @@ function openDetail(id){
  ${purchaseBlock(s,"orta_gemi","⛵","Orta Gemi",1,"ship", canManage, p)}
  ${purchaseBlock(s,"buyuk_gemi","🚢","Büyük Gemi",1,"ship", canManage, p)}</div>
  <div class="section-title">🏗 ALTYAPI</div>
- <div class="grid">${infraBlock(s,"kucuk_liman","⚓","Küçük Liman","5 gemi kapasitesi", canManage)}
- ${infraBlock(s,"orta_liman","⚓","Orta Liman","7 gemi kapasitesi", canManage)}
- ${infraBlock(s,"buyuk_liman","⚓","Büyük Liman","10 gemi kapasitesi", canManage)}
- ${infraBlock(s,"kucuk_ocak","🔥","Küçük Top Ocağı","10 top kapasitesi", canManage)}
- ${infraBlock(s,"orta_ocak","🔥","Orta Top Ocağı","20 top kapasitesi", canManage)}
- ${infraBlock(s,"buyuk_ocak","🔥","Büyük Top Ocağı","35 top kapasitesi", canManage)}
- ${infraBlock(s,"okul","🏫","Okul","Eğitim +${st.schoolEducation}%", canManage)}</div>
+ <div class="grid">${infraBlock(s,"kucuk_liman","⚓","Küçük Liman","Limandaki gemi kapasitesini artırır.", canManage)}
+ ${infraBlock(s,"orta_liman","⚓","Orta Liman","Daha büyük donanmalar için orta boy tersane.", canManage)}
+ ${infraBlock(s,"buyuk_liman","⚓","Büyük Liman","Devasa kalyonlara ev sahipliği yapacak tersane.", canManage)}
+ ${infraBlock(s,"kucuk_ocak","🔥","Küçük Top Ocağı","Savaş toplarının dökümü için kapasite artırır.", canManage)}
+ ${infraBlock(s,"orta_ocak","🔥","Orta Top Ocağı","Topçu birliklerinin kapasitesini destekler.", canManage)}
+ ${infraBlock(s,"buyuk_ocak","🔥","Büyük Top Ocağı","Şahi topların döküleceği devasa endüstri merkezi.", canManage)}
+ ${infraBlock(s,"okul","🏫","Okul","Halkın eğitim seviyesini artırıp elit tabakayı çoğaltır.", canManage)}</div>
  <div class="section-title">💸 HAZİNE İŞLEMLERİ</div>
  <div class="actions">${treasuryActions}</div>`;
 }
@@ -355,7 +355,7 @@ function addLog(stateName, itemLabel, qty, totalCost) {
     if(!db.purchaseLog) db.purchaseLog = [];
     const dateStr = new Date().toLocaleString("tr-TR");
     db.purchaseLog.unshift({ state: stateName, item: itemLabel, qty: qty, cost: totalCost, date: dateStr, user: currentUserEmail });
-    if(db.purchaseLog.length > 200) db.purchaseLog.pop(); // Son 200 işlemi sakla
+    if(db.purchaseLog.length > 200) db.purchaseLog.pop();
 }
 
 // ---------------- SATIN ALMA İŞLEMLERİ ----------------
