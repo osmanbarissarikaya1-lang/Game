@@ -1,23 +1,25 @@
-# Devlet Yönetim Paneli — GitHub Pages + Supabase
+# Devlet Yönetim Paneli - GitHub Pages V3
 
-Statik GitHub Pages uygulamasıdır. Veriler kullanıcı hesabına göre Supabase `game_data.data` JSONB alanında saklanır.
+Bu sürüm Supabase Auth için resmi `@supabase/supabase-js` istemcisini kullanır.
 
-## Yeni özellikler
-- Devlet hazinesinden açıklamalı manuel para kesintisi ve işlem geçmişi
-- Devletler arası para aktarımı
-- Küçük/Orta/Büyük liman: gemi kapasitesi
-- Küçük/Orta/Büyük top ocağı: top kapasitesi
-- Kapasite doluyken gemi/top satın alma engeli
-- Okul satın alma ve eğitim seviyesi artışı
-- Halk mutluluğu ve eğitim seviyesi
-- Mutluluğa bağlı elverişli nüfus hesabı
-- Eğitime bağlı kişi başı vergi bonusu
-- Admin panelinden fiyatlar, bakım giderleri, kapasite ve ekonomik kurallar
-- Admin panelinden sınırsız özel satış ürünü ekleme/silme
-- Otomatik Supabase kayıt
+## GitHub Pages
 
-## Kurulum
-1. `index.html` ve `config.js` dosyalarını GitHub repository köküne yükleyin.
-2. Pages: `main` + `/ (root)`.
-3. Supabase'de mevcut `game_data` tablosu yeterlidir; JSONB veri yapısı uygulama tarafından otomatik genişletilir.
-4. Publishable/anon key kullanın; Service Role Key kullanmayın.
+`index.html`, `config.js`, `schema.sql` dosyalarını repository ana dizinine yükleyin.
+
+Pages: `main` + `/ (root)`.
+
+## Supabase
+
+`schema.sql` dosyasını Supabase SQL Editor'da bir kez çalıştırın.
+
+Authentication > Providers > Email açık olmalı.
+
+Email Confirmations açık ise kayıt sonrası e-posta doğrulaması gerekir. İsterseniz test sırasında kapatabilirsiniz.
+
+Authentication > URL Configuration bölümünde Site URL olarak GitHub Pages adresinizi ekleyin:
+
+https://osmanbarissarikaya1-lang.github.io/Game/
+
+## Önemli
+
+`config.js` içindeki `sb_publishable_...` anahtarı frontend'de kullanılabilen publishable key'dir. Secret/service_role key kullanmayın.
