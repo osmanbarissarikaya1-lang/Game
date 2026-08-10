@@ -68,7 +68,7 @@ let isAdmin = false;
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
-let db={states:[],settings:null,transfers:[]}, currentId=null, authMode="login", saveTimer=null;
+let db={states:[],settings:null,transfers:[], purchaseLog:[]}, currentId=null, authMode="login", saveTimer=null;
 
 function initSupabase(){
  if(!window.supabase || typeof window.supabase.createClient!=="function") throw new Error("Supabase JavaScript kütüphanesi yüklenemedi.");
@@ -81,9 +81,19 @@ const defaultSettings={
  prices:{piyade:10,suvari:50,nisanci:20,kucuk_top:3000,orta_top:6000,buyuk_top:10000,kucuk_gemi:15000,orta_gemi:30000,buyuk_gemi:60000,kucuk_liman:100000,orta_liman:180000,buyuk_liman:300000,kucuk_ocak:80000,orta_ocak:150000,buyuk_ocak:250000,okul:120000},
  capacity:{kucuk_liman:5,orta_liman:7,buyuk_liman:10,kucuk_ocak:10,orta_ocak:20,buyuk_ocak:35},
  upkeep:{piyade:1,suvari:5,nisanci:2,kucuk_top:250,orta_top:450,buyuk_top:800,kucuk_gemi:1200,orta_gemi:2200,buyuk_gemi:4000},
- schoolEducation:2, educationTaxBonus:0.75, happinessEligibleBonus:0.20,
+ schoolEducation:2,
  customItems: [] 
 };
+
+// FERMANLAR
+const EDICTS = [
+    { id: 'erzak', name: 'Erzak Dağıtımı', pts: 10, costPerPop: 2, icon: '🍞' },
+    { id: 'karakol', name: 'Karakol İnşası', pts: 8, costPerPop: 1.5, icon: '🛡️' },
+    { id: 'panayir', name: 'Panayır Düzenle', pts: 7, costPerPop: 1, icon: '🎪' },
+    { id: 'ibadethane', name: 'İbadethane / Hamam', pts: 7, costPerPop: 3, icon: '🕌' },
+    { id: 'anit', name: 'Anıt İnşası', pts: 5, costPerPop: 2.5, icon: '🏛️' },
+    { id: 'denetim', name: 'Pazar Denetimi', pts: '5-9', costPerPop: 0.5, icon: '⚖️' }
+];
 
 function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function money(n){return Number(n||0).toLocaleString("tr-TR")+" TL"}
@@ -117,7 +127,12 @@ async function showApp(session){
  
  const actionsDiv = document.getElementById("topActions");
  if(isAdmin){
-    actionsDiv.innerHTML = `<button class="btn green" onclick="openStateForm()">＋ Devlet Ekle</button><button class="btn blue" onclick="openAdmin()">⚙ Admin</button><button class="btn" onclick="logout()">Çıkış</button>`;
+    actionsDiv.innerHTML = `
+    <button class="btn gold" onclick="passOneYear()">⏳ 1 Yılı Geçir</button>
+    <button class="btn" style="background:var(--purple); color:#fff;" onclick="openPurchaseLogs()">📜 Loglar</button>
+    <button class="btn green" onclick="openStateForm()">＋ Devlet Ekle</button>
+    <button class="btn blue" onclick="openAdmin()">⚙ Admin</button>
+    <button class="btn" onclick="logout()">Çıkış</button>`;
  } else {
     actionsDiv.innerHTML = `<span style="color:var(--muted); font-size:12px; margin-right:10px;">👤 ${esc(currentUserEmail)}</span><button class="btn" onclick="logout()">Çıkış</button>`;
  }
@@ -150,8 +165,9 @@ async function loadDB(){
     db.settings.capacity={...defaultSettings.capacity,...(db.settings?.capacity||{})};
     db.settings.upkeep={...defaultSettings.upkeep,...(db.settings?.upkeep||{})};
     db.settings.customItems = db.settings.customItems || [];
+    db.purchaseLog = db.purchaseLog || []; // LOG SİSTEMİ İÇİN
  }
- else {db={states:[],settings:structuredClone(defaultSettings),transfers:[]};await saveDB()}
+ else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};await saveDB()}
  toast("Çevrimiçi ve otomatik kayıt açık",true);
 }
 async function saveDB(){
@@ -165,7 +181,6 @@ function renderHome(){
  currentId=null;document.getElementById("detail").classList.add("hidden");document.getElementById("home").classList.remove("hidden");
  const box=document.getElementById("stateGrid");
  
- // KESİN GÜVENLİK: Adminse tüm devletler, değilse sadece kendisine atanmış devletleri listele
  const visibleStates = isAdmin ? db.states : db.states.filter(s => s.ownerEmail === currentUserEmail);
  
  if(!visibleStates.length){
@@ -192,16 +207,16 @@ function openDetail(id){
  const s=getState(id);
  if(!s) return;
  
- // KESİN GÜVENLİK DUVARI: Başka oyuncunun verisine giriş engelleniyor
- if(!isAdmin && s.ownerEmail !== currentUserEmail) {
-    alert("Bu devleti görüntüleme yetkiniz yok!");
-    return;
- }
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Bu devleti görüntüleme yetkiniz yok!"); return; }
  
  currentId=id;document.getElementById("home").classList.add("hidden");document.getElementById("detail").classList.remove("hidden");
+ 
  const st=db.settings, army=(s.piyade||0)+(s.suvari||0)+(s.nisanci||0);
- const eligible=calcEligible(s), guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
- const annualUpkeep=calcUpkeep(s);
+ const guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
+ 
+ const p = calcPop(s);
+ const annualUpkeep = calcUpkeep(s);
+ const annualIncome = calcIncome(s);
  
  const isOwner = (s.ownerEmail === currentUserEmail);
  const canManage = isAdmin || isOwner;
@@ -211,37 +226,34 @@ function openDetail(id){
  let customItemsHtml = "";
  if(db.settings.customItems && db.settings.customItems.length > 0) {
     customItemsHtml = `<div class="section-title">🌟 ÖZEL BİRİMLER / ÜRÜNLER</div><div class="grid">`;
-    db.settings.customItems.forEach(item => {
-        customItemsHtml += purchaseBlockCustom(s, item, canManage);
-    });
+    db.settings.customItems.forEach(item => { customItemsHtml += purchaseBlockCustom(s, item, canManage); });
     customItemsHtml += `</div>`;
  }
 
- // YETKİLENDİRME: Hazine işlemleri butonları
  let treasuryActions = ``;
- if (isAdmin) {
-    treasuryActions = `<button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
- } else if (isOwner) {
-    treasuryActions = `<button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
- }
+ if (isAdmin) treasuryActions = `<button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
+ else if (isOwner) treasuryActions = `<button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
 
  document.getElementById("detail").innerHTML=`
  <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button>${editBtn}</div></div>
+ ${!canManage ? '<div class="notice">Sadece görüntüleme modundasınız. Bu devlette işlem yapabilmek için yetkiniz bulunmuyor.</div>' : ''}
  <div class="cards" style="margin-top:14px">
   <div class="card"><div class="sub">HAZİNE</div><div class="kpi money">${money(s.treasury)}</div></div>
-  <div class="card"><div class="sub">YILLIK GELİR</div><div class="kpi">${money(calcIncome(s))}</div></div>
+  <div class="card"><div class="sub">YILLIK GELİR (VERGİ)</div><div class="kpi">${money(annualIncome)}</div></div>
   <div class="card"><div class="sub">YILLIK GİDER</div><div class="kpi" style="color:#ff6970">${money(calcExpenses(s))}</div></div>
  </div>
  <div class="grid" style="margin-top:14px">
-  <div class="card"><h2>👥 Nüfus & Sosyal</h2>
+  <div class="card"><h2>👥 Nüfus & Sınıflar (Yeni Sistem)</h2>
    <div class="item">Toplam Nüfus <b>${num(s.population)}</b></div>
-   <div class="item">Elverişli Nüfus <b>${num(eligible)}</b><div class="progress"><i style="width:${Math.min(100,eligible/Math.max(1,s.population)*100)}%"></i></div></div>
-   <div class="item">Halk Mutluluğu <b>${num(s.happiness)}%</b><div class="progress"><i style="width:${Math.max(0,Math.min(100,s.happiness))}%"></i></div></div>
-   <div class="item">Eğitim Seviyesi <b>${num(s.education)}%</b><div class="progress"><i style="width:${Math.max(0,Math.min(100,s.education))}%"></i></div></div>
-   <div class="item">Vergi Oranı <b>${num(s.tax)}%</b></div>
+   <div class="item">Eğitimli Sınıf (%${num(p.eduRate)}) <b>${num(p.edu)}</b><div class="sub" style="color:var(--gold)">1.5x Vergi öderler</div></div>
+   <div class="item">Diğer / Sivil Halk <b>${num(p.other)}</b><div class="sub">1x Vergi öderler</div></div>
+   <div class="item">Elverişli Askerler (%${num(p.eligRate)}) <b>${num(p.elig)}</b><div class="sub">1x Vergi öderler (Mutluluğun yarısı)</div></div>
+   <div class="item" style="${p.anar > 0 ? 'border-color:#ff6970' : ''}">Anarşistler (%${num(p.anarRate)}) <b style="color:#ff6970">${num(p.anar)}</b><div class="sub">İsyancıdır, vergi ödemezler</div></div>
+   <div class="item">Halk Mutluluğu <b>%${num(s.happiness)}</b><div class="progress"><i style="width:${Math.max(0,Math.min(100,s.happiness))}%"></i></div></div>
+   <div class="item">Vergi Oranı <b>%${num(s.tax)}</b></div>
   </div>
-  <div class="card"><h2>💰 Ekonomi</h2>
-   <div class="item">Vergi Geliri <b class="money">${money(calcIncome(s))}</b><div class="sub">Eğitim bonusu dahil</div></div>
+  <div class="card"><h2>💰 Ekonomi Detayı</h2>
+   <div class="item">Toplam Vergi Geliri <b class="money">${money(annualIncome)}</b><div class="sub">Eğitimliler, Siviller ve Elverişlilerden alınır.</div></div>
    <div class="item">Ordu Bakımı <b style="color:#ff6970">${money(calcMilitaryUpkeep(s))}</b></div>
    <div class="item">Topçu Bakımı <b style="color:#ff6970">${money(calcArtilleryUpkeep(s))}</b></div>
    <div class="item">Donanma Bakımı <b style="color:#ff6970">${money(calcNavyUpkeep(s))}</b></div>
@@ -251,18 +263,36 @@ function openDetail(id){
   </div>
  </div>
  
+ <div class="section-title">📜 FERMANLAR & SOSYAL POLİTİKALAR</div>
+ <p class="sub">Hazineden harcama yaparak halkın mutluluğunu anında artırın.</p>
+ <div class="grid">
+    ${EDICTS.map(e => `
+        <div class="item">
+            <div class="row" style="align-items:flex-start">
+                <div>
+                    <b>${e.icon} ${e.name}</b>
+                    <div class="sub">+${e.pts} Puan (+%${e.pts==='5-9'?'0.5-0.9':e.pts/10} Mutluluk)<br>Maliyet: ${money(s.population * e.costPerPop)}</div>
+                </div>
+                <div style="text-align:right">
+                    ${canManage ? `<button class="btn gold" onclick="buyEdict('${s.id}', '${e.id}')">YAYINLA</button>` : `<span class="sub" style="color:#f0444c">Yetki Yok</span>`}
+                </div>
+            </div>
+        </div>
+    `).join('')}
+ </div>
+
  ${customItemsHtml}
 
  <div class="section-title">⚔ TEMEL ASKER & DONANMA</div>
- <div class="grid">${purchaseBlock(s,"piyade","🪖","Piyade",1,"eligible", canManage)}
- ${purchaseBlock(s,"suvari","🐎","Süvari",1,"eligible", canManage)}
- ${purchaseBlock(s,"nisanci","🏹","Nişancı",1,"eligible", canManage)}
- ${purchaseBlock(s,"kucuk_top","🔫","Küçük Top",1,"gun", canManage)}
- ${purchaseBlock(s,"orta_top","💣","Orta Top",1,"gun", canManage)}
- ${purchaseBlock(s,"buyuk_top","💥","Büyük Top",1,"gun", canManage)}
- ${purchaseBlock(s,"kucuk_gemi","🚤","Küçük Gemi",1,"ship", canManage)}
- ${purchaseBlock(s,"orta_gemi","⛵","Orta Gemi",1,"ship", canManage)}
- ${purchaseBlock(s,"buyuk_gemi","🚢","Büyük Gemi",1,"ship", canManage)}</div>
+ <div class="grid">${purchaseBlock(s,"piyade","🪖","Piyade",1,"eligible", canManage, p)}
+ ${purchaseBlock(s,"suvari","🐎","Süvari",1,"eligible", canManage, p)}
+ ${purchaseBlock(s,"nisanci","🏹","Nişancı",1,"eligible", canManage, p)}
+ ${purchaseBlock(s,"kucuk_top","🔫","Küçük Top",1,"gun", canManage, p)}
+ ${purchaseBlock(s,"orta_top","💣","Orta Top",1,"gun", canManage, p)}
+ ${purchaseBlock(s,"buyuk_top","💥","Büyük Top",1,"gun", canManage, p)}
+ ${purchaseBlock(s,"kucuk_gemi","🚤","Küçük Gemi",1,"ship", canManage, p)}
+ ${purchaseBlock(s,"orta_gemi","⛵","Orta Gemi",1,"ship", canManage, p)}
+ ${purchaseBlock(s,"buyuk_gemi","🚢","Büyük Gemi",1,"ship", canManage, p)}</div>
  <div class="section-title">🏗 ALTYAPI</div>
  <div class="grid">${infraBlock(s,"kucuk_liman","⚓","Küçük Liman","5 gemi kapasitesi", canManage)}
  ${infraBlock(s,"orta_liman","⚓","Orta Liman","7 gemi kapasitesi", canManage)}
@@ -272,24 +302,44 @@ function openDetail(id){
  ${infraBlock(s,"buyuk_ocak","🔥","Büyük Top Ocağı","35 top kapasitesi", canManage)}
  ${infraBlock(s,"okul","🏫","Okul","Eğitim +${st.schoolEducation}%", canManage)}</div>
  <div class="section-title">💸 HAZİNE İŞLEMLERİ</div>
- <div class="actions">${treasuryActions}</div>
- <div class="section-title">📋 DETAYLAR</div>
- <div class="card"><h3>Gelir Detayları</h3><p class="muted">Nüfus × temel vergi × vergi oranı + eğitim verim bonusu.</p><p>Hesaplanan yıllık gelir: <b class="money">${money(calcIncome(s))}</b></p>
- <h3 style="margin-top:18px">Gider Detayları</h3><p class="muted">Asker, top, gemi ve eklenen özel birim bakım giderleri otomatik değişir.</p>
- <p>Toplam: <b style="color:#ff6970">${money(calcExpenses(s))}</b></p></div>`;
+ <div class="actions">${treasuryActions}</div>`;
 }
 
-// HESAPLAMALAR
-function calcEligible(s){let base=(s.population||0)*(s.eligibleRate||0)/100;return Math.min(s.population||0,Math.floor(base*(1+(s.happiness||0)/100*db.settings.happinessEligibleBonus)))}
-function calcIncome(s){let base=s.population*(s.baseTaxPerPerson||5)*(s.tax/100);return Math.floor(base*(1+(s.education||0)/100*db.settings.educationTaxBonus))}
+// ---------------- HESAPLAMALAR ----------------
+
+function calcPop(s){
+  let hap = Number(s.happiness) || 0;
+  let pop = Number(s.population) || 0;
+  let edu = Number(s.education) || 0;
+  
+  let anarRate = hap >= 60 ? 0 : Math.floor((59 - hap)/10)*10 + 10;
+  if(hap < 0) anarRate = 60; 
+  let anarCount = Math.floor(pop * (anarRate/100));
+  
+  let eligRate = hap / 2;
+  let eligCount = Math.floor(pop * (eligRate/100));
+  
+  let remCount = Math.max(0, pop - anarCount - eligCount);
+  let eduCount = Math.floor(remCount * (edu/100));
+  
+  let otherCount = remCount - eduCount;
+  
+  return { anar: anarCount, anarRate, elig: eligCount, eligRate, edu: eduCount, eduRate: edu, other: otherCount, remaining: remCount };
+}
+
+function calcIncome(s){
+  const p = calcPop(s);
+  const baseTax = (Number(s.baseTaxPerPerson)||5) * ((Number(s.tax)||0)/100);
+  const total = (p.elig * baseTax) + (p.other * baseTax) + (p.edu * baseTax * 1.5);
+  return Math.floor(total);
+}
+
 function calcMilitaryUpkeep(s){return (s.piyade||0)*db.settings.upkeep.piyade+(s.suvari||0)*db.settings.upkeep.suvari+(s.nisanci||0)*db.settings.upkeep.nisanci;}
 function calcArtilleryUpkeep(s){return (s.kucuk_top||0)*db.settings.upkeep.kucuk_top+(s.orta_top||0)*db.settings.upkeep.orta_top+(s.buyuk_top||0)*db.settings.upkeep.buyuk_top}
 function calcNavyUpkeep(s){return (s.kucuk_gemi||0)*db.settings.upkeep.kucuk_gemi+(s.orta_gemi||0)*db.settings.upkeep.orta_gemi+(s.buyuk_gemi||0)*db.settings.upkeep.buyuk_gemi}
 function calcCustomUpkeep(s){
   let total = 0;
-  if(db.settings.customItems) {
-    db.settings.customItems.forEach(item => { total += (s[item.id]||0) * (item.upkeep||0); });
-  }
+  if(db.settings.customItems) { db.settings.customItems.forEach(item => { total += (s[item.id]||0) * (item.upkeep||0); }); }
   return total;
 }
 function calcUpkeep(s){return calcMilitaryUpkeep(s)+calcArtilleryUpkeep(s)+calcNavyUpkeep(s)+calcCustomUpkeep(s)+Number(s.civilExpense||0)}
@@ -300,8 +350,39 @@ function updateTotal(id, key, price) {
  document.getElementById(`total_${id}_${key}`).innerHTML = `Toplam: <b style="color:var(--gold)">${money(price * qty)}</b>`;
 }
 
-// SATIN ALMA BLOKLARI
-function purchaseBlock(s,key,icon,label,unit,type, canManage){
+// ---------------- LOG YAZMA FONKSİYONU ----------------
+function addLog(stateName, itemLabel, qty, totalCost) {
+    if(!db.purchaseLog) db.purchaseLog = [];
+    const dateStr = new Date().toLocaleString("tr-TR");
+    db.purchaseLog.unshift({ state: stateName, item: itemLabel, qty: qty, cost: totalCost, date: dateStr, user: currentUserEmail });
+    if(db.purchaseLog.length > 200) db.purchaseLog.pop(); // Son 200 işlemi sakla
+}
+
+// ---------------- SATIN ALMA İŞLEMLERİ ----------------
+
+function buyEdict(id, edictId) {
+    const s = getState(id);
+    if(!s) return;
+    if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; }
+    
+    let edict = EDICTS.find(e => e.id === edictId);
+    let totalCost = Math.floor(s.population * edict.costPerPop);
+    
+    if(s.treasury < totalCost) { alert(`Hazine yetersiz! Gerekli: ${money(totalCost)}`); return; }
+    
+    let pts = edict.pts;
+    if(edictId === 'denetim') pts = Math.floor(Math.random() * 5) + 5; 
+    let hapIncrease = pts / 10;
+    
+    s.treasury -= totalCost;
+    s.happiness = Math.min(100, (s.happiness||0) + hapIncrease);
+    
+    addLog(s.name, `Ferman: ${edict.name}`, 1, totalCost);
+    
+    queueSave(); openDetail(id);
+}
+
+function purchaseBlock(s,key,icon,label,unit,type, canManage, p){
  let count=s[key]||0, price=db.settings.prices[key]||0, cap="";
  if(type==="ship") cap=`Kapasite: ${num(shipCapacity(s))} / ${num(shipCapMax(s))}`;
  if(type==="gun") cap=`Kapasite: ${num(gunCapacity(s))} / ${num(gunCapMax(s))}`;
@@ -309,7 +390,7 @@ function purchaseBlock(s,key,icon,label,unit,type, canManage){
  const actionsHtml = canManage 
     ? `<div style="display:flex;gap:5px;align-items:center;margin-bottom:5px">
          <input id="qty_${s.id}_${key}" type="number" min="1" value="1" style="width:80px;padding:8px" oninput="updateTotal('${s.id}','${key}',${price})">
-         <button class="btn green" onclick="buyBulk('${s.id}','${key}')">AL</button>
+         <button class="btn green" onclick="buyBulk('${s.id}','${key}', '${label}')">AL</button>
        </div>
        <div class="sub" id="total_${s.id}_${key}">Toplam: ${money(price)}</div>` 
     : `<span class="sub" style="color:#f0444c">Yetki Yok</span>`;
@@ -326,11 +407,10 @@ function purchaseBlock(s,key,icon,label,unit,type, canManage){
 }
 function infraBlock(s,key,icon,label,desc, canManage){
  let count=s[key]||0, price=db.settings.prices[key]||0;
- 
  const actionsHtml = canManage 
     ? `<div style="display:flex;gap:5px;align-items:center;margin-bottom:5px">
          <input id="qty_${s.id}_${key}" type="number" min="1" value="1" style="width:80px;padding:8px" oninput="updateTotal('${s.id}','${key}',${price})">
-         <button class="btn green" onclick="buyInfraBulk('${s.id}','${key}')">YAP</button>
+         <button class="btn green" onclick="buyInfraBulk('${s.id}','${key}', '${label}')">YAP</button>
        </div>
        <div class="sub" id="total_${s.id}_${key}">Toplam: ${money(price)}</div>`
     : `<span class="sub" style="color:#f0444c">Yetki Yok</span>`;
@@ -347,11 +427,10 @@ function infraBlock(s,key,icon,label,desc, canManage){
 }
 function purchaseBlockCustom(s, item, canManage){
  let count=s[item.id]||0;
- 
  const actionsHtml = canManage 
     ? `<div style="display:flex;gap:5px;align-items:center;margin-bottom:5px">
          <input id="qty_${s.id}_${item.id}" type="number" min="1" value="1" style="width:80px;padding:8px" oninput="updateTotal('${s.id}','${item.id}',${item.price})">
-         <button class="btn gold" onclick="buyCustomBulk('${s.id}','${item.id}')">AL</button>
+         <button class="btn gold" onclick="buyCustomBulk('${s.id}','${item.id}', '${esc(item.name)}')">AL</button>
        </div>
        <div class="sub" id="total_${s.id}_${item.id}">Toplam: ${money(item.price)}</div>`
     : `<span class="sub" style="color:#f0444c">Yetki Yok</span>`;
@@ -372,7 +451,7 @@ function shipCapMax(s){return (s.kucuk_liman||0)*db.settings.capacity.kucuk_lima
 function gunCapacity(s){return (s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0)}
 function gunCapMax(s){return (s.kucuk_ocak||0)*db.settings.capacity.kucuk_ocak+(s.orta_ocak||0)*db.settings.capacity.orta_ocak+(s.buyuk_ocak||0)*db.settings.capacity.buyuk_ocak}
 
-async function buyBulk(id,key){
+async function buyBulk(id,key, labelName){
  const s=getState(id);
  if(!s) return;
  if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
@@ -381,16 +460,22 @@ async function buyBulk(id,key){
  const qty = Math.floor(Number(document.getElementById(`qty_${id}_${key}`).value)) || 0;
  if(qty <= 0) { alert("Lütfen geçerli bir miktar girin."); return; }
  const totalCost = price * qty;
+ 
  if(s.treasury<totalCost){alert(`Hazine yetersiz! Toplam maliyet: ${money(totalCost)}`);return}
- if(["piyade","suvari","nisanci"].includes(key) && calcEligible(s)<qty){alert("Elverişli nüfus yetersiz.");return}
+ 
+ const p = calcPop(s);
+ if(["piyade","suvari","nisanci"].includes(key) && p.elig < qty){alert("Elverişli nüfus yetersiz!");return}
  if(key.includes("gemi") && (shipCapacity(s) + qty) > shipCapMax(s)){alert("Limanda boş gemi kapasitesi yok.");return}
  if(key.includes("top") && (gunCapacity(s) + qty) > gunCapMax(s)){alert("Top ocağında boş kapasite yok.");return}
+ 
  s.treasury -= totalCost;
  s[key] = (s[key]||0) + qty;
  if(["piyade","suvari","nisanci"].includes(key)) s.population = Math.max(0, s.population - qty);
+ 
+ addLog(s.name, labelName, qty, totalCost);
  queueSave(); openDetail(id);
 }
-async function buyInfraBulk(id,key){
+async function buyInfraBulk(id,key, labelName){
  const s=getState(id);
  if(!s) return;
  if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; }
@@ -403,9 +488,11 @@ async function buyInfraBulk(id,key){
  s.treasury -= totalCost;
  s[key] = (s[key]||0) + qty;
  if(key==="okul") s.education=Math.min(100,(s.education||0)+(db.settings.schoolEducation*qty));
+ 
+ addLog(s.name, labelName, qty, totalCost);
  queueSave(); openDetail(id);
 }
-async function buyCustomBulk(id, itemId){
+async function buyCustomBulk(id, itemId, labelName){
  const s = getState(id);
  if(!s) return;
  if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
@@ -416,18 +503,24 @@ async function buyCustomBulk(id, itemId){
  if(qty <= 0) { alert("Geçerli miktar girin."); return; }
  const totalCost = item.price * qty;
  if(s.treasury < totalCost){alert(`Hazine yetersiz! Gerekli: ${money(totalCost)}`);return;}
- if(item.category === 'asker' && calcEligible(s) < qty){alert("Elverişli nüfus yetersiz!"); return;}
+ 
+ const p = calcPop(s);
+ if(item.category === 'asker' && p.elig < qty){alert("Elverişli nüfus yetersiz!"); return;}
+ 
  s.treasury -= totalCost;
  s[item.id] = (s[item.id]||0) + qty;
  if(item.category === 'asker') s.population = Math.max(0, s.population - qty);
+ 
+ addLog(s.name, labelName, qty, totalCost);
  queueSave(); openDetail(id);
 }
 
-// DEVLET FORMU
+// ---------------- DEVLET FORMU & VERGİ HESABI ----------------
+
 function openStateForm(id=null){
- if(!isAdmin) return; // KESİN GÜVENLİK
+ if(!isAdmin) return;
  
- const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",title:"Devlet",color:"#3d82f6",treasury:0,population:0,eligibleRate:20,happiness:75,education:30,tax:20,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
+ const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",title:"Devlet",color:"#3d82f6",treasury:0,population:0,tax:20,happiness:75,education:30,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
  
  let customFields = "";
  if(db.settings.customItems && db.settings.customItems.length > 0) {
@@ -441,7 +534,7 @@ function openStateForm(id=null){
     ${field("ownerEmail","Sahip Oyuncu (Arkadaşının E-postası)",s.ownerEmail||"","email")}
     <p class="sub" style="color:#ffb000; margin:5px 0 0;">Bu devleti yönetecek kişinin kayıt olduğu mail adresini yaz. Aksi halde devleti kontrol edemez.</p>
  </div>
- ${field("treasury","Hazine",s.treasury,"number")}${field("population","Toplam Nüfus",s.population,"number")}${field("eligibleRate","Elverişli Nüfus %",s.eligibleRate,"number")}${field("tax","Vergi %",s.tax,"number")}
+ ${field("treasury","Hazine",s.treasury,"number")}${field("population","Toplam Nüfus",s.population,"number")}${field("tax","Vergi % (0.4 Etkisi)",s.tax,"number")}
  ${field("happiness","Halk Mutluluğu %",s.happiness,"number")}${field("education","Eğitim %",s.education,"number")}${field("baseTaxPerPerson","Kişi Başına Temel Vergi",s.baseTaxPerPerson,"number")}${field("civilExpense","Sivil Gider",s.civilExpense,"number")}
  <div class="full"><h3 style="margin-top:10px; border-bottom:1px solid var(--line); padding-bottom:5px;">Temel Ordu & Altyapı</h3></div>
  ${field("piyade","Piyade",s.piyade,"number")}${field("suvari","Süvari",s.suvari,"number")}${field("nisanci","Nişancı",s.nisanci,"number")}
@@ -453,43 +546,123 @@ function openStateForm(id=null){
  <div class="full actions"><button class="btn" onclick="closeModal()">Vazgeç</button><button class="btn green" onclick="saveState('${id||""}')">KAYDET</button>${id?`<button class="btn red" onclick="deleteState('${id}')">DEVLETİ SİL</button>`:""}</div></div>`);
 }
 function field(k,l,v,t="text"){return `<div><label>${l}</label><input id="f_${k}" type="${t}" value="${esc(v)}"></div>`}
+
 function saveState(id){
- const keys=["name","ownerEmail","ruler","title","color","treasury","population","eligibleRate","tax","happiness","education","baseTaxPerPerson","civilExpense","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul"];
+ const keys=["name","ownerEmail","ruler","title","color","treasury","population","tax","education","baseTaxPerPerson","civilExpense","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul"];
  if(db.settings.customItems) { db.settings.customItems.forEach(item => keys.push(item.id)); }
- const o={};keys.forEach(k=>o[k]=["name","ownerEmail","ruler","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
+ 
+ const o={};
+ keys.forEach(k=>o[k]=["name","ownerEmail","ruler","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
  if(!o.name){alert("Devlet adı gerekli.");return}
  o.ownerEmail = (o.ownerEmail || "").trim().toLowerCase();
- if(id){Object.assign(getState(id),o)}else{db.states.push({id:crypto.randomUUID(),...o})}
+ 
+ let oldTax = id ? getState(id).tax : Number(document.getElementById("f_tax").value||0);
+ let newTax = o.tax;
+ let diff = oldTax - newTax;
+ let hapChange = diff * 0.4;
+ 
+ let inputHap = Number(document.getElementById("f_happiness").value||0);
+ o.happiness = Math.max(0, Math.min(100, inputHap + hapChange));
+
+ if(id){
+    Object.assign(getState(id),o);
+    if(diff !== 0) alert(`Vergi değişimi sebebiyle halk mutluluğu ${hapChange > 0 ? '+'+hapChange.toFixed(1) : hapChange.toFixed(1)} puan etkilendi.`);
+ }else{
+    db.states.push({id:crypto.randomUUID(),...o})
+ }
+ 
  closeModal();queueSave();renderHome()
 }
 function deleteState(id){if(confirm("Bu devlet silinsin mi?")){db.states=db.states.filter(x=>x.id!==id);closeModal();queueSave();renderHome()}}
 
-// HAZİNE & TRANSFER
 function openDeduct(id){ 
- if(!isAdmin) { alert("Sadece admin hazineden para silebilir."); return; } 
+ if(!isAdmin) return;
  modal(`<h2>Hazineden Para Kes</h2><label>Tutar</label><input id="deductAmt" type="number" min="0"><label>Açıklama</label><textarea id="deductDesc" placeholder="Örn: Saray masrafı, olağanüstü ödeme..."></textarea><div class="actions" style="margin-top:12px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn red" onclick="deduct('${id}')">KES VE KAYDET</button></div>`) 
 }
 function deduct(id){
  if(!isAdmin) return;
  let s=getState(id),a=Number(document.getElementById("deductAmt").value||0),d=document.getElementById("deductDesc").value.trim();
  if(a<=0||a>s.treasury){alert("Tutar geçersiz veya hazine yetersiz.");return}
- s.treasury-=a;s.expenseLog=s.expenseLog||[];s.expenseLog.unshift({amount:a,description:d||"Açıklamasız",date:new Date().toISOString()});closeModal();queueSave();openDetail(id)
+ s.treasury-=a;
+ addLog(s.name, "Hazine Kesintisi ("+d+")", 1, a);
+ closeModal();queueSave();openDetail(id)
 }
 function openTransfer(id){
  const s = getState(id);
- if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) return;
  const opts=db.states.filter(x=>x.id!==id).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
  modal(`<h2>Devletler Arası Para Aktarımı</h2><label>Hedef Devlet</label><select id="transferTarget">${opts}</select><label>Tutar</label><input id="transferAmt" type="number" min="0"><label>Açıklama</label><textarea id="transferDesc"></textarea><div class="actions" style="margin-top:12px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn blue" onclick="transfer('${id}')">AKTAR</button></div>`)
 }
 function transfer(id){
  let s=getState(id);
- if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; } 
+ if(!isAdmin && s.ownerEmail !== currentUserEmail) return;
  let t=getState(document.getElementById("transferTarget").value),a=Number(document.getElementById("transferAmt").value||0),d=document.getElementById("transferDesc").value.trim();
  if(!t||a<=0||a>s.treasury){alert("Tutar geçersiz.");return}
- s.treasury-=a;t.treasury+=a;db.transfers.unshift({from:s.name,to:t.name,amount:a,description:d,date:new Date().toISOString()});closeModal();queueSave();openDetail(id)
+ s.treasury-=a;t.treasury+=a;
+ addLog(s.name, `Transfer -> ${t.name}`, 1, a);
+ closeModal();queueSave();openDetail(id)
 }
 
-// ADMİN PANELİ (SADECE SUPER_ADMIN GÖREBİLİR)
+// ---------------- ADMİN: LOG & 1 YILI GEÇİR ----------------
+
+function openPurchaseLogs(){
+    if(!isAdmin) return;
+    let logHtml = db.purchaseLog && db.purchaseLog.length ? db.purchaseLog.map(l => 
+        `<div class="item" style="padding:10px; margin-bottom:5px;">
+            <div class="row">
+                <div>
+                    <b>${esc(l.state)}</b> 
+                    <div class="sub" style="font-size:11px;">Oyuncu: ${esc(l.user)} <br> ${l.date}</div>
+                </div>
+                <div style="text-align:right">
+                    <div>${l.qty}x ${esc(l.item)}</div>
+                    <div class="sub" style="color:var(--gold)">${money(l.cost)}</div>
+                </div>
+            </div>
+        </div>`
+    ).join("") : "<p class='muted'>Henüz bir kayıt yok.</p>";
+    
+    modal(`<h2>📜 Satın Alma ve İşlem Logları</h2>
+    <p class="sub">Son 200 işlem kaydı burada tutulur.</p>
+    <div style="max-height:60vh; overflow:auto; margin-bottom:15px;">${logHtml}</div>
+    <div class="actions"><button class="btn blue" onclick="closeModal()">Kapat</button></div>`);
+}
+
+function passOneYear(){
+    if(!isAdmin) return;
+    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nSistem her devletin yıllık vergi gelirini toplayıp, ordu ve altyapı giderlerini düşecek ve net kâr/zararı hazinelerine yansıtacak.\n\nOnaylıyor musunuz?")) return;
+    
+    let summaryHtml = "<h3>⏳ 1. Yıl Sonu Finansal Raporu</h3><div style='max-height:60vh; overflow:auto;'><div class='grid' style='grid-template-columns:1fr;'>";
+    
+    db.states.forEach(s => {
+        let inc = calcIncome(s);
+        let exp = calcExpenses(s);
+        let net = inc - exp;
+        
+        s.treasury += net;
+        
+        let color = net >= 0 ? 'var(--green)' : '#ff6970';
+        let netSign = net >= 0 ? '+' : '';
+        
+        summaryHtml += `
+        <div class="item">
+            <div style="border-bottom:1px solid var(--line); margin-bottom:5px; padding-bottom:5px;"><b>${esc(s.name)}</b></div>
+            <div class="row" style="font-size:13px;">
+                <div>Gelir: <span style="color:var(--green)">${money(inc)}</span><br>Gider: <span style="color:#ff6970">${money(exp)}</span></div>
+                <div style="text-align:right;">Net: <b style="color:${color}">${netSign}${money(net)}</b><br>Yeni Hazine: ${money(s.treasury)}</div>
+            </div>
+        </div>`;
+    });
+    
+    summaryHtml += "</div></div><div class='actions' style='margin-top:15px;'><button class='btn blue' onclick='closeModal()'>Kapat</button></div>";
+    
+    queueSave();
+    modal(summaryHtml);
+    
+    if(currentId) openDetail(currentId);
+    else renderHome();
+}
+
 function openAdmin(){
  if(!isAdmin) return; 
  const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity;
@@ -517,7 +690,7 @@ function openAdmin(){
  <h3 style="margin-top:24px;">Temel Satın Alma Fiyatları</h3><div class="formgrid">${Object.keys(p).map(k=>field("p_"+k,k,p[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Temel Kapasiteler</h3><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Temel Bakım Giderleri / Adet</h3><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
- <h3 style="margin-top:18px">Sosyal Kurallar</h3><div class="formgrid">${field("schoolEducation","Okul başına eğitim artışı %",db.settings.schoolEducation,"number")}${field("educationTaxBonus","Eğitimin vergi bonusu",db.settings.educationTaxBonus,"number")}${field("happinessEligibleBonus","Mutluluğun elverişli nüfus bonusu",db.settings.happinessEligibleBonus,"number")}</div>
+ <h3 style="margin-top:18px">Sosyal Kurallar</h3><div class="formgrid">${field("schoolEducation","Okul başına eğitim artışı %",db.settings.schoolEducation,"number")}</div>
  <div class="actions" style="margin-top:18px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn blue" onclick="saveAdmin(true)">TÜM AYARLARI KAYDET</button></div>`)
 }
 
@@ -539,8 +712,6 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.capacity).forEach(k=>{ const el=document.getElementById("f_c_"+k); if(el) db.settings.capacity[k]=Number(el.value||0); });
  Object.keys(db.settings.upkeep).forEach(k=>{ const el=document.getElementById("f_u_"+k); if(el) db.settings.upkeep[k]=Number(el.value||0); });
  const elSchool = document.getElementById("f_schoolEducation"); if(elSchool) db.settings.schoolEducation = Number(elSchool.value||0);
- const elEdu = document.getElementById("f_educationTaxBonus"); if(elEdu) db.settings.educationTaxBonus = Number(elEdu.value||0);
- const elHap = document.getElementById("f_happinessEligibleBonus"); if(elHap) db.settings.happinessEligibleBonus = Number(elHap.value||0);
  if(doClose){ closeModal(); queueSave(); if(currentId) openDetail(currentId); } else { queueSave(); openAdmin(); }
 }
 
