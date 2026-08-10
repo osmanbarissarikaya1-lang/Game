@@ -81,18 +81,19 @@ const defaultSettings={
  prices:{piyade:10,suvari:50,nisanci:20,kucuk_top:3000,orta_top:6000,buyuk_top:10000,kucuk_gemi:15000,orta_gemi:30000,buyuk_gemi:60000,kucuk_liman:100000,orta_liman:180000,buyuk_liman:300000,kucuk_ocak:80000,orta_ocak:150000,buyuk_ocak:250000,okul:120000},
  capacity:{kucuk_liman:5,orta_liman:7,buyuk_liman:10,kucuk_ocak:10,orta_ocak:20,buyuk_ocak:35},
  upkeep:{piyade:1,suvari:5,nisanci:2,kucuk_top:250,orta_top:450,buyuk_top:800,kucuk_gemi:1200,orta_gemi:2200,buyuk_gemi:4000},
+ edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  schoolEducation:2,
  customItems: [] 
 };
 
-// FERMANLAR (Puanlar gizli, açıklamalar hikayesel)
+// FERMANLAR (Sadece Puan ve Açıklamalar. Maliyetler artık db.settings.edictCost'tan gelir)
 const EDICTS = [
-    { id: 'erzak', name: 'Erzak Dağıtımı', desc: 'Devlet ambarlarını açarak halkın karnını doyur ve duasını al.', pts: 10, costPerPop: 2, icon: '🍞' },
-    { id: 'karakol', name: 'Karakol İnşası', desc: 'Eşkıyaları temizle, yollarda ve şehirlerde güvenliği sağla.', pts: 8, costPerPop: 1.5, icon: '🛡️' },
-    { id: 'panayir', name: 'Panayır Düzenle', desc: 'Ülke genelinde şenlikler ve eğlenceler tertip ederek moralleri yükselt.', pts: 7, costPerPop: 1, icon: '🎪' },
-    { id: 'ibadethane', name: 'İbadethane / Hamam', desc: 'Halkın manevi ve bedeni temizliği için ulu yapılar inşa et.', pts: 7, costPerPop: 3, icon: '🕌' },
-    { id: 'anit', name: 'Anıt İnşası', desc: 'Devletin haşmetini gösterecek görkemli anıtlar dikerek gurur ver.', pts: 5, costPerPop: 2.5, icon: '🏛️' },
-    { id: 'denetim', name: 'Pazar Denetimi', desc: 'Karaborsacılara göz açtırmamak için pazarlara baskınlar düzenle.', pts: '5-9', costPerPop: 0.5, icon: '⚖️' }
+    { id: 'erzak', name: 'Erzak Dağıtımı', desc: 'Devlet ambarlarını açarak halkın karnını doyur ve duasını al.', pts: 10, icon: '🍞' },
+    { id: 'karakol', name: 'Karakol İnşası', desc: 'Eşkıyaları temizle, yollarda ve şehirlerde güvenliği sağla.', pts: 8, icon: '🛡️' },
+    { id: 'panayir', name: 'Panayır Düzenle', desc: 'Ülke genelinde şenlikler ve eğlenceler tertip ederek moralleri yükselt.', pts: 7, icon: '🎪' },
+    { id: 'ibadethane', name: 'İbadethane / Hamam', desc: 'Halkın manevi ve bedeni temizliği için ulu yapılar inşa et.', pts: 7, icon: '🕌' },
+    { id: 'anit', name: 'Anıt İnşası', desc: 'Devletin haşmetini gösterecek görkemli anıtlar dikerek gurur ver.', pts: 5, icon: '🏛️' },
+    { id: 'denetim', name: 'Pazar Denetimi', desc: 'Karaborsacılara göz açtırmamak için pazarlara baskınlar düzenle.', pts: '5-9', icon: '⚖️' }
 ];
 
 function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
@@ -164,6 +165,7 @@ async function loadDB(){
     db.settings.prices={...defaultSettings.prices,...(db.settings?.prices||{})};
     db.settings.capacity={...defaultSettings.capacity,...(db.settings?.capacity||{})};
     db.settings.upkeep={...defaultSettings.upkeep,...(db.settings?.upkeep||{})};
+    db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
  }
@@ -271,7 +273,7 @@ function openDetail(id){
             <div class="row" style="align-items:flex-start">
                 <div>
                     <b>${e.icon} ${e.name}</b>
-                    <div class="sub">${e.desc}<br>Maliyet: <span style="color:var(--gold)">${money(s.population * e.costPerPop)}</span></div>
+                    <div class="sub">${e.desc}<br>Maliyet: <span style="color:var(--gold)">${money(s.population * (db.settings.edictCost[e.id] || 0))}</span></div>
                 </div>
                 <div style="text-align:right">
                     ${canManage ? `<button class="btn gold" onclick="buyEdict('${s.id}', '${e.id}')">YAYINLA</button>` : `<span class="sub" style="color:#f0444c">Yetki Yok</span>`}
@@ -366,7 +368,8 @@ function buyEdict(id, edictId) {
     if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Yetkiniz yok!"); return; }
     
     let edict = EDICTS.find(e => e.id === edictId);
-    let totalCost = Math.floor(s.population * edict.costPerPop);
+    let edictCost = db.settings.edictCost[edictId] || 0;
+    let totalCost = Math.floor(s.population * edictCost);
     
     if(s.treasury < totalCost) { alert(`Hazine yetersiz! Gerekli: ${money(totalCost)}`); return; }
     
@@ -665,7 +668,7 @@ function passOneYear(){
 
 function openAdmin(){
  if(!isAdmin) return; 
- const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity;
+ const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost;
  
  let customHtml = (db.settings.customItems||[]).map(x => 
    `<div class="item" style="display:flex;justify-content:space-between;align-items:center;">
@@ -690,6 +693,7 @@ function openAdmin(){
  <h3 style="margin-top:24px;">Temel Satın Alma Fiyatları</h3><div class="formgrid">${Object.keys(p).map(k=>field("p_"+k,k,p[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Temel Kapasiteler</h3><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Temel Bakım Giderleri / Adet</h3><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
+ <h3 style="margin-top:18px; color:var(--gold);">Ferman Maliyetleri (Kişi Başı)</h3><div class="formgrid">${Object.keys(ec).map(k=>field("ec_"+k,k,ec[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Sosyal Kurallar</h3><div class="formgrid">${field("schoolEducation","Okul başına eğitim artışı %",db.settings.schoolEducation,"number")}</div>
  <div class="actions" style="margin-top:18px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn blue" onclick="saveAdmin(true)">TÜM AYARLARI KAYDET</button></div>`)
 }
@@ -711,6 +715,7 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.prices).forEach(k=>{ const el=document.getElementById("f_p_"+k); if(el) db.settings.prices[k]=Number(el.value||0); });
  Object.keys(db.settings.capacity).forEach(k=>{ const el=document.getElementById("f_c_"+k); if(el) db.settings.capacity[k]=Number(el.value||0); });
  Object.keys(db.settings.upkeep).forEach(k=>{ const el=document.getElementById("f_u_"+k); if(el) db.settings.upkeep[k]=Number(el.value||0); });
+ Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
  const elSchool = document.getElementById("f_schoolEducation"); if(elSchool) db.settings.schoolEducation = Number(elSchool.value||0);
  if(doClose){ closeModal(); queueSave(); if(currentId) openDetail(currentId); } else { queueSave(); openAdmin(); }
 }
