@@ -82,11 +82,11 @@ const defaultSettings={
  capacity:{kucuk_liman:5,orta_liman:7,buyuk_liman:10,kucuk_ocak:10,orta_ocak:20,buyuk_ocak:35},
  upkeep:{piyade:1,suvari:5,nisanci:2,kucuk_top:250,orta_top:450,buyuk_top:800,kucuk_gemi:1200,orta_gemi:2200,buyuk_gemi:4000},
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
+ campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000}, // YENİ: SEFER İKMAL MALİYETLERİ
  schoolEducation:2,
  customItems: [] 
 };
 
-// FERMANLAR (Sadece Puan ve Açıklamalar. Maliyetler artık db.settings.edictCost'tan gelir)
 const EDICTS = [
     { id: 'erzak', name: 'Erzak Dağıtımı', desc: 'Devlet ambarlarını açarak halkın karnını doyur ve duasını al.', pts: 10, icon: '🍞' },
     { id: 'karakol', name: 'Karakol İnşası', desc: 'Eşkıyaları temizle, yollarda ve şehirlerde güvenliği sağla.', pts: 8, icon: '🛡️' },
@@ -166,6 +166,7 @@ async function loadDB(){
     db.settings.capacity={...defaultSettings.capacity,...(db.settings?.capacity||{})};
     db.settings.upkeep={...defaultSettings.upkeep,...(db.settings?.upkeep||{})};
     db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
+    db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
  }
@@ -233,8 +234,8 @@ function openDetail(id){
  }
 
  let treasuryActions = ``;
- if (isAdmin) treasuryActions = `<button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
- else if (isOwner) treasuryActions = `<button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
+ if (isAdmin) treasuryActions = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
+ else if (isOwner) treasuryActions = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
 
  document.getElementById("detail").innerHTML=`
  <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button>${editBtn}</div></div>
@@ -318,7 +319,7 @@ function calcPop(s){
   if(hap < 0) anarRate = 60; 
   let anarCount = Math.floor(pop * (anarRate/100));
   
-  let eligRate = hap / 2;
+  let eligRate = hap * 0.3;
   let eligCount = Math.floor(pop * (eligRate/100));
   
   let remCount = Math.max(0, pop - anarCount - eligCount);
@@ -326,7 +327,7 @@ function calcPop(s){
   
   let otherCount = remCount - eduCount;
   
-  return { anar: anarCount, anarRate, elig: eligCount, eligRate, edu: eduCount, eduRate: edu, other: otherCount, remaining: remCount };
+  return { anar: anarCount, anarRate, elig: eligCount, eligRate: eligRate.toFixed(1), edu: eduCount, eduRate: edu, other: otherCount, remaining: remCount };
 }
 
 function calcIncome(s){
@@ -352,7 +353,6 @@ function updateTotal(id, key, price) {
  document.getElementById(`total_${id}_${key}`).innerHTML = `Toplam: <b style="color:var(--gold)">${money(price * qty)}</b>`;
 }
 
-// ---------------- LOG YAZMA FONKSİYONU ----------------
 function addLog(stateName, itemLabel, qty, totalCost) {
     if(!db.purchaseLog) db.purchaseLog = [];
     const dateStr = new Date().toLocaleString("tr-TR");
@@ -518,7 +518,92 @@ async function buyCustomBulk(id, itemId, labelName){
  queueSave(); openDetail(id);
 }
 
-// ---------------- DEVLET FORMU & VERGİ HESABI ----------------
+// ---------------- SEFER HAZIRLIĞI ----------------
+function calcCampCost(id) {
+    const s = getState(id);
+    if(!s) return;
+    const cc = db.settings.campaignCost || {};
+    let total = 0;
+    ['piyade','suvari','nisanci','kucuk_top','orta_top','buyuk_top'].forEach(k => {
+        let el = document.getElementById('camp_'+k);
+        if(!el) return;
+        let val = Number(el.value) || 0;
+        let max = Number(el.max) || 0;
+        if(val > max) { val = max; el.value = max; }
+        if(val < 0) { val = 0; el.value = 0; }
+        total += val * (cc[k]||0);
+    });
+    document.getElementById('campTotalCost').innerHTML = money(total);
+}
+
+function openCampaign(id) {
+    const s = getState(id);
+    if(!s) return;
+    const cc = db.settings.campaignCost || {};
+    
+    const units = [
+        {key: 'piyade', label: 'Piyade', max: s.piyade||0, cost: cc.piyade||0},
+        {key: 'suvari', label: 'Süvari', max: s.suvari||0, cost: cc.suvari||0},
+        {key: 'nisanci', label: 'Nişancı', max: s.nisanci||0, cost: cc.nisanci||0},
+        {key: 'kucuk_top', label: 'Küçük Top', max: s.kucuk_top||0, cost: cc.kucuk_top||0},
+        {key: 'orta_top', label: 'Orta Top', max: s.orta_top||0, cost: cc.orta_top||0},
+        {key: 'buyuk_top', label: 'Büyük Top', max: s.buyuk_top||0, cost: cc.buyuk_top||0}
+    ];
+
+    let html = `<h2>⚔️ Sefer Hazırlığı (Lojistik ve İkmal)</h2>
+    <p class="sub">Ordunuzu sefere çıkarmak için gereken erzak ve mühimmat masrafı peşin ödenir.</p>
+    <div class="grid" style="margin-bottom:15px; max-height:40vh; overflow:auto;">`;
+
+    units.forEach(u => {
+        html += `<div class="item">
+            <div class="row">
+                <div><b>${u.label}</b><div class="sub">Mevcut: ${num(u.max)} | İkmal: ${money(u.cost)}/adet</div></div>
+                <input type="number" id="camp_${u.key}" min="0" max="${u.max}" value="0" style="width:80px; padding:8px;" oninput="calcCampCost('${id}')">
+            </div>
+        </div>`;
+    });
+
+    html += `</div>
+    <div style="background:var(--panel2); padding:15px; border-radius:10px; text-align:center; font-size:18px;">
+        Toplam İkmal Maliyeti: <b id="campTotalCost" style="color:var(--gold)">0 TL</b>
+    </div>
+    <div class="actions" style="margin-top:15px;">
+        <button class="btn" onclick="closeModal()">İptal</button>
+        <button class="btn red" style="width:100%; font-weight:bold;" onclick="startCampaign('${id}')">SEFERİ BAŞLAT (ÖDE)</button>
+    </div>`;
+
+    modal(html);
+}
+
+function startCampaign(id) {
+    const s = getState(id);
+    if(!s) return;
+    const cc = db.settings.campaignCost || {};
+    let total = 0;
+    let details = [];
+    
+    ['piyade','suvari','nisanci','kucuk_top','orta_top','buyuk_top'].forEach(k => {
+        let el = document.getElementById('camp_'+k);
+        if(!el) return;
+        let val = Number(el.value) || 0;
+        if(val > 0) {
+            total += val * (cc[k]||0);
+            details.push(`${num(val)} ${k.replace('_',' ')}`);
+        }
+    });
+
+    if(total <= 0) { alert("Sefere çıkmak için birlik seçmelisiniz."); return; }
+    if(s.treasury < total) { alert("Hazine yetersiz! Toplam maliyet: " + money(total)); return; }
+
+    s.treasury -= total;
+    addLog(s.name, `Sefer Ordusu İkmali: ${details.join(', ')}`, 1, total);
+    
+    closeModal();
+    queueSave();
+    openDetail(id);
+}
+
+// ---------------- DEVLET FORMU & DİĞER İŞLEMLER ----------------
 
 function openStateForm(id=null){
  if(!isAdmin) return;
@@ -606,8 +691,6 @@ function transfer(id){
  closeModal();queueSave();openDetail(id)
 }
 
-// ---------------- ADMİN: LOG & 1 YILI GEÇİR ----------------
-
 function openPurchaseLogs(){
     if(!isAdmin) return;
     let logHtml = db.purchaseLog && db.purchaseLog.length ? db.purchaseLog.map(l => 
@@ -625,7 +708,7 @@ function openPurchaseLogs(){
         </div>`
     ).join("") : "<p class='muted'>Henüz bir kayıt yok.</p>";
     
-    modal(`<h2>📜 Satın Alma ve İşlem Logları</h2>
+    modal(`<h2>📜 İşlem Logları</h2>
     <p class="sub">Son 200 işlem kaydı burada tutulur.</p>
     <div style="max-height:60vh; overflow:auto; margin-bottom:15px;">${logHtml}</div>
     <div class="actions"><button class="btn blue" onclick="closeModal()">Kapat</button></div>`);
@@ -668,7 +751,7 @@ function passOneYear(){
 
 function openAdmin(){
  if(!isAdmin) return; 
- const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost;
+ const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost;
  
  let customHtml = (db.settings.customItems||[]).map(x => 
    `<div class="item" style="display:flex;justify-content:space-between;align-items:center;">
@@ -677,7 +760,7 @@ function openAdmin(){
     </div>`
  ).join("");
 
- modal(`<h2>⚙ Admin Paneli</h2><p class="sub">Fiyat, kapasite ve bakım giderlerini buradan değiştir. Değişiklikler tüm kullanıcılar için ortak kaydedilir.</p>
+ modal(`<h2>⚙ Admin Paneli</h2><p class="sub">Tüm küresel ayarları buradan yönetin.</p>
  
  <h3 style="margin-top:24px; color:var(--gold);">🌟 Özel Ürün / Birim Yönetimi</h3>
  <p class="sub">Oyuna yeni eklenebilir asker, bina veya kaynaklar tanımlayın.</p>
@@ -694,6 +777,7 @@ function openAdmin(){
  <h3 style="margin-top:18px">Temel Kapasiteler</h3><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Temel Bakım Giderleri / Adet</h3><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
  <h3 style="margin-top:18px; color:var(--gold);">Ferman Maliyetleri (Kişi Başı)</h3><div class="formgrid">${Object.keys(ec).map(k=>field("ec_"+k,k,ec[k],"number")).join("")}</div>
+ <h3 style="margin-top:18px; color:var(--red);">Sefer & İkmal Maliyetleri (Birim Başı)</h3><div class="formgrid">${Object.keys(cc).map(k=>field("cc_"+k,k,cc[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Sosyal Kurallar</h3><div class="formgrid">${field("schoolEducation","Okul başına eğitim artışı %",db.settings.schoolEducation,"number")}</div>
  <div class="actions" style="margin-top:18px"><button class="btn" onclick="closeModal()">İptal</button><button class="btn blue" onclick="saveAdmin(true)">TÜM AYARLARI KAYDET</button></div>`)
 }
@@ -716,6 +800,7 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.capacity).forEach(k=>{ const el=document.getElementById("f_c_"+k); if(el) db.settings.capacity[k]=Number(el.value||0); });
  Object.keys(db.settings.upkeep).forEach(k=>{ const el=document.getElementById("f_u_"+k); if(el) db.settings.upkeep[k]=Number(el.value||0); });
  Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
+ Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
  const elSchool = document.getElementById("f_schoolEducation"); if(elSchool) db.settings.schoolEducation = Number(elSchool.value||0);
  if(doClose){ closeModal(); queueSave(); if(currentId) openDetail(currentId); } else { queueSave(); openAdmin(); }
 }
