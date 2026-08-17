@@ -4,35 +4,84 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Devlet Yönetim Paneli</title>
+<!-- Orta Çağ Temasına Uygun Fontlar -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
- --bg:#0b1220;--panel:#151f31;--panel2:#1b2940;--line:#30415c;--text:#edf3ff;--muted:#9aabc4;
- --green:#16c79a;--blue:#3d82f6;--red:#f0444c;--gold:#ffb000;--purple:#a970ff;
+ /* Orta Çağ Renk Paleti */
+ --bg: #120e0b;
+ --panel: #1e1814;
+ --panel2: #2a221b;
+ --line: #4a3b2c;
+ --text: #e6dcc3;
+ --muted: #a69477;
+ --green: #3a704a;
+ --blue: #3d608a;
+ --red: #8a3030;
+ --gold: #d4af37;
+ --purple: #6a4b8a;
 }
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+*{box-sizing:border-box} 
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Playfair Display', serif;}
 button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
 .container{max-width:1200px;margin:auto;padding:20px}
-.top{display:flex;gap:12px;align-items:center;justify-content:space-between;background:#101a2b;border:1px solid var(--line);padding:16px 18px;border-radius:12px;position:sticky;top:10px;z-index:10}
-h1,h2,h3{margin:0 0 10px}.brand{font-size:22px;font-weight:800}.sub{color:var(--muted);font-size:13px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:10px 14px;border-radius:8px;color:#fff;background:#33445e}.btn.green{background:var(--green);color:#061b15}.btn.blue{background:var(--blue)}.btn.red{background:var(--red)}.btn.gold{background:var(--gold);color:#221600}.btn.small{padding:7px 10px;font-size:13px}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;background:linear-gradient(to bottom, #1a1410, #120e0b);border:1px solid var(--line);padding:16px 18px;border-radius:8px;position:sticky;top:10px;z-index:10;box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+h1,h2,h3{margin:0 0 10px; font-family:'Cinzel', serif; font-weight:700;}
+.brand{font-size:22px;font-weight:800; color:var(--gold); text-shadow: 2px 2px 4px #000;}
+.sub{color:var(--muted);font-size:13px; font-family:'Playfair Display', serif;}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Orta Çağ Buton Tasarımları */
+.btn {
+    background: linear-gradient(180deg, #4a3b2c 0%, #2a1f16 100%);
+    border: 1px solid #8c6b3e;
+    border-radius: 4px;
+    color: #ebdcb2;
+    text-shadow: 1px 1px 2px #000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    transition: all 0.2s;
+}
+.btn:hover { background: linear-gradient(180deg, #5c4a3d 0%, #3a2b1f 100%); border-color: var(--gold); transform: translateY(-1px); }
+.btn:active { transform: translateY(1px); box-shadow: inset 0 2px 5px rgba(0,0,0,0.6); }
+.btn.green { background: linear-gradient(180deg, #2a5a3b 0%, #163821 100%); border-color: #4CAF50; }
+.btn.blue { background: linear-gradient(180deg, #2b456b 0%, #172842 100%); border-color: #3d82f6; }
+.btn.red { background: linear-gradient(180deg, #6b2b2b 0%, #421717 100%); border-color: #f0444c; }
+.btn.gold { background: linear-gradient(180deg, #8a6a1c 0%, #523f11 100%); color: #fff; border-color: #ffb000; }
+.btn.small{padding:7px 10px;font-size:12px}
+
 .screen{margin-top:18px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}.state-card{border:3px solid var(--accent,#30415c);min-height:220px}
-.state-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}.badge{border:1px solid var(--accent,#30415c);padding:7px 10px;border-radius:6px;color:var(--accent,#fff);font-size:12px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;color:#dfe8f8}.money{color:var(--green);font-weight:700}.muted{color:var(--muted)}.section-title{margin:24px 0 12px;color:var(--gold);font-size:19px}
-.notice{padding:12px;border-radius:9px;background:#211b1d;border:1px solid #71343b;color:#ffb6bc;margin-bottom:12px}
-.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.item{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:13px;margin-bottom:10px}
-.kpi{font-size:22px;font-weight:800}.kpi small{font-size:12px;color:var(--muted);font-weight:400}
-.progress{height:9px;background:#2d3b52;border-radius:9px;overflow:hidden}.progress>i{display:block;height:100%;background:var(--green)}
-label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:#0e1726;color:var(--text);outline:none}textarea{min-height:80px;resize:vertical}
-.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:16px;z-index:50}.modal.show{display:flex}.modalbox{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
-.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}.tabs{display:flex;gap:8px;margin-bottom:14px}.hidden{display:none!important}.empty{padding:35px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
-.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.authbox{width:min(430px,100%);background:var(--panel);padding:24px;border-radius:16px;border:1px solid var(--line)}.error{color:#ff8188;font-size:13px;margin-top:10px;white-space:pre-wrap}.success{color:#54e2b4;font-size:13px;margin-top:10px;white-space:pre-wrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;box-shadow: inset 0 0 15px rgba(0,0,0,0.3);}
+.state-card{border:2px solid var(--accent,#4a3b2c);min-height:220px; position:relative; overflow:hidden;}
+.state-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px; position:relative; z-index:2;}
+.badge{border:1px solid var(--accent,#4a3b2c);padding:5px 8px;border-radius:4px;color:var(--accent,#fff);font-size:11px; background:rgba(0,0,0,0.5); font-family:'Cinzel', serif;}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;color:#d8cca6; position:relative; z-index:2;}
+.money{color:#a9d18e;font-weight:700}.muted{color:var(--muted)}.section-title{margin:24px 0 12px;color:var(--gold);font-size:19px; border-bottom:1px solid var(--line); padding-bottom:5px;}
+.notice{padding:12px;border-radius:6px;background:#2a1717;border:1px solid #6b2b2b;color:#e8a4a4;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.item{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:13px;margin-bottom:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+.kpi{font-size:22px;font-weight:800; font-family:'Cinzel', serif;}.kpi small{font-size:12px;color:var(--muted);font-weight:400; font-family:'Playfair Display', serif;}
+.progress{height:9px;background:#14100c;border-radius:4px;overflow:hidden; border:1px solid var(--line);}.progress>i{display:block;height:100%;background:var(--green)}
+label{display:block;color:var(--gold);font-size:12px;margin:10px 0 5px; font-family:'Cinzel', serif;}
+input,select,textarea{width:100%;padding:10px;border-radius:4px;border:1px solid var(--line);background:#120e0b;color:var(--text);outline:none; box-shadow:inset 0 2px 4px rgba(0,0,0,0.5);}
+textarea{min-height:80px;resize:vertical}
+.modal{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;padding:16px;z-index:50}.modal.show{display:flex}.modalbox{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:2px solid var(--gold);border-radius:8px;padding:18px; box-shadow:0 0 30px rgba(0,0,0,0.8);}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}.tabs{display:flex;gap:8px;margin-bottom:14px}.hidden{display:none!important}.empty{padding:35px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:8px}
+.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px; background: url('https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=2000&auto=format&fit=crop') center/cover; position:relative;}
+.auth::before{content:'';position:absolute;inset:0;background:rgba(18,14,11,0.85);}
+.authbox{position:relative; z-index:1; width:min(430px,100%);background:rgba(30,24,20,0.9);padding:24px;border-radius:8px;border:1px solid var(--gold); box-shadow:0 0 20px rgba(0,0,0,0.8);}
+.error{color:#ff8188;font-size:13px;margin-top:10px;white-space:pre-wrap}.success{color:#54e2b4;font-size:13px;margin-top:10px;white-space:pre-wrap}
 @media(max-width:800px){.grid,.cards{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.top{position:static}.container{padding:12px}.brand{font-size:18px}}
 
-/* SEKME TASARIMLARI */
-.sec-header { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; background: #1a2536; padding: 14px 18px; border-radius: 10px; margin: 24px 0 12px; border: 1px solid var(--line); font-weight: bold; color: var(--gold); font-size: 17px; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-.sec-header:hover { background: #23324a; border-color: var(--gold); }
+/* SEKME (ACCORDION) TASARIMLARI */
+.sec-header { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(180deg, #2a221b 0%, #1e1814 100%); padding: 14px 18px; border-radius: 6px; margin: 24px 0 12px; border: 1px solid var(--gold); font-weight: bold; color: var(--gold); font-size: 16px; font-family:'Cinzel', serif; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.sec-header:hover { background: linear-gradient(180deg, #362a20 0%, #2a221b 100%); border-color: #fff; }
 .sec-content { margin-bottom: 20px; transition: all 0.3s ease; }
+
+.ruler-img { width:45px; height:45px; border-radius:50%; border:2px solid var(--gold); object-fit:cover; margin-right:10px; box-shadow: 0 0 10px rgba(0,0,0,0.8); background:#120e0b; }
 </style>
 </head>
 <body>
@@ -111,7 +160,6 @@ function closeModal(){document.getElementById("modal").classList.remove("show")}
 function modal(html){document.getElementById("modalContent").innerHTML=html;document.getElementById("modal").classList.add("show")}
 function toast(msg,ok=false){document.getElementById("syncText").textContent=(ok?"✓ ":"⚠ ")+msg}
 
-// SEKME FONKSİYONLARI
 function toggleSec(id){
     toggled[id] = !toggled[id];
     const el = document.getElementById(id);
@@ -152,7 +200,7 @@ async function showApp(session){
  if(isAdmin){
     actionsDiv.innerHTML = `
     <button class="btn gold" onclick="passOneYear()">⏳ 1 Yılı Geçir</button>
-    <button class="btn" style="background:var(--purple); color:#fff;" onclick="openPurchaseLogs()">📜 Loglar</button>
+    <button class="btn" onclick="openPurchaseLogs()">📜 Loglar</button>
     <button class="btn green" onclick="openStateForm()">＋ Devlet Ekle</button>
     <button class="btn blue" onclick="openAdmin()">⚙ Admin</button>
     <button class="btn" onclick="logout()">Çıkış</button>`;
@@ -191,8 +239,12 @@ async function loadDB(){
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
-    // Devletlerde customLedger dizisi yoksa ekle
-    db.states.forEach(s => { s.customLedger = s.customLedger || []; });
+    db.states.forEach(s => { 
+        s.customLedger = s.customLedger || []; 
+        s.permanentLedger = s.permanentLedger || [];
+        s.rulerImage = s.rulerImage || "";
+        s.bgImage = s.bgImage || "";
+    });
  }
  else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};await saveDB()}
  toast("Çevrimiçi ve otomatik kayıt açık",true);
@@ -222,14 +274,24 @@ function renderHome(){
   }
   const guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
   const isMine = s.ownerEmail === currentUserEmail;
-  const accent=s.color||"#3d82f6";
-  return `<div class="card state-card" style="--accent:${esc(accent)}; ${isMine ? 'box-shadow: 0 0 15px rgba(22, 199, 154, 0.2);' : ''}">
-   <div class="state-head"><div><h2>${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"")} ${isMine ? '<span style="color:var(--green)">(Senin Devletin)</span>' : ''}</div></div><span class="badge">${esc(s.title||"Devlet")}</span></div>
+  const accent=s.color||"#d4af37";
+  
+  const bgStyle = s.bgImage ? `background: linear-gradient(rgba(30,24,20,0.85), rgba(18,14,11,0.95)), url('${esc(s.bgImage)}') center/cover;` : `background: var(--panel);`;
+  const rulerImg = s.rulerImage ? `<img src="${esc(s.rulerImage)}" class="ruler-img" alt="Ruler">` : ``;
+
+  return `<div class="card state-card" style="--accent:${esc(accent)}; ${bgStyle} ${isMine ? 'box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);' : ''}">
+   <div class="state-head">
+     <div style="display:flex; align-items:center;">
+       ${rulerImg}
+       <div><h2 style="color:${esc(accent)};">${esc(s.name)}</h2><div class="sub" style="color:#d8cca6;">${esc(s.ruler||"")} ${isMine ? '<span style="color:var(--gold)">(Senin Devletin)</span>' : ''}</div></div>
+     </div>
+     <span class="badge" style="border-color:${esc(accent)}">${esc(s.title||"Devlet")}</span>
+   </div>
    <div class="stats">
     <div>💰 Hazine<br><span class="money">${money(s.treasury)}</span></div><div>👥 Nüfus<br>${num(s.population)}</div>
     <div>⚔ Ordu<br>${num(army)}</div><div>🛡 Top<br>${num(guns)}</div><div>⚓ Gemi<br>${num(ships)}</div><div>😊 Mutluluk<br>${num(s.happiness)}%</div>
    </div>
-   <div style="margin-top:14px"><button class="btn blue" onclick="openDetail('${s.id}')">Devlet Yönetimi →</button></div>
+   <div style="margin-top:14px; position:relative; z-index:2;"><button class="btn blue" onclick="openDetail('${s.id}')">Devlet Yönetimi →</button></div>
   </div>`
  }).join("")
 }
@@ -250,7 +312,6 @@ function openDetail(id){
  const canManage = isAdmin || isOwner;
  const editBtn = isAdmin ? `<button class="btn blue" onclick="openStateForm('${s.id}')">✎ Verileri Düzenle</button>` : ``;
 
- // 1. FERMANLAR
  let innerFerman = `<p class="sub" style="margin-top:0">Hazineden harcama yaparak halkın gönlünü alın.</p><div class="grid">` +
     EDICTS.map(e => `
         <div class="item">
@@ -262,7 +323,6 @@ function openDetail(id){
     `).join('') + `</div>`;
  let fermanHtml = buildSec('sec_ferman', '📜 FERMANLAR & SOSYAL POLİTİKALAR', innerFerman);
 
- // 2. ÖZEL BİRİMLER
  let customItemsHtml = "";
  const visibleCustomItems = (db.settings.customItems || []).filter(item => !item.faction || item.faction === s.id);
  if(visibleCustomItems.length > 0) {
@@ -270,7 +330,6 @@ function openDetail(id){
     customItemsHtml = buildSec('sec_ozel', '🌟 ÖZEL BİRİMLER / ÜRÜNLER', innerCustom);
  }
 
- // 3. TEMEL ASKER
  let innerTemel = `<div class="grid">${purchaseBlock(s,"piyade","🪖","Piyade",1,"eligible", canManage, p)}
  ${purchaseBlock(s,"suvari","🐎","Süvari",1,"eligible", canManage, p)}
  ${purchaseBlock(s,"nisanci","🏹","Nişancı",1,"eligible", canManage, p)}
@@ -282,7 +341,6 @@ function openDetail(id){
  ${purchaseBlock(s,"buyuk_gemi","🚢","Büyük Gemi",1,"ship", canManage, p)}</div>`;
  let temelHtml = buildSec('sec_temel', '⚔ TEMEL ASKER & DONANMA', innerTemel);
 
- // 4. ALTYAPI
  let innerAltyapi = `<div class="grid">${infraBlock(s,"kucuk_liman","⚓","Küçük Liman","Limandaki gemi kapasitesini artırır.", canManage)}
  ${infraBlock(s,"orta_liman","⚓","Orta Liman","Daha büyük donanmalar için orta boy tersane.", canManage)}
  ${infraBlock(s,"buyuk_liman","⚓","Büyük Liman","Devasa kalyonlara ev sahipliği yapacak tersane.", canManage)}
@@ -292,10 +350,25 @@ function openDetail(id){
  ${infraBlock(s,"okul","🏫","Okul","Halkın eğitim seviyesini artırıp elit tabakayı çoğaltır.", canManage)}</div>`;
  let altyapiHtml = buildSec('sec_altyapi', '🏗 ALTYAPI (BİNALAR)', innerAltyapi);
 
- // 5. MALİYE DEFTERİ (ADİSYON) - YENİ SEKME
- let ledgerHtmlContent = `<p class="sub" style="margin-top:0">Yıl içinde devletin kasasına giren ve çıkan özel ticaret, gümrük, vergi veya yardım kalemleri.</p>`;
+ let ledgerHtmlContent = `<p class="sub" style="margin-top:0">Devletin kasasına giren ve çıkan uzun süreli ticaret antlaşmaları ile anlık kalemler.</p>`;
+ ledgerHtmlContent += `<h3 style="font-size:15px; color:var(--gold); margin-top:10px;">📜 Uzun Süreli Antlaşmalar & Sabit Kalemler (Her Yıl Yenilenir)</h3>`;
+ if(s.permanentLedger && s.permanentLedger.length > 0) {
+    ledgerHtmlContent += `<div style="max-height:200px; overflow:auto; margin-bottom:15px;">` + s.permanentLedger.map((item, index) => {
+        let isPos = item.amount >= 0;
+        let col = isPos ? 'var(--green)' : '#ff6970';
+        let adminDel = isAdmin ? `<button class="btn red small" style="padding:2px 6px; font-size:11px;" onclick="removePermLedgerItem('${s.id}', ${index})">İptal Et</button>` : '';
+        return `<div class="item" style="padding:10px; margin-bottom:6px;"><div class="row">
+            <div><b>${esc(item.desc)}</b> <span class="sub" style="font-size:11px;">(Yıllık Sabit)</span></div>
+            <div style="text-align:right;"><span style="color:${col}; font-weight:bold;">${isPos?'+':''}${money(item.amount)}/yıl</span> ${adminDel}</div>
+        </div></div>`;
+    }).join('') + `</div>`;
+ } else {
+    ledgerHtmlContent += `<p class='muted' style="margin-bottom:15px;">Aktif uzun süreli antlaşma bulunmuyor.</p>`;
+ }
+
+ ledgerHtmlContent += `<h3 style="font-size:15px; color:var(--gold); margin-top:10px;">⚡ Bu Yıla Mahsus Tek Seferlik Kalemler</h3>`;
  if(s.customLedger && s.customLedger.length > 0) {
-    ledgerHtmlContent += `<div style="max-height:300px; overflow:auto;">` + s.customLedger.map((item, index) => {
+    ledgerHtmlContent += `<div style="max-height:200px; overflow:auto;">` + s.customLedger.map((item, index) => {
         let isPos = item.amount >= 0;
         let col = isPos ? 'var(--green)' : '#ff6970';
         let adminDel = isAdmin ? `<button class="btn red small" style="padding:2px 6px; font-size:11px;" onclick="removeLedgerItem('${s.id}', ${index})">Sil</button>` : '';
@@ -305,32 +378,44 @@ function openDetail(id){
         </div></div>`;
     }).join('') + `</div>`;
  } else {
-    ledgerHtmlContent += `<p class='muted'>Bu yıla ait kayıtlı özel ticaret veya ek kalem bulunmuyor.</p>`;
+    ledgerHtmlContent += `<p class='muted'>Bu yıla ait tek seferlik ek kalem bulunmuyor.</p>`;
  }
+
  if(isAdmin) {
-    ledgerHtmlContent += `<div style="margin-top:12px; background:var(--panel2); padding:12px; border-radius:8px; border:1px solid var(--line);">
-        <b style="font-size:13px; color:var(--gold);">Admin: Yeni Kalem Ekle</b>
+    ledgerHtmlContent += `<div style="margin-top:15px; background:var(--panel2); padding:14px; border-radius:8px; border:1px solid var(--line);">
+        <b style="font-size:14px; color:var(--gold);">Admin: Yeni Kalem veya Antlaşma Ekle</b>
         <div class="formgrid" style="margin-top:8px;">
-            <div><label>Açıklama</label><input id="ledger_desc_${s.id}" type="text" placeholder="Örn: Venedik Gümrük Vergisi"></div>
-            <div><label>Tutar (Eksi(-) gider, artı gelir)</label><input id="ledger_amt_${s.id}" type="number" placeholder="Örn: 50000 veya -20000"></div>
-            <div class="full"><button class="btn green small" onclick="addLedgerItem('${s.id}')">➕ Kalem Ekle</button></div>
+            <div><label>Açıklama / Antlaşma Adı</label><input id="ledger_desc_${s.id}" type="text" placeholder="Örn: Venedik Ticaret Antlaşması"></div>
+            <div><label>Tutar (Yıllık veya Tek Seferlik)</label><input id="ledger_amt_${s.id}" type="number" placeholder="Örn: 50000 veya -20000"></div>
+            <div><label>Tür Seçimi</label><select id="ledger_type_${s.id}"><option value="temp">Tek Seferlik (Sadece bu yıl)</option><option value="perm">Uzun Süreli / Sabit (Her yıl otomatik gelir)</option></select></div>
+            <div style="display:flex; align-items:flex-end;"><button class="btn green small" style="width:100%; height:41px;" onclick="addLedgerItem('${s.id}')">➕ Kalem Ekle</button></div>
         </div>
     </div>`;
  }
- let ledgerHtml = buildSec('sec_ledger', '📜 MALİYE DEFTERİ & TİCARET KALEMLERİ', ledgerHtmlContent);
+ let ledgerHtml = buildSec('sec_ledger', '📜 MALİYE DEFTERİ & ANTLAŞMALAR', ledgerHtmlContent);
 
- // 6. HAZİNE İŞLEMLERİ
  let tActs = ``;
  if (isAdmin) tActs = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn red" onclick="openDeduct('${s.id}')">Hazineden Para Kes</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
  else if (isOwner) tActs = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
  let hazineHtml = buildSec('sec_hazine', '💸 HAZİNE İŞLEMLERİ & DİPLOMASİ', `<div class="actions">${tActs}</div>`);
 
+ const bgStyle = s.bgImage ? `background: linear-gradient(rgba(30,24,20,0.85), rgba(18,14,11,0.95)), url('${esc(s.bgImage)}') center/cover; padding:20px; border-radius:8px; margin-bottom:15px; border:1px solid var(--gold);` : `background: var(--panel2); padding:20px; border-radius:8px; margin-bottom:15px; border:1px solid var(--line);`;
+ const rulerImg = s.rulerImage ? `<img src="${esc(s.rulerImage)}" class="ruler-img" style="width:60px; height:60px;" alt="Ruler">` : ``;
+
  document.getElementById("detail").innerHTML=`
- <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button>${editBtn}</div></div>
+ <div style="${bgStyle}">
+     <div class="row">
+        <div style="display:flex; align-items:center;">
+            ${rulerImg}
+            <div><h1 style="color:${esc(s.color||"var(--gold)")}; text-shadow:2px 2px 4px #000; margin-bottom:0;">${esc(s.name)}</h1><div class="sub" style="color:#d8cca6; font-size:15px;">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--gold)">(Sizin Yönetiminizde)</b>' : ''}</div></div>
+        </div>
+        <div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button>${editBtn}</div>
+     </div>
+ </div>
  ${!canManage ? '<div class="notice">Sadece görüntüleme modundasınız. Bu devlette işlem yapabilmek için yetkiniz bulunmuyor.</div>' : ''}
- <div class="cards" style="margin-top:14px">
+ <div class="cards">
   <div class="card"><div class="sub">HAZİNE</div><div class="kpi money">${money(s.treasury)}</div></div>
-  <div class="card"><div class="sub">YILLIK GELİR (VERGİ)</div><div class="kpi">${money(annualIncome)}</div></div>
+  <div class="card"><div class="sub">YILLIK NET GELİR (VERGİ + SABİT TİCARET)</div><div class="kpi">${money(annualIncome + calcPermIncome(s))}</div></div>
   <div class="card"><div class="sub">YILLIK GİDER</div><div class="kpi" style="color:#ff6970">${money(calcExpenses(s))}</div></div>
  </div>
  <div class="grid" style="margin-top:14px">
@@ -345,7 +430,8 @@ function openDetail(id){
    <div class="item">Vergi Oranı <b>%${num(s.tax)}</b></div>
   </div>
   <div class="card"><h2>💰 Ekonomi Detayı</h2>
-   <div class="item">Toplam Vergi Geliri <b class="money">${money(annualIncome)}</b><div class="sub">Eğitimliler, Siviller ve Boştaki Elverişlilerden toplanan meblağ.</div></div>
+   <div class="item">Vergi Geliri <b class="money">${money(annualIncome)}</b></div>
+   <div class="item">Uzun Süreli Sabit Ticaret/Antlaşmalar <b class="money">${money(calcPermIncome(s))}</b></div>
    <div class="item">Ordu Bakımı <b style="color:#ff6970">${money(calcMilitaryUpkeep(s))}</b></div>
    <div class="item">Topçu Bakımı <b style="color:#ff6970">${money(calcArtilleryUpkeep(s))}</b></div>
    <div class="item">Donanma Bakımı <b style="color:#ff6970">${money(calcNavyUpkeep(s))}</b></div>
@@ -364,17 +450,22 @@ function openDetail(id){
  `;
 }
 
-// ---------------- MALİYE DEFTERİ FONKSİYONLARI ----------------
 function addLedgerItem(stateId) {
     if(!isAdmin) return;
     let s = getState(stateId);
     if(!s) return;
     let desc = document.getElementById('ledger_desc_'+stateId).value.trim();
     let amt = Number(document.getElementById('ledger_amt_'+stateId).value) || 0;
+    let type = document.getElementById('ledger_type_'+stateId).value;
     if(!desc) { alert("Açıklama yazmalısınız."); return; }
     
-    s.customLedger = s.customLedger || [];
-    s.customLedger.push({ desc, amount: amt });
+    if(type === 'perm') {
+        s.permanentLedger = s.permanentLedger || [];
+        s.permanentLedger.push({ desc, amount: amt });
+    } else {
+        s.customLedger = s.customLedger || [];
+        s.customLedger.push({ desc, amount: amt });
+    }
     queueSave();
     openDetail(stateId);
 }
@@ -388,7 +479,14 @@ function removeLedgerItem(stateId, index) {
     openDetail(stateId);
 }
 
-// ---------------- HESAPLAMALAR ----------------
+function removePermLedgerItem(stateId, index) {
+    if(!isAdmin) return;
+    let s = getState(stateId);
+    if(!s || !s.permanentLedger) return;
+    s.permanentLedger.splice(index, 1);
+    queueSave();
+    openDetail(stateId);
+}
 
 function calcPop(s){
   let hap = Number(s.happiness) || 0;
@@ -427,6 +525,14 @@ function calcIncome(s){
   return Math.floor(total);
 }
 
+function calcPermIncome(s){
+  let total = 0;
+  if(s.permanentLedger && s.permanentLedger.length > 0) {
+      s.permanentLedger.forEach(item => { total += item.amount; });
+  }
+  return total;
+}
+
 function calcMilitaryUpkeep(s){return (s.piyade||0)*db.settings.upkeep.piyade+(s.suvari||0)*db.settings.upkeep.suvari+(s.nisanci||0)*db.settings.upkeep.nisanci;}
 function calcArtilleryUpkeep(s){return (s.kucuk_top||0)*db.settings.upkeep.kucuk_top+(s.orta_top||0)*db.settings.upkeep.orta_top+(s.buyuk_top||0)*db.settings.upkeep.buyuk_top}
 function calcNavyUpkeep(s){return (s.kucuk_gemi||0)*db.settings.upkeep.kucuk_gemi+(s.orta_gemi||0)*db.settings.upkeep.orta_gemi+(s.buyuk_gemi||0)*db.settings.upkeep.buyuk_gemi}
@@ -449,8 +555,6 @@ function addLog(stateName, itemLabel, qty, totalCost) {
     db.purchaseLog.unshift({ state: stateName, item: itemLabel, qty: qty, cost: totalCost, date: dateStr, user: currentUserEmail });
     if(db.purchaseLog.length > 200) db.purchaseLog.pop();
 }
-
-// ---------------- SATIN ALMA İŞLEMLERİ ----------------
 
 function buyEdict(id, edictId) {
     const s = getState(id);
@@ -605,7 +709,6 @@ async function buyCustomBulk(id, itemId, labelName){
  queueSave(); openDetail(id);
 }
 
-// ---------------- SEFER HAZIRLIĞI ----------------
 function calcCampCost(id) {
     const s = getState(id);
     if(!s) return;
@@ -653,7 +756,7 @@ function openCampaign(id) {
         html += `<div class="item"><div class="row"><div><b>${u.label}</b><div class="sub">Mevcut: ${num(u.max)} | İkmal: <span style="color:var(--gold)">${money(u.cost)}</span>/adet</div></div>
                 <input type="number" id="camp_${u.key}" min="0" max="${u.max}" value="0" style="width:80px; padding:8px;" oninput="calcCampCost('${id}')"></div></div>`;
     });
-    html += `</div><div style="background:var(--panel2); padding:15px; border-radius:10px; text-align:center; font-size:18px;">
+    html += `</div><div style="background:var(--panel2); padding:15px; border-radius:10px; text-align:center; font-size:18px; border:1px solid var(--gold);">
         Toplam İkmal: <b id="campTotalCost" style="color:var(--gold)">0 TL</b></div>
     <div class="actions" style="margin-top:15px;"><button class="btn" onclick="closeModal()">İptal</button><button class="btn red" style="width:100%; font-weight:bold;" onclick="startCampaign('${id}')">SEFERİ BAŞLAT (ÖDE)</button></div>`;
     modal(html);
@@ -684,21 +787,24 @@ function startCampaign(id) {
     closeModal(); queueSave(); openDetail(id);
 }
 
-// ---------------- DEVLET FORMU & DİĞER İŞLEMLER ----------------
-
 function openStateForm(id=null){
  if(!isAdmin) return;
- const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",title:"Devlet",color:"#3d82f6",treasury:0,population:0,tax:20,happiness:75,education:30,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
+ const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",rulerImage:"",bgImage:"",title:"Devlet",color:"#d4af37",treasury:0,population:0,tax:20,happiness:75,education:30,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
  let customFields = "";
  if(db.settings.customItems && db.settings.customItems.length > 0) {
     customFields += `<div class="full"><h3 style="margin-top:10px; border-bottom:1px solid var(--line); padding-bottom:5px;">Özel Ürünler</h3></div>`;
     db.settings.customItems.forEach(item => { customFields += field(item.id, item.name, s[item.id]||0, "number"); });
  }
  modal(`<h2>${id?"Devlet Verilerini Düzenle":"Devlet Ekle"}</h2><div class="formgrid">
- ${field("name","Devlet Adı",s.name,"text")}${field("ruler","Taht Sahibi (Görsel İsim)",s.ruler,"text")}${field("title","Unvan",s.title,"text")}${field("color","Çerçeve Rengi",s.color,"color")}
- <div class="full" style="background:#201815; border:1px solid #ffb000; padding:10px; border-radius:8px;">
+ ${field("name","Devlet Adı",s.name,"text")}
+ ${field("title","Unvan",s.title,"text")}
+ ${field("ruler","Taht Sahibi (Görsel İsim)",s.ruler,"text")}
+ ${field("rulerImage","Kral/Padişah Resmi URL (İsteğe bağlı)",s.rulerImage,"text")}
+ ${field("bgImage","Arka Plan Resmi URL (İsteğe bağlı)",s.bgImage,"text")}
+ ${field("color","Çerçeve Rengi",s.color,"color")}
+ <div class="full" style="background:#2a1717; border:1px solid #6b2b2b; padding:10px; border-radius:8px;">
     ${field("ownerEmail","Sahip Oyuncu (Arkadaşının E-postası)",s.ownerEmail||"","email")}
-    <p class="sub" style="color:#ffb000; margin:5px 0 0;">Bu devleti yönetecek kişinin kayıt olduğu mail adresini yaz. Aksi halde devleti kontrol edemez.</p>
+    <p class="sub" style="color:#e8a4a4; margin:5px 0 0;">Bu devleti yönetecek kişinin kayıt olduğu mail adresini yaz. Aksi halde devleti kontrol edemez.</p>
  </div>
  ${field("treasury","Hazine",s.treasury,"number")}${field("population","Toplam Nüfus",s.population,"number")}${field("tax","Vergi % (0.4 Etkisi)",s.tax,"number")}
  ${field("happiness","Halk Mutluluğu %",s.happiness,"number")}${field("education","Eğitim %",s.education,"number")}${field("baseTaxPerPerson","Kişi Başına Temel Vergi",s.baseTaxPerPerson,"number")}${field("civilExpense","Sivil Gider",s.civilExpense,"number")}
@@ -714,10 +820,10 @@ function openStateForm(id=null){
 function field(k,l,v,t="text"){return `<div><label>${l}</label><input id="f_${k}" type="${t}" value="${esc(v)}"></div>`}
 
 function saveState(id){
- const keys=["name","ownerEmail","ruler","title","color","treasury","population","tax","education","baseTaxPerPerson","civilExpense","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul"];
+ const keys=["name","ownerEmail","ruler","rulerImage","bgImage","title","color","treasury","population","tax","education","baseTaxPerPerson","civilExpense","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul"];
  if(db.settings.customItems) { db.settings.customItems.forEach(item => keys.push(item.id)); }
  const o={};
- keys.forEach(k=>o[k]=["name","ownerEmail","ruler","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
+ keys.forEach(k=>o[k]=["name","ownerEmail","ruler","rulerImage","bgImage","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
  if(!o.name){alert("Devlet adı gerekli.");return}
  o.ownerEmail = (o.ownerEmail || "").trim().toLowerCase();
  let oldTax = id ? getState(id).tax : Number(document.getElementById("f_tax").value||0);
@@ -726,11 +832,13 @@ function saveState(id){
  o.happiness = Math.max(0, Math.min(100, Number(document.getElementById("f_happiness").value||0) + hapChange));
  if(id){ 
     let existing = getState(id);
-    o.customLedger = existing.customLedger || []; // Eskisini koru
+    o.customLedger = existing.customLedger || [];
+    o.permanentLedger = existing.permanentLedger || [];
     Object.assign(existing,o); 
     if(diff !== 0) alert(`Vergi değişimi sebebiyle halk mutluluğu ${hapChange > 0 ? '+'+hapChange.toFixed(1) : hapChange.toFixed(1)} puan etkilendi.`); 
  } else { 
     o.customLedger = [];
+    o.permanentLedger = [];
     db.states.push({id:crypto.randomUUID(),...o}) 
  }
  closeModal();queueSave();renderHome()
@@ -774,31 +882,29 @@ function openPurchaseLogs(){
 
 function passOneYear(){
     if(!isAdmin) return;
-    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, otomatik giderler ve Maliye Defterindeki (Adisyondaki) tüm artı-eksi kalemler hazineye işlenecek.\n\nOnaylıyor musunuz?")) return;
+    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler, uzun süreli sabit antlaşmalar, otomatik giderler ve bu yıla mahsus tek seferlik kalemler hazineye işlenecek.\n\nOnaylıyor musunuz?")) return;
     
     let summaryHtml = "<h3>⏳ 1. Yıl Sonu Finansal Raporu</h3><div style='max-height:60vh; overflow:auto;'><div class='grid' style='grid-template-columns:1fr;'>";
     
     db.states.forEach(s => {
         let inc = calcIncome(s);
+        let permInc = calcPermIncome(s); 
         let exp = calcExpenses(s);
         
-        // Maliye defterindeki (adisyondaki) özel kalemlerin toplamını hesapla ve hazineye yansıt
-        let ledgerTotal = 0;
+        let tempLedgerTotal = 0;
         if(s.customLedger && s.customLedger.length > 0) {
-            s.customLedger.forEach(item => { ledgerTotal += item.amount; });
+            s.customLedger.forEach(item => { tempLedgerTotal += item.amount; });
         }
         
-        let net = inc - exp + ledgerTotal;
+        let net = inc + permInc - exp + tempLedgerTotal;
         s.treasury += net;
-        
-        // Yıl bittiği için adisyonu (maliye defterini) sıfırlıyoruz ki yeni yıla temiz başlansın
         s.customLedger = []; 
         
         let color = net >= 0 ? 'var(--green)' : '#ff6970';
         let netSign = net >= 0 ? '+' : '';
         
         summaryHtml += `<div class="item"><div style="border-bottom:1px solid var(--line); margin-bottom:5px; padding-bottom:5px;"><b>${esc(s.name)}</b></div>
-            <div class="row" style="font-size:13px;"><div>Gelir: <span style="color:var(--green)">${money(inc)}</span><br>Gider: <span style="color:#ff6970">${money(exp)}</span><br>Ticaret/Özel Kalemler: <span style="color:${ledgerTotal>=0?'var(--green)':'#ff6970'}">${ledgerTotal>=0?'+':''}${money(ledgerTotal)}</span></div>
+            <div class="row" style="font-size:13px;"><div>Vergi Geliri: <span style="color:var(--green)">${money(inc)}</span><br>Sabit Antlaşmalar: <span style="color:var(--green)">${money(permInc)}</span><br>Gider: <span style="color:#ff6970">${money(exp)}</span><br>Tek Seferlik Kalemler: <span style="color:${tempLedgerTotal>=0?'var(--green)':'#ff6970'}">${tempLedgerTotal>=0?'+':''}${money(tempLedgerTotal)}</span></div>
             <div style="text-align:right;">Net: <b style="color:${color}">${netSign}${money(net)}</b><br>Yeni Hazine: ${money(s.treasury)}</div></div></div>`;
     });
     
@@ -816,7 +922,7 @@ function openAdmin(){
  let customHtml = (db.settings.customItems||[]).map(x => {
     let fName = x.faction ? (getState(x.faction)?.name || "Silinmiş Devlet") : "Tümü";
     return `<div class="item" style="display:flex;justify-content:space-between;align-items:center;">
-      <div><b>${esc(x.icon)} ${esc(x.name)}</b> <span class="badge" style="background:#2d3b52">${esc(fName)}</span><br><span class="sub">(${x.category}) - Fiyat: ${money(x.price)} | Bakım: ${money(x.upkeep)} | İkmal: ${money(x.campCost||0)}</span></div>
+      <div><b>${esc(x.icon)} ${esc(x.name)}</b> <span class="badge" style="background:#2a221b">${esc(fName)}</span><br><span class="sub">(${x.category}) - Fiyat: ${money(x.price)} | Bakım: ${money(x.upkeep)} | İkmal: ${money(x.campCost||0)}</span></div>
       <button class="btn red small" onclick="removeCustomItem('${x.id}')">Sil</button>
     </div>`
  }).join("");
