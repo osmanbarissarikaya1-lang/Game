@@ -453,7 +453,6 @@ const INITIAL_STATES = [
     istihbarat_binasi: 1,
     hiredAdvisors: [],
     advisorHiredYears: {},
-    pendingEvents: [],
     customLedger: [],
     permanentLedger: []
   },
@@ -493,7 +492,6 @@ const INITIAL_STATES = [
     istihbarat_binasi: 1,
     hiredAdvisors: [],
     advisorHiredYears: {},
-    pendingEvents: [],
     customLedger: [],
     permanentLedger: []
   },
@@ -533,7 +531,6 @@ const INITIAL_STATES = [
     istihbarat_binasi: 1,
     hiredAdvisors: [],
     advisorHiredYears: {},
-    pendingEvents: [],
     customLedger: [],
     permanentLedger: []
   }
@@ -591,45 +588,6 @@ const DEFAULT_45_ADVISORS = [
   { id:"adv_gn_14", name:"Cihangir Han Mareşal", role:"Yenilmez Mareşal", stars:5, salary:140000, targetName:"Güneş Devleti", buff:"-%8 Ordu Bakımı & -%6 Asker Alımı", debuff:"Sefer ikramiyesi ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:6, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
   { id:"adv_gn_15", name:"Karun Mirza", role:"Altın Simyacısı", stars:5, salary:130000, targetName:"Güneş Devleti", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -3 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:false, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 }
 ];
-
-// 100 ADET DİNAMİK OLAY LİSTESİ
-const DYNAMIC_EVENTS = [
-  { title: "Celali Eşkıyaları Türedi", desc: "Taşrada eşkıyalar türedi ve ticaret yollarını kesiyor.", condition: s => (s.happiness < 50), choiceA: { text: "Asker gönderip temizle (-150.000 TL)", cost: 150000, hap: 3, anar: -0.05 }, choiceB: { text: "Yerel ağalara yetki ver (Mutluluk -3)", cost: 0, hap: -3, anar: 0 } },
-  { title: "Kışla Disiplini ve Şikayetler", desc: "Askerler geciken iaşeler nedeniyle homurdanıyor.", condition: s => ((s.piyade||0)+(s.suvari||0) > 10000), choiceA: { text: "İaşe ikramiyesi dağıt (-120.000 TL)", cost: 120000, hap: 3, anar: 0 }, choiceB: { text: "Disiplini sertleştir (Mutluluk -4)", cost: 0, hap: -4, anar: 0 } },
-  { title: "Kadim Tapınak Restorasyonu", desc: "Halk, başkentteki tarihi ibadethanenin onarılmasını istiyor.", condition: s => (s.happiness >= 65), choiceA: { text: "Devlet bütçesinden fon ayır (-90.000 TL)", cost: 90000, hap: 4, anar: 0 }, choiceB: { text: "Halk kendi toplasın", cost: 0, hap: 0, anar: 0 } },
-  { title: "Saray Düğünü ve Şenlikler", desc: "Hükümdarın hanedan üyelerinden biri evleniyor.", condition: s => (s.happiness >= 50 && s.happiness < 70), choiceA: { text: "Şehirde büyük şenlikler düzenle (-180.000 TL)", cost: 180000, hap: 5, anar: 0 }, choiceB: { text: "Sade bir nikah yap", cost: 0, hap: 0, anar: 0 } },
-  { title: "Esnaf Loncası Dilekçesi", desc: "Çarşı esnafı artan girdi maliyetlerinden şikayetçi.", condition: s => true, choiceA: { text: "Geçici vergi indirimi tanı (-100.000 TL)", cost: 100000, hap: 3, anar: 0 }, choiceB: { text: "Talepleri reddet (Mutluluk -3)", cost: 0, hap: -3, anar: 0 } },
-  { title: "Şehir Kilitlendi: Çöp ve Temizlik Krizi", desc: "Büyük şehirlerde çöp ve hijyen sorunları salgın riskini artırdı.", condition: s => (s.population > 200000), choiceA: { text: "Temizlik seferberliği başlat (-80.000 TL)", cost: 80000, hap: 2, anar: 0 }, choiceB: { text: "Görmezden gel (Mutluluk -3)", cost: 0, hap: -3, anar: 0 } },
-  { title: "Kardeş Kavgası (Hanedan Çekişmesi)", desc: "Saray çevresinde taht üzerinde hak iddia eden küçük bir grup huzursuzluk çıkardı.", condition: s => true, choiceA: { text: "Unvan ve maaş ver (-70.000 TL)", cost: 70000, hap: 1, anar: 0 }, choiceB: { text: "Sürgüne gönder (-50.000 TL, Mutluluk -2)", cost: 50000, hap: -2, anar: 0 } },
-  { title: "Zindan İsyanı Bastırıldı", desc: "Başkent zindanlarında mahkumlar ayaklandı.", condition: s => (s.happiness < 60), choiceA: { text: "Muhafızları salıp bastır (-60.000 TL, Mutluluk -3)", cost: 60000, hap: -3, anar: -0.02 }, choiceB: { text: "Şartları iyileştir (-110.000 TL, Mutluluk +2)", cost: 110000, hap: 2, anar: 0 } },
-  { title: "Köylü Bayramı (Hıdırellez Şenliği)", desc: "Baharın gelmesiyle köylüler bolluk içinde şenlik kutlamak istiyor.", condition: s => (s.happiness >= 60), choiceA: { text: "Erzak hibesi yap (-75.000 TL, Mutluluk +3)", cost: 75000, hap: 3, anar: 0 }, choiceB: { text: "Müdahale etme", cost: 0, hap: 0, anar: 0 } },
-  { title: "Şehir Bekçileri Görev İhmali", desc: "Gece vakti hırsızlık olayları ve yankesicilik patlama yaptı.", condition: s => true, choiceA: { text: "Bekçi kadrosunu artır (-90.000 TL)", cost: 90000, hap: 2, anar: 0 }, choiceB: { text: "Halk kendi çaresine baksın (Mutluluk -4)", cost: 0, hap: -4, anar: 0 } },
-  { title: "İpek Yolu Kervanı Saldırıya Uğradı", desc: "Doğu'dan gelen büyük bir ticaret kervanı dağ eşkıyalarınca soyuldu.", condition: s => true, choiceA: { text: "Tüccarların zararını karşıla (-140.000 TL)", cost: 140000, hap: 1, anar: 0 }, choiceB: { text: "Tazminat ödeme (Mutluluk -2)", cost: 0, hap: -2, anar: 0 } },
-  { title: "Sahte Sikke (Kalpazanlık) Şebekesi", desc: "Piyasada düşük ayarlı gümüş ve altın sikkeler dolaşmaya başladı.", condition: s => true, choiceA: { text: "Piyasayı denetlet (-100.000 TL)", cost: 100000, hap: 2, anar: 0 }, choiceB: { text: "Görmezden gel (Mutluluk -2)", cost: 0, hap: -2, anar: 0 } },
-  { title: "Gümrük Kaçağı Venedik Gemileri", desc: "Tüccarlar gümrük vergisi ödemeden kaçak mal indiriyor.", condition: s => ((s.kucuk_liman||0) > 0), choiceA: { text: "Mallarına el koy (+180.000 TL Hazine)", cost: -180000, hap: -1, anar: 0 }, choiceB: { text: "Rüşvet alıp göz yum (+90.000 TL Hazine)", cost: -90000, hap: 1, anar: 0 } },
-  { title: "Büyük Gümüş Madeni Damarı", desc: "Taşrada yeni bir zengin gümüş madeni keşfedildi.", condition: s => true, choiceA: { text: "Madeni işletmeye aç (-250.000 TL)", cost: 250000, hap: 3, anar: 0 }, choiceB: { text: "İşletmeyi tüccarlara sat (+200.000 TL)", cost: -200000, hap: 0, anar: 0 } },
-  { title: "Tuz ve Hububat Monopolü", desc: "Devlet tuz ve ekmek ticaretini tekeline almak istiyor.", condition: s => (s.tax >= 35), choiceA: { text: "Monopolü kur (+220.000 TL Hazine, Mutluluk -5)", cost: -220000, hap: -5, anar: 0.05 }, choiceB: { text: "Serbest bırak", cost: 0, hap: 1, anar: 0 } },
-  { title: "Yeniçeriler / Askerler Bahşiş İster", desc: "Geleneksel cülus bahşişi vakti geldi.", condition: s => ((s.piyade||0) > 10000), choiceA: { text: "Bahşiş dağıt (-200.000 TL)", cost: 200000, hap: 3, anar: 0 }, choiceB: { text: "Vermiyorum de (Mutluluk -5)", cost: 0, hap: -5, anar: 0.03 } },
-  { title: "Tophane Yangını ve Barut Patlaması", desc: "Top dökümhanesinde büyük bir barut patlaması oldu.", condition: s => ((s.kucuk_ocak||0) > 0), choiceA: { text: "Hemen yeniden kur (-150.000 TL)", cost: 150000, hap: 0, anar: 0 }, choiceB: { text: "Onarımı geciktir", cost: 0, hap: -2, anar: 0 } },
-  { title: "Büyük Anadolu Kuraklığı (Kıtlık)", desc: "Yağmur yağmadı, tarım tarlaları kuruma noktasına geldi.", condition: s => true, choiceA: { text: "Ambarları açıp halkı doyur (-220.000 TL)", cost: 220000, hap: 2, anar: 0 }, choiceB: { text: "Müdahale etme (Mutluluk -4)", cost: 0, hap: -4, anar: 0.02 } },
-  { title: "Veba Salgını (Karantina)", desc: "Liman şehirlerinde veba vakaları görülmeye başlandı.", condition: s => (s.population > 150000), choiceA: { text: "Karantinaya al ve ilaç dağıt (-170.000 TL)", cost: 170000, hap: 1, anar: 0 }, choiceB: { text: "Tedbir alma (Mutluluk -3)", cost: 0, hap: -3, anar: 0.01 } },
-  { title: "Büyük İstanbul Depremi", desc: "Şiddetli bir deprem oldu, bazı surlar ve evler yıkıldı.", condition: s => true, choiceA: { text: "Acil yardım ve onarım başlat (-300.000 TL)", cost: 300000, hap: 2, anar: 0 }, choiceB: { text: "Halk kendi yarasını sarsın (Mutluluk -5)", cost: 0, hap: -5, anar: 0.02 } },
-  { title: "Medreselerde Reform Talebi", desc: "Alimler eğitim müfredatına pozitif bilimlerin eklenmesini istiyor.", condition: s => ((s.okul||0) > 0), choiceA: { text: "Reformu destekle (-120.000 TL)", cost: 120000, hap: 2, anar: 0 }, choiceB: { text: "Eski usul devam et", cost: 0, hap: 0, anar: 0 } },
-  { title: "Matbaanın Gelişi", desc: "Bilginler ucuz kitap basmak için yeni bir baskı makinesi icat etti.", condition: s => (s.education >= 25), choiceA: { text: "Teşvik et (-160.000 TL)", cost: 160000, hap: 2, anar: 0 }, choiceB: { text: "Yasakla", cost: 0, hap: -1, anar: 0 } },
-  { title: "Zirai Sulama Kanalları Projesi", desc: "Kurak ovalara nehir suyu akıtmak için sulama kanalları kazılacak.", condition: s => true, choiceA: { text: "Projeyi başlat (-210.000 TL)", cost: 210000, hap: 3, anar: 0 }, choiceB: { text: "Bütçeyi ayırma", cost: 0, hap: -1, anar: 0 } },
-  { title: "Saray Münecciminin Kehaneti", desc: "Saray müneccimi bu yıl yıldızların savaş işaret ettiğini söylüyor.", condition: s => true, choiceA: { text: "Kurban ve adaklar ada (-40.000 TL)", cost: 40000, hap: 1, anar: 0 }, choiceB: { text: "İnanma", cost: 0, hap: 0, anar: 0 } },
-  { title: "Yabancı Elçinin Kabulü ve Rüşvet", desc: "Batılı bir elçi, sarayda bazı kararları kendi lehine çevirmek için teklifte bulunuyor.", condition: s => true, choiceA: { text: "Rüşveti kabul et (+200.000 TL Hazine)", cost: -200000, hap: -3, anar: 0 }, choiceB: { text: "Elçiyi huzurdan kov (Mutluluk +2)", cost: 0, hap: 2, anar: 0 } }
-];
-
-for(let i=26; i<=100; i++) {
-  DYNAMIC_EVENTS.push({
-    title: `Krallık Gündem Raporu #${i}`,
-    desc: `Bölgelerden gelen raporlarda idari ve ekonomik aksaklıklar rapor ediliyor.`,
-    condition: s => true,
-    choiceA: { text: `Ödenek gönderip çöz (-${(i*5000)%400000 + 50000} TL)`, cost: (i*5000)%400000 + 50000, hap: 2, anar: 0 },
-    choiceB: { text: `Akışına bırak (Mutluluk -2)`, cost: 0, hap: -2, anar: 0 }
-  });
-}
 
 function initSupabase(){
  if(!window.supabase || typeof window.supabase.createClient!=="function") throw new Error("Supabase kütüphanesi yüklenemedi.");
@@ -880,7 +838,6 @@ async function loadDB(){
             s.hiredAdvisors = s.hiredAdvisors || [];
             s.advisorHiredYears = s.advisorHiredYears || {};
             s.advisorSlots = s.advisorSlots || 3;
-            s.pendingEvents = s.pendingEvents || [];
         });
     }
  }
@@ -931,7 +888,6 @@ function renderHome(){
   const accent=s.color||"#c5a059";
   const rulerImgClean = cleanUrl(s.rulerImage);
   const unreadLetters = (db.letters||[]).filter(l => l.toStateId === s.id && !l.read).length;
-  const pendingCount = (s.pendingEvents || []).length;
 
   return `<div class="state-card" style="border-left: 3px solid ${esc(accent)};">
    <div class="state-head">
@@ -940,7 +896,6 @@ function renderHome(){
        <div><h2 style="color:${esc(accent)}; font-size:16px;">${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"Lider Yok")} ${isMine ? '<span style="color:var(--gold)">(Sen)</span>' : ''}</div></div>
      </div>
      <div style="display:flex; align-items:center; gap:5px;">
-       ${pendingCount > 0 ? `<span class="badge-count" style="background:var(--gold); color:#000;" title="Çözülecek Olay Var!">⚡ ${pendingCount}</span>` : ''}
        ${unreadLetters > 0 ? `<span class="badge-count" title="Yeni Mektup!">✉ ${unreadLetters}</span>` : ''}
        <span class="badge">${esc(s.title||"Devlet")}</span>
      </div>
@@ -1183,31 +1138,7 @@ function openDetail(id){
  }
  divanHtml += `</div>`;
 
- // 5. DEVLET İÇİNDEKİ OLAYLAR SEKMESİ
- let pendingList = s.pendingEvents || [];
- let olaylarHtml = `<div>
-    <h4 style="color:var(--gold); margin:0 0 8px; font-family:'Oswald';">⚡ DEVLET KRİZLERİ & GÜNDEM OLAYLARI (${pendingList.length})</h4>
-    <p class="sub" style="margin-bottom:14px;">Yıl geçişlerinde devletinizin başına gelen olaylar burada listelenir. Kararlarınızı doğrudan devlet panelinden verebilirsiniz.</p>`;
-
- if(pendingList.length > 0) {
-    olaylarHtml += pendingList.map((ev, idx) => `
-        <div style="background:rgba(21, 24, 29, 0.9); border:1px solid var(--border-gold); border-left:4px solid var(--gold); padding:12px; border-radius:3px; margin-bottom:10px;">
-            <h3 style="margin:0 0 6px; font-family:'Playfair Display'; color:var(--border-gold);">${esc(ev.title)}</h3>
-            <p style="font-size:13px; line-height:1.4; color:var(--text); margin-bottom:10px;">${esc(ev.desc)}</p>
-            <div style="display:flex; flex-direction:column; gap:6px;">
-                <button class="btn green small" style="text-align:left; padding:8px;" onclick="resolveStateEvent('${s.id}', ${idx}, 'A')">✔ ${esc(ev.choiceA.text)}</button>
-                <button class="btn red small" style="text-align:left; padding:8px;" onclick="resolveStateEvent('${s.id}', ${idx}, 'B')">✖ ${esc(ev.choiceB.text)}</button>
-            </div>
-        </div>
-    `).join('');
- } else {
-    olaylarHtml += `<div style="text-align:center; padding:30px; color:var(--muted); border:1px dashed var(--line); border-radius:3px;">
-        ☕ Şu an devletinizde bekleyen aktif bir kriz veya olay bulunmuyor. Yıl geçişini bekleyin.
-    </div>`;
- }
- olaylarHtml += `</div>`;
-
- // 6. MEKTUPLAR
+ // 5. MEKTUPLAR
  let mektupHtml = `<div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
         <h4 style="color:var(--border-gold); margin:0; font-family:'Oswald';">📜 DİPLOMATİK ULAK & MEKTUPLAR</h4>
@@ -1232,7 +1163,7 @@ function openDetail(id){
  } else { mektupHtml += `<p class="sub">Mektup yok.</p>`; }
  mektupHtml += `</div>`;
 
- // 7. İSTİHBARAT
+ // 6. İSTİHBARAT
  let istihbaratHtml = ``;
  if((s.istihbarat_binasi || 0) > 0) {
     const targetOpts = db.states.filter(x => x.id !== s.id).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('');
@@ -1256,7 +1187,7 @@ function openDetail(id){
     </div>`;
  }
 
- // 8. SİYASET
+ // 7. SİYASET
  let eylemHtml = `<div>`;
  let tActs = isAdmin ? `<button class="btn red" style="flex:1; padding:10px;" onclick="openCampaign('${s.id}')">⚔️ SEFER</button><button class="btn gold" style="flex:1; padding:10px;" onclick="openAdminGrantModal('${s.id}')">💸 PARA GÖNDER</button>` : '';
  eylemHtml += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">${tActs}</div></div>`;
@@ -1295,7 +1226,6 @@ function openDetail(id){
             <div class="hoi-tab" id="tab-btn-altyapi" onclick="switchTab('altyapi')">Altyapı</div>
             <div class="hoi-tab" id="tab-btn-maliye" onclick="switchTab('maliye')">Maliye</div>
             <div class="hoi-tab" id="tab-btn-divan" onclick="switchTab('divan')">👑 Divan (${activeAdvisors.length}/${maxSlots})</div>
-            <div class="hoi-tab" id="tab-btn-olaylar" onclick="switchTab('olaylar')" style="color:${pendingCount>0?'var(--gold)':''}">⚡ Gündem ${pendingCount>0?`(${pendingCount})`:''}</div>
             <div class="hoi-tab" id="tab-btn-mektup" onclick="switchTab('mektup')">Mektuplar</div>
             ${(s.istihbarat_binasi || 0) > 0 ? `<div class="hoi-tab" id="tab-btn-intel" onclick="switchTab('intel')">🕵️ İstihbarat</div>` : ''}
             <div class="hoi-tab" id="tab-btn-eylem" onclick="switchTab('eylem')">Siyaset</div>
@@ -1304,7 +1234,6 @@ function openDetail(id){
         <div class="tab-content" id="tab-content-altyapi">${altyapiHtml}</div>
         <div class="tab-content" id="tab-content-maliye">${ledgerHtml}</div>
         <div class="tab-content" id="tab-content-divan">${divanHtml}</div>
-        <div class="tab-content" id="tab-content-olaylar">${olaylarHtml}</div>
         <div class="tab-content" id="tab-content-mektup">${mektupHtml}</div>
         ${(s.istihbarat_binasi || 0) > 0 ? `<div class="tab-content" id="tab-content-intel">${istihbaratHtml}</div>` : ''}
         <div class="tab-content" id="tab-content-eylem">${eylemHtml}</div>
@@ -1312,47 +1241,15 @@ function openDetail(id){
  </div>`;
 }
 
-// ---------------- DEVLET İÇİNDEN OLAY ÇÖZME ----------------
-function resolveStateEvent(stateId, eventIndex, choiceKey) {
-    const s = getState(stateId);
-    if(!s || !s.pendingEvents || !s.pendingEvents[eventIndex]) return;
-    
-    const ev = s.pendingEvents[eventIndex];
-    const choice = choiceKey === 'A' ? ev.choiceA : ev.choiceB;
-
-    const oldT = s.treasury;
-    if(choice.cost) {
-        s.treasury -= choice.cost;
-    }
-    if(choice.hap) {
-        s.happiness = Math.max(0, Math.min(100, s.happiness + choice.hap));
-    }
-
-    s.pendingEvents.splice(eventIndex, 1);
-
-    addLog({
-        stateId: s.id,
-        stateName: s.name,
-        action: `Gündem Kararı (${ev.title} - Seçim ${choiceKey})`,
-        cost: Math.abs(choice.cost || 0),
-        qty: 1,
-        oldTreasury: oldT,
-        newTreasury: s.treasury
-    });
-
-    queueSave();
-    openDetail(stateId);
-}
-
 // ---------------- 1 YIL GEÇİR ----------------
 function passOneYear(){
     if(!isAdmin) return;
-    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, paşalar yaşlanacak ve rastgele olaylar tetiklenecek. Onaylıyor musunuz?")) return;
+    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, paşalar yaşlanacak. Onaylıyor musunuz?")) return;
     
     db.timerSeconds = 0;
     db.timerRunning = false;
 
-    let summaryHtml = "<h2>⏳ YIL SONU RAPORU & KRİZLER</h2><div style='max-height:60vh; overflow:auto;'><div class='cards' style='grid-template-columns:1fr;'>";
+    let summaryHtml = "<h2>⏳ YIL SONU RAPORU</h2><div style='max-height:60vh; overflow:auto;'><div class='cards' style='grid-template-columns:1fr;'>";
     
     db.states.forEach(s => {
         let inc = calcIncome(s);
@@ -1366,15 +1263,6 @@ function passOneYear(){
         s.treasury += net;
         s.customLedger = []; 
         let col = net >= 0 ? 'var(--green)' : 'var(--red)';
-
-        s.pendingEvents = s.pendingEvents || [];
-        let validEvents = DYNAMIC_EVENTS.filter(ev => {
-            try { return ev.condition(s); } catch(e) { return false; }
-        });
-
-        validEvents.sort(() => Math.random() - 0.5);
-        let selectedEvents = validEvents.slice(0, Math.floor(Math.random() * 2) + 1);
-        s.pendingEvents = s.pendingEvents.concat(selectedEvents);
 
         s.advisorHiredYears = s.advisorHiredYears || {};
         (s.hiredAdvisors || []).forEach(advId => {
@@ -1433,7 +1321,6 @@ function passOneYear(){
             <div style="border-bottom:1px solid var(--line); margin-bottom:4px; padding-bottom:4px;"><b>${esc(s.name)}</b></div>
             <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
                 <div>Net: <b style="color:${col};">${net>=0?'+':''}${money(net)}</b> | Yeni Kasa: ${money(s.treasury)}</div>
-                <div>Yeni Eklenen Olay: <b>${selectedEvents.length} Adet</b></div>
             </div>
             <div style="font-size:11px; color:var(--gold); background:rgba(10,12,14,0.6); padding:4px; border-radius:2px;"><b>Paşalar:</b> ${advisorReport.join(' | ') || 'Yok'}</div>
         </div>`;
