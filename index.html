@@ -33,6 +33,27 @@ label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,se
 .sec-header { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; background: #1a2536; padding: 14px 18px; border-radius: 10px; margin: 24px 0 12px; border: 1px solid var(--line); font-weight: bold; color: var(--gold); font-size: 17px; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .sec-header:hover { background: #23324a; border-color: var(--gold); }
 .sec-content { margin-bottom: 20px; transition: all 0.3s ease; }
+
+/* ===== GÖRSEL SİSTEMİ ===== */
+body{background-color:var(--bg);background-image:var(--site-bg-image);background-size:cover;background-position:center;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:var(--site-overlay,rgba(7,12,22,.72))}
+.state-card{position:relative;overflow:hidden;background-size:cover;background-position:center;isolation:isolate}
+.state-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,14,25,.18),rgba(8,14,25,.92));z-index:-1}
+.state-card>*{position:relative}
+.state-portrait{width:72px;height:72px;border-radius:12px;object-fit:cover;border:2px solid var(--accent,#3d82f6);box-shadow:0 5px 18px #0007;background:#0e1726}
+.state-emblem{width:44px;height:44px;border-radius:10px;object-fit:cover;border:1px solid var(--accent,#3d82f6);background:#0e1726}
+.detail-hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:16px;padding:22px;background-size:cover;background-position:center;margin-bottom:14px}
+.detail-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,12,22,.92),rgba(7,12,22,.62),rgba(7,12,22,.88))}
+.detail-hero>*{position:relative}
+.detail-portrait{width:112px;height:112px;border-radius:16px;object-fit:cover;border:3px solid var(--accent,#3d82f6);box-shadow:0 10px 30px #0008}
+.asset-img{width:56px;height:56px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:#0e1726;flex:none}
+.item-visual{display:flex;gap:12px;align-items:flex-start}
+.visual-preview{max-width:140px;max-height:90px;border-radius:10px;object-fit:cover;border:1px solid var(--line);display:block;margin-top:6px}
+.admin-visual-box{background:linear-gradient(135deg,#17243a,#101a2b);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+.admin-asset-row{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.admin-asset-row:last-child{border-bottom:0}
+.admin-asset-row img{width:100px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+@media(max-width:800px){.admin-asset-row{grid-template-columns:1fr}.admin-asset-row img{width:100%;height:120px}.state-portrait{width:60px;height:60px}.detail-portrait{width:88px;height:88px}}
 </style>
 </head>
 <body>
@@ -110,6 +131,16 @@ function getState(id){return db.states.find(s=>s.id===id)}
 function closeModal(){document.getElementById("modal").classList.remove("show")}
 function modal(html){document.getElementById("modalContent").innerHTML=html;document.getElementById("modal").classList.add("show")}
 function toast(msg,ok=false){document.getElementById("syncText").textContent=(ok?"✓ ":"⚠ ")+msg}
+function applyVisualSettings(){
+  const v=db.settings?.visuals||defaultSettings.visuals;
+  document.documentElement.style.setProperty("--site-bg-image",v.siteBackground?`url("${String(v.siteBackground).replace(/"/g,'\"')}")`:"none");
+  document.documentElement.style.setProperty("--site-overlay",v.siteOverlay||"rgba(7,12,22,.72)");
+  document.documentElement.style.setProperty("--card-alpha",String(v.cardOpacity??.94));
+  document.body.style.setProperty("--card-alpha",String(v.cardOpacity??.94));
+}
+function visualUrl(url){return String(url||"").trim()}
+function imgTag(url,cls="asset-img",alt=""){const u=visualUrl(url);return u?`<img class="${cls}" src="${esc(u)}" alt="${esc(alt)}" loading="lazy" onerror="this.style.display='none'">`:""}
+
 
 // SEKME FONKSİYONLARI
 function toggleSec(id){
@@ -190,6 +221,8 @@ async function loadDB(){
     db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.customItems = db.settings.customItems || [];
+     db.settings.visuals={...defaultSettings.visuals,...(db.settings.visuals||{})};
+     db.settings.visuals.coreImages={...defaultSettings.visuals.coreImages,...(db.settings.visuals.coreImages||{})};
     db.purchaseLog = db.purchaseLog || []; 
     db.states.forEach(s => { 
         s.customLedger = s.customLedger || []; 
@@ -225,8 +258,11 @@ function renderHome(){
   const guns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0), ships=(s.kucuk_gemi||0)+(s.orta_gemi||0)+(s.buyuk_gemi||0);
   const isMine = s.ownerEmail === currentUserEmail;
   const accent=s.color||"#3d82f6";
-  return `<div class="card state-card" style="--accent:${esc(accent)}; ${isMine ? 'box-shadow: 0 0 15px rgba(22, 199, 154, 0.2);' : ''}">
-   <div class="state-head"><div><h2>${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"")} ${isMine ? '<span style="color:var(--green)">(Senin Devletin)</span>' : ''}</div></div><span class="badge">${esc(s.title||"Devlet")}</span></div>
+  const bg=s.backgroundUrl||"";
+  const portrait=(db.settings.visuals?.showPortraits!==false)?imgTag(s.portraitUrl,"state-portrait",s.ruler||s.name):"";
+  const emblem=(db.settings.visuals?.showEmblems!==false)?imgTag(s.emblemUrl,"state-emblem",s.name):"";
+  return `<div class="card state-card" style="--accent:${esc(accent)};${bg?`background-image:url("${esc(bg)}")`:''}${isMine ? 'box-shadow: 0 0 15px rgba(22, 199, 154, 0.2);' : ''}">
+   <div class="state-head"><div style="display:flex;gap:12px;align-items:center">${portrait}<div><h2>${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"")} ${isMine ? '<span style="color:var(--green)">(Senin Devletin)</span>' : ''}</div></div></div><div style="display:flex;gap:8px;align-items:center">${emblem}<span class="badge">${esc(s.title||"Devlet")}</span></div></div>
    <div class="stats">
     <div>💰 Hazine<br><span class="money">${money(s.treasury)}</span></div><div>👥 Nüfus<br>${num(s.population)}</div>
     <div>⚔ Ordu<br>${num(army)}</div><div>🛡 Top<br>${num(guns)}</div><div>⚓ Gemi<br>${num(ships)}</div><div>😊 Mutluluk<br>${num(s.happiness)}%</div>
@@ -348,8 +384,13 @@ function openDetail(id){
  else if (isOwner) tActs = `<button class="btn red" onclick="openCampaign('${s.id}')">⚔️ Sefer Hazırlığı</button><button class="btn blue" onclick="openTransfer('${s.id}')">Başka Devlete Para Aktar</button>`;
  let hazineHtml = buildSec('sec_hazine', '💸 HAZİNE İŞLEMLERİ & DİPLOMASİ', `<div class="actions">${tActs}</div>`);
 
+ const detailBg=s.backgroundUrl||"";
+ const detailPortrait=(db.settings.visuals?.showPortraits!==false)?imgTag(s.portraitUrl,"detail-portrait",s.ruler||s.name):"";
+ const detailEmblem=(db.settings.visuals?.showEmblems!==false)?imgTag(s.emblemUrl,"state-emblem",s.name):"";
  document.getElementById("detail").innerHTML=`
- <div class="row"><div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button><button class="btn blue" onclick="openStateForm('${s.id}')">✎ Verileri Düzenle</button></div></div>
+ <div class="detail-hero" style="--accent:${esc(s.color||"#3d82f6")};${detailBg?`background-image:url("${esc(detailBg)}")`:''}">
+  <div class="row" style="align-items:center"><div style="display:flex;gap:18px;align-items:center">${detailPortrait}<div><div style="display:flex;gap:10px;align-items:center">${detailEmblem}<div><h1 style="color:${esc(s.color||"#fff")}">${esc(s.name)}</h1><div class="sub">${esc(s.ruler||"")} ${isOwner ? '<b style="color:var(--green)">(Sizin Yönetiminizde)</b>' : ''}</div></div></div></div></div><div class="actions"><button class="btn" onclick="renderHome()">← Ana Ekran</button>${isAdmin?`<button class="btn blue" onclick="openStateForm('${s.id}')">✎ Verileri Düzenle</button>`:''}</div></div>
+ </div>
  ${!canManage ? '<div class="notice">Sadece görüntüleme modundasınız. Bu devlette işlem yapabilmek için yetkiniz bulunmuyor.</div>' : ''}
  <div class="cards" style="margin-top:14px">
   <div class="card"><div class="sub">HAZİNE</div><div class="kpi money">${money(s.treasury)}</div></div>
@@ -536,10 +577,10 @@ function purchaseBlock(s,key,icon,label,unit,type, canManage, p){
 
  return `<div class="item">
   <div class="row" style="align-items:flex-start">
-   <div>
+   <div class="item-visual">${imgTag(db.settings.visuals?.coreImages?.[key],"asset-img",label)}<div>
     <b>${icon} ${label}</b>
     <div class="sub">Envanter: ${num(count)} • ${money(price)} / adet ${cap? "• "+cap:""}</div>
-   </div>
+   </div></div>
    <div style="text-align:right">${actionsHtml}</div>
   </div>
  </div>`
@@ -556,10 +597,10 @@ function infraBlock(s,key,icon,label,desc, canManage){
 
  return `<div class="item">
   <div class="row" style="align-items:flex-start">
-   <div>
+   <div class="item-visual">${imgTag(db.settings.visuals?.coreImages?.[key],"asset-img",label)}<div>
     <b>${icon} ${label}</b>
     <div class="sub">${desc} • Mevcut: ${num(count)} • ${money(price)}</div>
-   </div>
+   </div></div>
    <div style="text-align:right">${actionsHtml}</div>
   </div>
  </div>`
@@ -576,10 +617,10 @@ function purchaseBlockCustom(s, item, canManage){
 
  return `<div class="item">
   <div class="row" style="align-items:flex-start">
-   <div>
+   <div class="item-visual">${imgTag(item.imageUrl,"asset-img",item.name)}<div>
     <b>${esc(item.icon)} ${esc(item.name)}</b>
     <div class="sub">Envanter: ${num(count)} • ${money(item.price)} / adet • Bakım: ${money(item.upkeep)}</div>
-   </div>
+   </div></div>
    <div style="text-align:right">${actionsHtml}</div>
   </div>
  </div>`
@@ -735,14 +776,14 @@ function startCampaign(id) {
 
 function openStateForm(id=null){
  if(!isAdmin) return;
- const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",title:"Devlet",color:"#3d82f6",treasury:0,population:0,tax:20,happiness:75,education:30,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
+ const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",title:"Devlet",color:"#3d82f6",backgroundUrl:"",portraitUrl:"",emblemUrl:"",treasury:0,population:0,tax:20,happiness:75,education:30,baseTaxPerPerson:5,civilExpense:0,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0};
  let customFields = "";
  if(db.settings.customItems && db.settings.customItems.length > 0) {
     customFields += `<div class="full"><h3 style="margin-top:10px; border-bottom:1px solid var(--line); padding-bottom:5px;">Özel Ürünler</h3></div>`;
     db.settings.customItems.forEach(item => { customFields += field(item.id, item.name, s[item.id]||0, "number"); });
  }
  modal(`<h2>${id?"Devlet Verilerini Düzenle":"Devlet Ekle"}</h2><div class="formgrid">
- ${field("name","Devlet Adı",s.name,"text")}${field("ruler","Taht Sahibi (Görsel İsim)",s.ruler,"text")}${field("title","Unvan",s.title,"text")}${field("color","Çerçeve Rengi",s.color,"color")}
+ ${field("name","Devlet Adı",s.name,"text")}${field("ruler","Taht Sahibi (Görsel İsim)",s.ruler,"text")}${field("title","Unvan",s.title,"text")}${field("color","Çerçeve Rengi",s.color,"color")} ${field("backgroundUrl","Devlet Arka Plan Görsel URL",s.backgroundUrl||"","url")} ${field("portraitUrl","Hükümdar Portre URL",s.portraitUrl||"","url")} ${field("emblemUrl","Devlet Sembol / Arma URL",s.emblemUrl||"","url")}
  <div class="full" style="background:#201815; border:1px solid #ffb000; padding:10px; border-radius:8px;">
     ${field("ownerEmail","Sahip Oyuncu (Arkadaşının E-postası)",s.ownerEmail||"","email")}
     <p class="sub" style="color:#ffb000; margin:5px 0 0;">Bu devleti yönetecek kişinin kayıt olduğu mail adresini yaz. Aksi halde devleti kontrol edemez.</p>
@@ -761,10 +802,10 @@ function openStateForm(id=null){
 function field(k,l,v,t="text"){return `<div><label>${l}</label><input id="f_${k}" type="${t}" value="${esc(v)}"></div>`}
 
 function saveState(id){
- const keys=["name","ownerEmail","ruler","title","color","treasury","population","tax","education","baseTaxPerPerson","civilExpense","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul"];
+ const keys=["name","ownerEmail","ruler","title","color","backgroundUrl","portraitUrl","emblemUrl","treasury","population","tax","education","baseTaxPerPerson","civilExpense","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul"];
  if(db.settings.customItems) { db.settings.customItems.forEach(item => keys.push(item.id)); }
  const o={};
- keys.forEach(k=>o[k]=["name","ownerEmail","ruler","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
+ keys.forEach(k=>o[k]=["name","ownerEmail","ruler","title","color","backgroundUrl","portraitUrl","emblemUrl"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
  if(!o.name){alert("Devlet adı gerekli.");return}
  o.ownerEmail = (o.ownerEmail || "").trim().toLowerCase();
  let oldTax = id ? getState(id).tax : Number(document.getElementById("f_tax").value||0);
@@ -866,7 +907,7 @@ function openAdmin(){
  let customHtml = (db.settings.customItems||[]).map(x => {
     let fName = x.faction ? (getState(x.faction)?.name || "Silinmiş Devlet") : "Tümü";
     return `<div class="item" style="display:flex;justify-content:space-between;align-items:center;">
-      <div><b>${esc(x.icon)} ${esc(x.name)}</b> <span class="badge" style="background:#2d3b52">${esc(fName)}</span><br><span class="sub">(${x.category}) - Fiyat: ${money(x.price)} | Bakım: ${money(x.upkeep)} | İkmal: ${money(x.campCost||0)}</span></div>
+      <div style="display:flex;gap:10px;align-items:center">${imgTag(x.imageUrl,"asset-img",x.name)}<div><b>${esc(x.icon)} ${esc(x.name)}</b> <span class="badge" style="background:#2d3b52">${esc(fName)}</span><br><span class="sub">(${x.category}) - Fiyat: ${money(x.price)} | Bakım: ${money(x.upkeep)} | İkmal: ${money(x.campCost||0)}</span></div></div>
       <button class="btn red small" onclick="removeCustomItem('${x.id}')">Sil</button>
     </div>`
  }).join("");
@@ -883,8 +924,17 @@ function openAdmin(){
     ${field("ci_price", "Birim Fiyatı", "0", "number")}
     ${field("ci_upkeep", "Yıllık Bakım Masrafı", "0", "number")}
     ${field("ci_campCost", "Sefer İkmal Maliyeti", "0", "number")}
-    ${field("ci_icon", "İkon (Örn: ⚔️)", "⚔️", "text")}
+    ${field("ci_icon", "İkon (Örn: ⚔️)", "⚔️", "text")} ${field("ci_image", "Görsel URL", "", "url")} 
     <div class="full actions"><button class="btn green" onclick="addCustomItem()">➕ Yeni Ürünü Ekle</button></div>
+ </div>
+ <h3 style="margin-top:24px; color:var(--gold);">🎨 GÖRSEL YÖNETİMİ</h3>
+ <div class="admin-visual-box">
+  <p class="sub">Site ve temel oyun görsellerini URL üzerinden buradan değiştirebilirsin. Devletin özel arka planı, hükümdar portresi ve arması ise Devlet Düzenleme ekranındadır.</p>
+  ${field("v_siteBackground","Genel Site Arka Plan Görsel URL",db.settings.visuals.siteBackground,"url")}
+  ${field("v_siteOverlay","Arka Plan Overlay / Karartma",db.settings.visuals.siteOverlay,"text")}
+  ${field("v_cardOpacity","Kart Saydamlığı (0.50 - 1.00)",db.settings.visuals.cardOpacity,"number")}
+  <h4 style="color:var(--gold);margin:14px 0 8px">Temel Birim / Bina Görselleri</h4>
+  <div class="formgrid">${Object.keys(db.settings.visuals.coreImages||{}).map(k=>field("v_img_"+k,k,(db.settings.visuals.coreImages||{})[k],"url")).join("")}</div>
  </div>
  <h3 style="margin-top:24px;">Temel Satın Alma Fiyatları</h3><div class="formgrid">${Object.keys(p).map(k=>field("p_"+k,k,p[k],"number")).join("")}</div>
  <h3 style="margin-top:18px">Temel Kapasiteler</h3><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
@@ -897,11 +947,11 @@ function openAdmin(){
 
 function addCustomItem(){
    const name = document.getElementById("f_ci_name").value.trim(), cat = document.getElementById("f_ci_cat").value, faction = document.getElementById("f_ci_faction").value;
-   const price = Number(document.getElementById("f_ci_price").value)||0, upkeep = Number(document.getElementById("f_ci_upkeep").value)||0, campCost = Number(document.getElementById("f_ci_campCost").value)||0, icon = document.getElementById("f_ci_icon").value.trim()||"📦";
+   const price = Number(document.getElementById("f_ci_price").value)||0, upkeep = Number(document.getElementById("f_ci_upkeep").value)||0, campCost = Number(document.getElementById("f_ci_campCost").value)||0, icon = document.getElementById("f_ci_icon").value.trim()||"📦", imageUrl = document.getElementById("f_ci_image").value.trim();
    if(!name){alert("Ürün adı boş olamaz!"); return;}
    const id = "c_" + crypto.randomUUID().split("-")[0];
    db.settings.customItems = db.settings.customItems || [];
-   db.settings.customItems.push({id, name, category: cat, price, upkeep, campCost, icon, faction});
+   db.settings.customItems.push({id, name, category: cat, price, upkeep, campCost, icon, faction, imageUrl});
    saveAdmin(false);
 }
 function removeCustomItem(id){
@@ -916,6 +966,13 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
  Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
  const elSchool = document.getElementById("f_schoolEducation"); if(elSchool) db.settings.schoolEducation = Number(elSchool.value||0);
+ db.settings.visuals=db.settings.visuals||structuredClone(defaultSettings.visuals);
+ const bgEl=document.getElementById("f_v_siteBackground"); if(bgEl) db.settings.visuals.siteBackground=bgEl.value.trim();
+ const ovEl=document.getElementById("f_v_siteOverlay"); if(ovEl) db.settings.visuals.siteOverlay=ovEl.value.trim()||"rgba(7,12,22,.72)";
+ const opEl=document.getElementById("f_v_cardOpacity"); if(opEl) db.settings.visuals.cardOpacity=Math.max(.5,Math.min(1,Number(opEl.value||.94)));
+ db.settings.visuals.coreImages=db.settings.visuals.coreImages||{};
+ Object.keys(db.settings.visuals.coreImages).forEach(k=>{const el=document.getElementById("f_v_img_"+k);if(el)db.settings.visuals.coreImages[k]=el.value.trim();});
+ applyVisualSettings();
  if(doClose){ closeModal(); queueSave(); if(currentId) openDetail(currentId); } else { queueSave(); openAdmin(); }
 }
 
