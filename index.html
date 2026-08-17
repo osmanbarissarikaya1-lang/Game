@@ -32,6 +32,19 @@ button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
 .sub{color:var(--muted);font-size:12px;}
 .actions{display:flex;gap:6px;flex-wrap:wrap}
 
+/* ADMİN SAYAÇ PANELLİ */
+.admin-timer-box {
+    background: rgba(197, 160, 89, 0.15);
+    border: 1px solid var(--border-gold);
+    padding: 6px 12px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+}
+
 /* BUTONLAR */
 .btn {
     background: linear-gradient(180deg, #2c323b 0%, #1c2026 100%);
@@ -400,60 +413,60 @@ let isAdmin = false;
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
-let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[]}, currentId=null, authMode="login", saveTimer=null;
+let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
 
-// 45 ÖZGÜN ADAY LİSTESİ (1★ - 5★ MİKRO DENGELİ)
+// 45 ÖZGÜN ADAY LİSTESİ (ÖMür ve Yıldız Sistemli)
 const DEFAULT_45_ADVISORS = [
-  // OSMANLI (15 Aday) - faction:"osmanli" veya isimle eşleşir
-  { id:"adv_os_1", name:"Kâtip Hamdi Efendi", role:"Defterhane Çırağı", stars:1, salary:12000, targetName:"Osmanlı İmparatorluğu", buff:"+%1 Vergi Geliri", debuff:"Bina yapımı +%1 pahalı.", taxBonus:1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-1, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_2", name:"Topçu Kalfası Veli", role:"Tophane Dökümcüsü", stars:1, salary:15000, targetName:"Osmanlı İmparatorluğu", buff:"-%2 Topçu Bakımı", debuff:"Ordu bakımı +%1.", taxBonus:0, milUpkeepDiscount:-1, navyUpkeepDiscount:0, artUpkeepDiscount:2, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_3", name:"Derviş Cemal", role:"Tekke Dervişi", stars:1, salary:10000, targetName:"Osmanlı İmparatorluğu", buff:"+1 Mutluluk", debuff:"Elverişli nüfus -200.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:1, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_4", name:"Subaşı Bahadır Ağa", role:"Asayiş Zabiti", stars:2, salary:25000, targetName:"Osmanlı İmparatorluğu", buff:"Anarşistlerin zararını %25 azaltır.", debuff:"Mutluluk -1 puan.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_5", name:"Reis İlyas", role:"Kadırga Kaptanı", stars:2, salary:30000, targetName:"Osmanlı İmparatorluğu", buff:"-%3 Donanma Bakımı", debuff:"Ticaret -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:3, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_6", name:"Mimar Şükrü Çelebi", role:"Hassa Mimarı", stars:2, salary:28000, targetName:"Osmanlı İmparatorluğu", buff:"-%3 Bina Yapım Maliyeti", debuff:"Yıllık 3.000 TL şantiye masrafı.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_7", name:"Defterdar Muhsin Paşa", role:"Sıkı Muhasebeci", stars:3, salary:50000, targetName:"Osmanlı İmparatorluğu", buff:"+%4 Vergi Geliri", debuff:"Mutluluk -2 puan.", taxBonus:4, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_8", name:"Kurt Ali Ağa", role:"Kışla Ağası", stars:3, salary:55000, targetName:"Osmanlı İmparatorluğu", buff:"-%5 Asker Satın Alma İndirimi", debuff:"Piyade bakımı +%2.", taxBonus:0, milUpkeepDiscount:-2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_9", name:"Kuşçubaşı Seyfi Efendi", role:"Divan İstihbaratçısı", stars:3, salary:48000, targetName:"Osmanlı İmparatorluğu", buff:"Casusluk Yanılmasını %10'a düşürür.", debuff:"İstihbarat bütçesi çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true },
-  { id:"adv_os_10", name:"Kaptan-ı Derya Turgut Paşa", role:"Denizler Fatihi", stars:4, salary:85000, targetName:"Osmanlı İmparatorluğu", buff:"-%6 Donanma Bakımı & -%4 Gemi Alımı", debuff:"Ticaret geliri -%2.", taxBonus:-2, milUpkeepDiscount:0, navyUpkeepDiscount:6, artUpkeepDiscount:0, recruitDiscount:4, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_11", name:"Dökümcübaşı Urbanzade", role:"Büyük Şahi Topçusu", stars:4, salary:90000, targetName:"Osmanlı İmparatorluğu", buff:"-%7 Topçu Bakımı", debuff:"Top alım fiyatı +%3.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:7, recruitDiscount:-3, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_12", name:"Müderris Ebu Fazıl Efendi", role:"Ulema Başı", stars:4, salary:75000, targetName:"Osmanlı İmparatorluğu", buff:"+4 Mutluluk & -%3 Bina İndirimi", debuff:"Vergi toplama -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:4, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_13", name:"Veziriazam Demir Köprülü Paşa", role:"Mutlak Otorite", stars:5, salary:160000, targetName:"Osmanlı İmparatorluğu", buff:"+%8 Vergi Geliri & İsyanı %0 Yapar", debuff:"Mutluluk -3 puan.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false },
-  { id:"adv_os_14", name:"Serdar-ı Ekrem Zafer Sinan Paşa", role:"Cihan Komutanı", stars:5, salary:150000, targetName:"Osmanlı İmparatorluğu", buff:"-%8 Ordu Bakımı & -%5 Sefer İkmali", debuff:"Yıllık paşa harcırahı ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_os_15", name:"Hazine Nazırı Karun Efendi", role:"Mali Deha", stars:5, salary:140000, targetName:"Osmanlı İmparatorluğu", buff:"+%10 Vergi Geliri", debuff:"Komisyon keser.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
+  // OSMANLI (15 Aday)
+  { id:"adv_os_1", name:"Kâtip Hamdi Efendi", role:"Defterhane Çırağı", stars:1, salary:12000, targetName:"Osmanlı İmparatorluğu", buff:"+%1 Vergi Geliri", debuff:"Bina yapımı +%1 pahalı.", taxBonus:1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-1, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:2, maxAge:15, yearsSinceUpgrade:0 },
+  { id:"adv_os_2", name:"Topçu Kalfası Veli", role:"Tophane Dökümcüsü", stars:1, salary:15000, targetName:"Osmanlı İmparatorluğu", buff:"-%2 Topçu Bakımı", debuff:"Ordu bakımı +%1.", taxBonus:0, milUpkeepDiscount:-1, navyUpkeepDiscount:0, artUpkeepDiscount:2, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:3, maxAge:18, yearsSinceUpgrade:0 },
+  { id:"adv_os_3", name:"Derviş Cemal", role:"Tekke Dervişi", stars:1, salary:10000, targetName:"Osmanlı İmparatorluğu", buff:"+1 Mutluluk", debuff:"Elverişli nüfus -200.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:22, yearsSinceUpgrade:0 },
+  { id:"adv_os_4", name:"Subaşı Bahadır Ağa", role:"Asayiş Zabiti", stars:2, salary:25000, targetName:"Osmanlı İmparatorluğu", buff:"Anarşistlerin zararını %25 azaltır.", debuff:"Mutluluk -1 puan.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:4, maxAge:20, yearsSinceUpgrade:0 },
+  { id:"adv_os_5", name:"Reis İlyas", role:"Kadırga Kaptanı", stars:2, salary:30000, targetName:"Osmanlı İmparatorluğu", buff:"-%3 Donanma Bakımı", debuff:"Ticaret -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:3, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:6, maxAge:25, yearsSinceUpgrade:0 },
+  { id:"adv_os_6", name:"Mimar Şükrü Çelebi", role:"Hassa Mimarı", stars:2, salary:28000, targetName:"Osmanlı İmparatorluğu", buff:"-%3 Bina Yapım Maliyeti", debuff:"Yıllık 3.000 TL şantiye masrafı.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:24, yearsSinceUpgrade:0 },
+  { id:"adv_os_7", name:"Defterdar Muhsin Paşa", role:"Sıkı Muhasebeci", stars:3, salary:50000, targetName:"Osmanlı İmparatorluğu", buff:"+%4 Vergi Geliri", debuff:"Mutluluk -2 puan.", taxBonus:4, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:7, maxAge:28, yearsSinceUpgrade:0 },
+  { id:"adv_os_8", name:"Kurt Ali Ağa", role:"Kışla Ağası", stars:3, salary:55000, targetName:"Osmanlı İmparatorluğu", buff:"-%5 Asker Satın Alma İndirimi", debuff:"Piyade bakımı +%2.", taxBonus:0, milUpkeepDiscount:-2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:8, maxAge:26, yearsSinceUpgrade:0 },
+  { id:"adv_os_9", name:"Kuşçubaşı Seyfi Efendi", role:"Divan İstihbaratçısı", stars:3, salary:48000, targetName:"Osmanlı İmparatorluğu", buff:"Casusluk Yanılmasını %10'a düşürür.", debuff:"İstihbarat bütçesi çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true, ageYears:4, maxAge:22, yearsSinceUpgrade:0 },
+  { id:"adv_os_10", name:"Kaptan-ı Derya Turgut Paşa", role:"Denizler Fatihi", stars:4, salary:85000, targetName:"Osmanlı İmparatorluğu", buff:"-%6 Donanma Bakımı & -%4 Gemi Alımı", debuff:"Ticaret geliri -%2.", taxBonus:-2, milUpkeepDiscount:0, navyUpkeepDiscount:6, artUpkeepDiscount:0, recruitDiscount:4, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:10, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_os_11", name:"Dökümcübaşı Urbanzade", role:"Büyük Şahi Topçusu", stars:4, salary:90000, targetName:"Osmanlı İmparatorluğu", buff:"-%7 Topçu Bakımı", debuff:"Top alım fiyatı +%3.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:7, recruitDiscount:-3, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:9, maxAge:28, yearsSinceUpgrade:0 },
+  { id:"adv_os_12", name:"Müderris Ebu Fazıl Efendi", role:"Ulema Başı", stars:4, salary:75000, targetName:"Osmanlı İmparatorluğu", buff:"+4 Mutluluk & -%3 Bina İndirimi", debuff:"Vergi toplama -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:4, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_os_13", name:"Veziriazam Demir Köprülü Paşa", role:"Mutlak Otorite", stars:5, salary:160000, targetName:"Osmanlı İmparatorluğu", buff:"+%8 Vergi Geliri & İsyanı %0 Yapar", debuff:"Mutluluk -3 puan.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_os_14", name:"Serdar-ı Ekrem Zafer Sinan Paşa", role:"Cihan Komutanı", stars:5, salary:150000, targetName:"Osmanlı İmparatorluğu", buff:"-%8 Ordu Bakımı & -%5 Sefer İkmali", debuff:"Yıllık paşa harcırahı ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:11, maxAge:29, yearsSinceUpgrade:0 },
+  { id:"adv_os_15", name:"Hazine Nazırı Karun Efendi", role:"Mali Deha", stars:5, salary:140000, targetName:"Osmanlı İmparatorluğu", buff:"+%10 Vergi Geliri", debuff:"Komisyon keser.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:13, maxAge:30, yearsSinceUpgrade:0 },
 
   // KIRIM HANLIĞI (15 Aday)
-  { id:"adv_kr_1", name:"Otlakçı Timur Ağa", role:"Bozkır Seyisi", stars:1, salary:10000, targetName:"Kırım Hanlığı", buff:"-%2 Süvari/Ordu Bakımı", debuff:"Bina yapımı +%1.", taxBonus:0, milUpkeepDiscount:2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-1, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_2", name:"Kefe Kâtibi Canbek", role:"Liman Kâtibi", stars:1, salary:12000, targetName:"Kırım Hanlığı", buff:"+%2 Sabit Ticaret Geliri", debuff:"Kâtip harcı çeker.", taxBonus:2, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_3", name:"İzci Tohtamış", role:"Öncü İzci", stars:1, salary:11000, targetName:"Kırım Hanlığı", buff:"-%2 Asker Satın Alma İndirimi", debuff:"Ordu disiplini hafif düşer.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:2, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_4", name:"Yay Ustası Cihanşa", role:"Bozkır Silahçısı", stars:2, salary:22000, targetName:"Kırım Hanlığı", buff:"-%3 Ordu Bakımı", debuff:"Asker alımı +%1 pahalanır.", taxBonus:0, milUpkeepDiscount:3, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:-1, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_5", name:"Arslan Bey", role:"Saray Sözcüsü", stars:2, salary:25000, targetName:"Kırım Hanlığı", buff:"+2 Mutluluk", debuff:"Ziyafet masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:2, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_6", name:"Mamay Reis", role:"Nehir Kaptanı", stars:2, salary:26000, targetName:"Kırım Hanlığı", buff:"-%4 Donanma Bakımı", debuff:"Ticaret -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:4, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_7", name:"Ataman Bahadır Mirza", role:"Bozkır Süvari Ağası", stars:3, salary:45000, targetName:"Kırım Hanlığı", buff:"-%5 Ordu Bakımı & -%4 Asker Alımı", debuff:"Otlak harcırahı ister.", taxBonus:0, milUpkeepDiscount:5, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:4, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_8", name:"Hacı Mengli Sarraf", role:"Tüccar Başı", stars:3, salary:48000, targetName:"Kırım Hanlığı", buff:"+%5 Vergi Geliri", debuff:"Komisyon keser.", taxBonus:5, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_9", name:"Gözcü Şahin Noyan", role:"Bozkır Casusu", stars:3, salary:42000, targetName:"Kırım Hanlığı", buff:"Casusluk Yanılmasını %10'a çeker.", debuff:"Mektup diplomasisi -%1.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true },
-  { id:"adv_kr_10", name:"Nogay Beyi Korkut Han", role:"Çöl Kurdu", stars:4, salary:75000, targetName:"Kırım Hanlığı", buff:"-%6 Ordu Bakımı", debuff:"Ticaret -%2.", taxBonus:-2, milUpkeepDiscount:6, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_11", name:"Mimar İlyas", role:"Tahkimat Ustası", stars:4, salary:70000, targetName:"Kırım Hanlığı", buff:"-%6 Bina Yapım İndirimi", debuff:"Şantiye gideri çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:6, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_12", name:"Müftü Abdülmecid", role:"Bozkır Şeyhi", stars:4, salary:65000, targetName:"Kırım Hanlığı", buff:"+4 Mutluluk & İsyanı %50 Azaltır", debuff:"Vergi -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:4, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_13", name:"Han Naibi Mengli Atalık", role:"Hanlık Aklı", stars:5, salary:130000, targetName:"Kırım Hanlığı", buff:"+%8 Vergi Geliri & İsyanı %0 Yapar", debuff:"Saray ödeneği ister.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:true, spyAccuracyBonus:false },
-  { id:"adv_kr_14", name:"Gazi Alp Serdar", role:"Efsane Akıncı", stars:5, salary:125000, targetName:"Kırım Hanlığı", buff:"-%9 Ordu Bakımı & -%5 Sefer İkmali", debuff:"Topçu bakımı +%3.", taxBonus:0, milUpkeepDiscount:9, navyUpkeepDiscount:0, artUpkeepDiscount:-3, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_kr_15", name:"Sarraf Karahan", role:"Altın Kervancısı", stars:5, salary:120000, targetName:"Kırım Hanlığı", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -2 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false },
+  { id:"adv_kr_1", name:"Otlakçı Timur Ağa", role:"Bozkır Seyisi", stars:1, salary:10000, targetName:"Kırım Hanlığı", buff:"-%2 Süvari/Ordu Bakımı", debuff:"Bina yapımı +%1.", taxBonus:0, milUpkeepDiscount:2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-1, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:3, maxAge:16, yearsSinceUpgrade:0 },
+  { id:"adv_kr_2", name:"Kefe Kâtibi Canbek", role:"Liman Kâtibi", stars:1, salary:12000, targetName:"Kırım Hanlığı", buff:"+%2 Sabit Ticaret Geliri", debuff:"Kâtip harcı çeker.", taxBonus:2, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:4, maxAge:18, yearsSinceUpgrade:0 },
+  { id:"adv_kr_3", name:"İzci Tohtamış", role:"Öncü İzci", stars:1, salary:11000, targetName:"Kırım Hanlığı", buff:"-%2 Asker Satın Alma İndirimi", debuff:"Ordu disiplini hafif düşer.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:2, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:2, maxAge:15, yearsSinceUpgrade:0 },
+  { id:"adv_kr_4", name:"Yay Ustası Cihanşa", role:"Bozkır Silahçısı", stars:2, salary:22000, targetName:"Kırım Hanlığı", buff:"-%3 Ordu Bakımı", debuff:"Asker alımı +%1 pahalanır.", taxBonus:0, milUpkeepDiscount:3, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:-1, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:22, yearsSinceUpgrade:0 },
+  { id:"adv_kr_5", name:"Arslan Bey", role:"Saray Sözcüsü", stars:2, salary:25000, targetName:"Kırım Hanlığı", buff:"+2 Mutluluk", debuff:"Ziyafet masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:6, maxAge:24, yearsSinceUpgrade:0 },
+  { id:"adv_kr_6", name:"Mamay Reis", role:"Nehir Kaptanı", stars:2, salary:26000, targetName:"Kırım Hanlığı", buff:"-%4 Donanma Bakımı", debuff:"Ticaret -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:4, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:7, maxAge:25, yearsSinceUpgrade:0 },
+  { id:"adv_kr_7", name:"Ataman Bahadır Mirza", role:"Bozkır Süvari Ağası", stars:3, salary:45000, targetName:"Kırım Hanlığı", buff:"-%5 Ordu Bakımı & -%4 Asker Alımı", debuff:"Otlak harcırahı ister.", taxBonus:0, milUpkeepDiscount:5, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:4, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:8, maxAge:26, yearsSinceUpgrade:0 },
+  { id:"adv_kr_8", name:"Hacı Mengli Sarraf", role:"Tüccar Başı", stars:3, salary:48000, targetName:"Kırım Hanlığı", buff:"+%5 Vergi Geliri", debuff:"Komisyon keser.", taxBonus:5, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:9, maxAge:27, yearsSinceUpgrade:0 },
+  { id:"adv_kr_9", name:"Gözcü Şahin Noyan", role:"Bozkır Casusu", stars:3, salary:42000, targetName:"Kırım Hanlığı", buff:"Casusluk Yanılmasını %10'a çeker.", debuff:"Mektup diplomasisi -%1.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true, ageYears:5, maxAge:23, yearsSinceUpgrade:0 },
+  { id:"adv_kr_10", name:"Nogay Beyi Korkut Han", role:"Çöl Kurdu", stars:4, salary:75000, targetName:"Kırım Hanlığı", buff:"-%6 Ordu Bakımı", debuff:"Ticaret -%2.", taxBonus:-2, milUpkeepDiscount:6, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:11, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_kr_11", name:"Mimar İlyas", role:"Tahkimat Ustası", stars:4, salary:70000, targetName:"Kırım Hanlığı", buff:"-%6 Bina Yapım İndirimi", debuff:"Şantiye gideri çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:6, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:10, maxAge:29, yearsSinceUpgrade:0 },
+  { id:"adv_kr_12", name:"Müftü Abdülmecid", role:"Bozkır Şeyhi", stars:4, salary:65000, targetName:"Kırım Hanlığı", buff:"+4 Mutluluk & İsyanı %50 Azaltır", debuff:"Vergi -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:4, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_kr_13", name:"Han Naibi Mengli Atalık", role:"Hanlık Aklı", stars:5, salary:130000, targetName:"Kırım Hanlığı", buff:"+%8 Vergi Geliri & İsyanı %0 Yapar", debuff:"Saray ödeneği ister.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:true, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_kr_14", name:"Gazi Alp Serdar", role:"Efsane Akıncı", stars:5, salary:125000, targetName:"Kırım Hanlığı", buff:"-%9 Ordu Bakımı & -%5 Sefer İkmali", debuff:"Topçu bakımı +%3.", taxBonus:0, milUpkeepDiscount:9, navyUpkeepDiscount:0, artUpkeepDiscount:-3, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:11, maxAge:28, yearsSinceUpgrade:0 },
+  { id:"adv_kr_15", name:"Sarraf Karahan", role:"Altın Kervancısı", stars:5, salary:120000, targetName:"Kırım Hanlığı", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -2 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:13, maxAge:30, yearsSinceUpgrade:0 },
 
   // GÜNEŞ DEVLETİ (15 Aday)
-  { id:"adv_gn_1", name:"Çavuş Bora", role:"Sert Kollukçu", stars:1, salary:10000, targetName:"Güneş Devleti", buff:"-%2 Ordu Bakımı", debuff:"Mutluluk -1 puan.", taxBonus:0, milUpkeepDiscount:2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_2", name:"Körük Ustası Kaya", role:"Küçük Ocakçı", stars:1, salary:12000, targetName:"Güneş Devleti", buff:"-%2 Topçu Bakımı", debuff:"Top alımı +%1.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:2, recruitDiscount:-1, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_3", name:"Tellal Selim", role:"Halk Kışkırtıcısı", stars:1, salary:11000, targetName:"Güneş Devleti", buff:"+1 Mutluluk", debuff:"Şehir asayiş masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:1, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_4", name:"Tahsildar Demir", role:"Acımasız Tahsildar", stars:2, salary:24000, targetName:"Güneş Devleti", buff:"+%3 Vergi Geliri", debuff:"Mutluluk -1 puan.", taxBonus:3, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_5", name:"Yaman Reis", role:"Kıyı Muhafızı", stars:2, salary:26000, targetName:"Güneş Devleti", buff:"-%3 Donanma Bakımı", debuff:"Gemi yapımı +%2.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:3, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-2, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_6", name:"Rükneddin Kalfa", role:"Cevher Arayıcı", stars:2, salary:25000, targetName:"Güneş Devleti", buff:"-%3 Bina Yapım İndirimi", debuff:"Şantiye masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_7", name:"Kara Kurt", role:"Korku Mimarı", stars:3, salary:48000, targetName:"Güneş Devleti", buff:"Anarşistlerin zararını %30 azaltır.", debuff:"Mutluluk -2 puan.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_8", name:"Alp Erdem", role:"Disiplin Subayı", stars:3, salary:52000, targetName:"Güneş Devleti", buff:"-%5 Ordu Bakımı", debuff:"Asker alım fiyatı +%2.", taxBonus:0, milUpkeepDiscount:5, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:-2, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_9", name:"Sarraf Leon", role:"Gölge Banker", stars:3, salary:46000, targetName:"Güneş Devleti", buff:"+%5 Vergi Geliri", debuff:"Faiz kesintisi yapar.", taxBonus:5, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_10", name:"Sadrazam Oğuz Bey", role:"Devlet Direği", stars:4, salary:80000, targetName:"Güneş Devleti", buff:"Anarşiyi %0 Yapar & +%4 Vergi", debuff:"Mutluluk -3 puan.", taxBonus:4, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false },
-  { id:"adv_gn_11", name:"Mühendis Hektor", role:"Top Döküm Üstadı", stars:4, salary:78000, targetName:"Güneş Devleti", buff:"-%7 Topçu Bakımı", debuff:"Top alım fiyatı +%3.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:7, recruitDiscount:-3, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_12", name:"Baybars Casus Başı", role:"Gizli Ağ Ustası", stars:4, salary:72000, targetName:"Güneş Devleti", buff:"Casusluk Yanılmasını %5'e çeker.", debuff:"Casus maaşı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true },
-  { id:"adv_gn_13", name:"Baş Vezir Nizamüddin", role:"Tiranlığın Mimarı", stars:5, salary:145000, targetName:"Güneş Devleti", buff:"+%8 Vergi & -%5 Bina İndirimi & İsyan %0", debuff:"Mutluluk -3 puan.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:5, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false },
-  { id:"adv_gn_14", name:"Cihangir Han Mareşal", role:"Yenilmez Mareşal", stars:5, salary:140000, targetName:"Güneş Devleti", buff:"-%8 Ordu Bakımı & -%6 Asker Alımı", debuff:"Sefer ikramiyesi ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:6, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false },
-  { id:"adv_gn_15", name:"Karun Mirza", role:"Altın Simyacısı", stars:5, salary:130000, targetName:"Güneş Devleti", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -3 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:false, spyAccuracyBonus:false }
+  { id:"adv_gn_1", name:"Çavuş Bora", role:"Sert Kollukçu", stars:1, salary:10000, targetName:"Güneş Devleti", buff:"-%2 Ordu Bakımı", debuff:"Mutluluk -1 puan.", taxBonus:0, milUpkeepDiscount:2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:3, maxAge:16, yearsSinceUpgrade:0 },
+  { id:"adv_gn_2", name:"Körük Ustası Kaya", role:"Küçük Ocakçı", stars:1, salary:12000, targetName:"Güneş Devleti", buff:"-%2 Topçu Bakımı", debuff:"Top alımı +%1.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:2, recruitDiscount:-1, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:4, maxAge:17, yearsSinceUpgrade:0 },
+  { id:"adv_gn_3", name:"Tellal Selim", role:"Halk Kışkırtıcısı", stars:1, salary:11000, targetName:"Güneş Devleti", buff:"+1 Mutluluk", debuff:"Şehir asayiş masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:2, maxAge:15, yearsSinceUpgrade:0 },
+  { id:"adv_gn_4", name:"Tahsildar Demir", role:"Acımasız Tahsildar", stars:2, salary:24000, targetName:"Güneş Devleti", buff:"+%3 Vergi Geliri", debuff:"Mutluluk -1 puan.", taxBonus:3, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:22, yearsSinceUpgrade:0 },
+  { id:"adv_gn_5", name:"Yaman Reis", role:"Kıyı Muhafızı", stars:2, salary:26000, targetName:"Güneş Devleti", buff:"-%3 Donanma Bakımı", debuff:"Gemi yapımı +%2.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:3, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-2, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:6, maxAge:24, yearsSinceUpgrade:0 },
+  { id:"adv_gn_6", name:"Rükneddin Kalfa", role:"Cevher Arayıcı", stars:2, salary:25000, targetName:"Güneş Devleti", buff:"-%3 Bina Yapım İndirimi", debuff:"Şantiye masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:23, yearsSinceUpgrade:0 },
+  { id:"adv_gn_7", name:"Kara Kurt", role:"Korku Mimarı", stars:3, salary:48000, targetName:"Güneş Devleti", buff:"Anarşistlerin zararını %30 azaltır.", debuff:"Mutluluk -2 puan.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:8, maxAge:26, yearsSinceUpgrade:0 },
+  { id:"adv_gn_8", name:"Alp Erdem", role:"Disiplin Subayı", stars:3, salary:52000, targetName:"Güneş Devleti", buff:"-%5 Ordu Bakımı", debuff:"Asker alım fiyatı +%2.", taxBonus:0, milUpkeepDiscount:5, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:-2, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:9, maxAge:27, yearsSinceUpgrade:0 },
+  { id:"adv_gn_9", name:"Sarraf Leon", role:"Gölge Banker", stars:3, salary:46000, targetName:"Güneş Devleti", buff:"+%5 Vergi Geliri", debuff:"Faiz kesintisi yapar.", taxBonus:5, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:7, maxAge:25, yearsSinceUpgrade:0 },
+  { id:"adv_gn_10", name:"Sadrazam Oğuz Bey", role:"Devlet Direği", stars:4, salary:80000, targetName:"Güneş Devleti", buff:"Anarşiyi %0 Yapar & +%4 Vergi", debuff:"Mutluluk -3 puan.", taxBonus:4, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false, ageYears:11, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_gn_11", name:"Mühendis Hektor", role:"Top Döküm Üstadı", stars:4, salary:78000, targetName:"Güneş Devleti", buff:"-%7 Topçu Bakımı", debuff:"Top alım fiyatı +%3.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:7, recruitDiscount:-3, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:10, maxAge:29, yearsSinceUpgrade:0 },
+  { id:"adv_gn_12", name:"Baybars Casus Başı", role:"Gizli Ağ Ustası", stars:4, salary:72000, targetName:"Güneş Devleti", buff:"Casusluk Yanılmasını %5'e çeker.", debuff:"Casus maaşı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true, ageYears:9, maxAge:28, yearsSinceUpgrade:0 },
+  { id:"adv_gn_13", name:"Baş Vezir Nizamüddin", role:"Tiranlığın Mimarı", stars:5, salary:145000, targetName:"Güneş Devleti", buff:"+%8 Vergi & -%5 Bina İndirimi & İsyan %0", debuff:"Mutluluk -3 puan.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:5, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false, ageYears:13, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_gn_14", name:"Cihangir Han Mareşal", role:"Yenilmez Mareşal", stars:5, salary:140000, targetName:"Güneş Devleti", buff:"-%8 Ordu Bakımı & -%6 Asker Alımı", debuff:"Sefer ikramiyesi ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:6, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
+  { id:"adv_gn_15", name:"Karun Mirza", role:"Altın Simyacısı", stars:5, salary:130000, targetName:"Güneş Devleti", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -3 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:false, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 }
 ];
 
 function initSupabase(){
@@ -495,7 +508,6 @@ function closeModal(){document.getElementById("modal").classList.remove("show")}
 function modal(html){document.getElementById("modalContent").innerHTML=html;document.getElementById("modal").classList.add("show")}
 function toast(msg,ok=false){document.getElementById("syncText").textContent=(ok?"✓ ":"⚠ ")+msg}
 
-// ---------------- DANIŞMAN VE NİTELİK ÇARPANLARI TOPLAYICI ----------------
 function getAdvisorEffects(s) {
     const hired = s.hiredAdvisors || [];
     let eff = {
@@ -535,11 +547,62 @@ async function init(){
   if(error) throw error;
   sb.auth.onAuthStateChange((_e,s)=>{if(s) showApp(s); else showAuth()});
   if(session) showApp(session); else showAuth();
+  
+  // Arka Planda 3 Saatlik Sayaç Döngüsü (Sadece Admin için canlı artar)
+  startGlobalClock();
  }catch(e){
   const msg=document.getElementById("authMsg");
   if(msg){msg.className="error";msg.textContent="❌ Supabase Hatası: "+(e.message||e);}
   console.error(e);
  }
+}
+
+function startGlobalClock() {
+    if(globalClockInterval) clearInterval(globalClockInterval);
+    globalClockInterval = setInterval(() => {
+        if(db.timerRunning) {
+            db.timerSeconds = (db.timerSeconds || 0) + 1;
+            // 3 saat = 10800 saniye
+            if(db.timerSeconds >= 10800) {
+                db.timerRunning = false;
+                toast("⚠️ 3 Saatlik Süre Doldu! Yıl geçişi onay bekliyor.", false);
+            }
+            updateAdminTimerUI();
+            queueSave();
+        }
+    }, 1000);
+}
+
+function updateAdminTimerUI() {
+    const box = document.getElementById("adminTimerDisplay");
+    if(!box) return;
+    const hrs = Math.floor(db.timerSeconds / 3600);
+    const mins = Math.floor((db.timerSeconds % 3600) / 60);
+    const secs = db.timerSeconds % 60;
+    const timeStr = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    
+    box.innerHTML = `
+        <div class="admin-timer-box">
+            <span>⏱️ Süre: <b>${timeStr}</b> / 03:00:00</span>
+            <button class="btn small ${db.timerRunning?'red':'green'}" onclick="toggleTimer()">${db.timerRunning?'DURDUR':'BAŞLAT'}</button>
+            <button class="btn small gold" onclick="resetTimer()">SIFIRLA</button>
+            ${db.timerSeconds >= 10800 ? '<button class="btn green small" onclick="passOneYear()">YILI GEÇİR</button>' : ''}
+        </div>
+    `;
+}
+
+function toggleTimer() {
+    db.timerRunning = !db.timerRunning;
+    queueSave();
+    updateAdminTimerUI();
+}
+
+function resetTimer() {
+    if(!confirm("Sayacı sıfırlamak istediğinize emin misiniz?")) return;
+    db.timerSeconds = 0;
+    db.timerRunning = false;
+    queueSave();
+    updateAdminTimerUI();
 }
 
 function showAuth(){
@@ -554,9 +617,28 @@ async function showApp(session){
  document.getElementById("auth").classList.add("hidden");
  document.getElementById("app").classList.remove("hidden");
  
+ await loadDB();
+ renderTopActions();
+ renderHome();
+}
+
+function renderTopActions() {
  const actionsDiv = document.getElementById("topActions");
  if(isAdmin){
+    const hrs = Math.floor((db.timerSeconds||0) / 3600);
+    const mins = Math.floor(((db.timerSeconds||0) % 3600) / 60);
+    const secs = (db.timerSeconds||0) % 60;
+    const timeStr = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+
     actionsDiv.innerHTML = `
+    <div id="adminTimerDisplay" style="display:flex; align-items:center;">
+        <div class="admin-timer-box">
+            <span>⏱️ Süre: <b>${timeStr}</b> / 03:00:00</span>
+            <button class="btn small ${db.timerRunning?'red':'green'}" onclick="toggleTimer()">${db.timerRunning?'DURDUR':'BAŞLAT'}</button>
+            <button class="btn small gold" onclick="resetTimer()">SIFIRLA</button>
+            ${(db.timerSeconds||0) >= 10800 ? '<button class="btn green small" onclick="passOneYear()">YILI GEÇİR</button>' : ''}
+        </div>
+    </div>
     <button class="btn gold" onclick="passOneYear()">⏳ 1 YIL GEÇİR</button>
     <button class="btn gold" onclick="openAdminGrantModal()">💸 PARA GÖNDER</button>
     <button class="btn" onclick="openPurchaseLogs()">📜 LOGLAR</button>
@@ -569,9 +651,6 @@ async function showApp(session){
     <span style="color:var(--muted); font-size:12px; margin:0 6px;">👤 ${esc(currentUserEmail)}</span>
     <button class="btn red" onclick="logout()">ÇIKIŞ</button>`;
  }
-
- await loadDB();
- renderHome();
 }
 
 function setAuthMode(m){
@@ -621,8 +700,9 @@ async function loadDB(){
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
     db.letters = db.letters || [];
+    db.timerSeconds = db.timerSeconds || 0;
+    db.timerRunning = db.timerRunning || false;
     
-    // Eski danışmanları sıfırlayıp 45 adaylı yeni havuzu bağla
     if(!db.advisors || db.advisors.length !== 45) {
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
     }
@@ -634,11 +714,12 @@ async function loadDB(){
         s.bgImage = cleanUrl(s.bgImage || "");
         s.istihbarat_binasi = s.istihbarat_binasi || 0;
         s.hiredAdvisors = s.hiredAdvisors || [];
-        s.advisorSlots = s.advisorSlots || 3; // Varsayılan 3 divan üyesi kontenjanı
+        s.advisorHiredYears = s.advisorHiredYears || {}; // Hangi paşanın kaç yıldır çalıştırıldığı
+        s.advisorSlots = s.advisorSlots || 3;
     });
  }
  else {
-    db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS)};
+    db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS), timerSeconds:0, timerRunning:false};
     await saveDB();
  }
  toast("Sistem Aktif",true);
@@ -902,12 +983,11 @@ function openDetail(id){
  }
  ledgerHtml += `</div>`;
 
- // 4. DANIŞMANLAR & DİVAN SEKMESİ (KOTAYLA KISITLI)
+ // 4. DANIŞMANLAR & DİVAN SEKMESİ (1 Yıl Çalıştırma Kuralı Dahil)
  const hiredIds = s.hiredAdvisors || [];
  const maxSlots = s.advisorSlots || 3;
  const activeAdvisors = (db.advisors||[]).filter(a => hiredIds.includes(a.id));
  
- // Aday filtreleme (Devlet adına veya ID'sine göre)
  const availableAdvisors = (db.advisors||[]).filter(a => {
      const matchesFaction = (!a.faction || a.faction === s.id || (a.targetName && s.name.includes(a.targetName)));
      return matchesFaction && !hiredIds.includes(a.id);
@@ -918,29 +998,36 @@ function openDetail(id){
         <h4 style="color:var(--border-gold); margin:0; font-family:'Oswald';">👑 AKTİF DİVAN-I HÜMAYUN HEYETİ</h4>
         <span class="badge" style="font-size:11px;">Kontenjan: ${activeAdvisors.length} / ${maxSlots}</span>
     </div>
-    <p class="sub" style="margin-bottom:10px;">Devletinize hizmet veren ve bütçeden yıllık maaş alan vezirler.</p>`;
+    <p class="sub" style="margin-bottom:10px;">Devletinize hizmet veren paşalar. 1 yıl dolmadan görevden alınamazlar!</p>`;
 
  if(activeAdvisors.length > 0) {
-    divanHtml += activeAdvisors.map(a => `
-        <div class="advisor-card" style="border-left-color:var(--green);">
+    divanHtml += activeAdvisors.map(a => {
+        const hiredYears = (s.advisorHiredYears || {})[a.id] || 0;
+        const locked = hiredYears < 1; // 1 yıldan az çalıştıysa kilitli
+
+        return `<div class="advisor-card" style="border-left-color:var(--green);">
             ${a.icon ? `<img src="${esc(a.icon)}" class="advisor-avatar">` : `<div class="advisor-avatar" style="display:flex;align-items:center;justify-content:center;font-size:20px;">👑</div>`}
             <div class="advisor-info">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div><b>${esc(a.name)}</b> <span class="stars-span">${'★'.repeat(a.stars||1)}</span> <span class="badge">${esc(a.role)}</span></div>
                     <span style="color:var(--gold); font-weight:bold;">${money(a.salary)}/yıl</span>
                 </div>
+                <div style="font-size:10px; color:var(--muted); margin:2px 0;">Hizmet Süresi: <b>${hiredYears} Yıl</b> | Kalan Ömür: ${Math.max(0, (a.maxAge||20) - (a.ageYears||5))} Yıl</div>
                 <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
                 <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
-                ${canManage ? `<div style="text-align:right; margin-top:6px;"><button class="btn red small" onclick="fireAdvisor('${s.id}','${a.id}')">AZLET (GÖREVDEN AL)</button></div>` : ''}
+                ${canManage ? `<div style="text-align:right; margin-top:6px;">
+                    ${locked ? '<span style="color:var(--gold); font-size:11px; font-weight:bold; margin-right:8px;">🔒 1 Yıl Sözleşme Sürüyor</span>' : ''}
+                    <button class="btn red small" onclick="fireAdvisor('${s.id}','${a.id}')" ${locked ? 'disabled title="Aynı yıl içinde iade edilemez!" style="opacity:0.5;"' : ''}>AZLET (İADE ET)</button>
+                </div>` : ''}
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
  } else {
     divanHtml += `<p class="sub" style="margin-bottom:15px;">Şu an divanınızda atanmış bir danışman bulunmuyor.</p>`;
  }
 
- divanHtml += `<h4 style="color:var(--border-gold); margin:16px 0 6px; font-family:'Oswald'; border-top:1px solid var(--line); padding-top:10px;">📜 HİZMETE ALINABİLİR DANIŞMANLAR & VEZİRLER (${availableAdvisors.length} Aday)</h4>
- <p class="sub" style="margin-bottom:10px;">Ülkenizin çağırabileceği 1★ - 5★ arası uzmanlar.</p>`;
+ divanHtml += `<h4 style="color:var(--border-gold); margin:16px 0 6px; font-family:'Oswald'; border-top:1px solid var(--line); padding-top:10px;">📜 HİZMETE ALINABİLİR DANIŞMANLAR & PAŞALAR (${availableAdvisors.length} Aday)</h4>
+ <p class="sub" style="margin-bottom:10px;">Ülkenizin çağırabileceği 1★ - 5★ arası paşalar.</p>`;
 
  if(availableAdvisors.length > 0) {
     divanHtml += availableAdvisors.map(a => `
@@ -951,6 +1038,7 @@ function openDetail(id){
                     <div><b>${esc(a.name)}</b> <span class="stars-span">${'★'.repeat(a.stars||1)}</span> <span class="badge" style="background:#111;">${esc(a.role)}</span></div>
                     <span style="color:var(--gold); font-weight:bold;">Maaş: ${money(a.salary)}/yıl</span>
                 </div>
+                <div style="font-size:10px; color:var(--muted); margin:2px 0;">Yaş: ${a.ageYears||5} | Ömür Beklentisi: ${a.maxAge||20} Yıl</div>
                 <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
                 <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;"><button class="btn green small" onclick="hireAdvisor('${s.id}','${a.id}')" ${activeAdvisors.length >= maxSlots ? 'disabled title="Kontenjan Dolu!" style="opacity:0.5;"' : ''}>DİVANA ATA (GÖREVE ÇAĞIR)</button></div>` : ''}
@@ -958,7 +1046,7 @@ function openDetail(id){
         </div>
     `).join('');
  } else {
-    divanHtml += `<p class="sub">Hizmete alınabilir başka danışman kalmadı.</p>`;
+    divanHtml += `<p class="sub">Hizmete alınabilir başka paşa kalmadı.</p>`;
  }
  divanHtml += `</div>`;
 
@@ -1142,7 +1230,7 @@ function openDetail(id){
  `;
 }
 
-// ---------------- DANIŞMAN ATAMA & AZLETME (KONTENJAN DENETİMLİ) ----------------
+// ---------------- DANIŞMAN ATAMA & 1 YIL KONTROLÜ ----------------
 function hireAdvisor(stateId, advId) {
     const s = getState(stateId);
     const adv = (db.advisors||[]).find(a => a.id === advId);
@@ -1159,6 +1247,8 @@ function hireAdvisor(stateId, advId) {
     if(s.hiredAdvisors.includes(advId)) return;
     
     s.hiredAdvisors.push(advId);
+    s.advisorHiredYears = s.advisorHiredYears || {};
+    s.advisorHiredYears[advId] = 0; // 0 yıl (yani henüz 1 yılını doldurmadı, kilitli)
     
     addLog({
         stateId: s.id,
@@ -1177,14 +1267,23 @@ function fireAdvisor(stateId, advId) {
     const adv = (db.advisors||[]).find(a => a.id === advId);
     if(!s || !adv) return;
     
-    if(!confirm(`${adv.name} azledilsin (görevden alınsın) mı?`)) return;
+    s.advisorHiredYears = s.advisorHiredYears || {};
+    const hiredYears = s.advisorHiredYears[advId] || 0;
+
+    if(hiredYears < 1) {
+        alert("Paşalar paşa sistemine göre en az 1 yıl çalışmak zorundadır! Aynı yıl içinde iade edemezsiniz.");
+        return;
+    }
+
+    if(!confirm(`${adv.name} azledilsin (iade edilsin) mi?`)) return;
 
     s.hiredAdvisors = (s.hiredAdvisors || []).filter(id => id !== advId);
+    delete s.advisorHiredYears[advId];
     
     addLog({
         stateId: s.id,
         stateName: s.name,
-        action: `Divandan Azledildi: ${adv.name}`,
+        action: `Divandan Azledildi / İade Edildi: ${adv.name}`,
         cost: 0,
         qty: 1
     });
@@ -1193,7 +1292,7 @@ function fireAdvisor(stateId, advId) {
     openDetail(stateId);
 }
 
-// ---------------- ADMİN PARA GÖNDERME (HİBE) FONKSİYONU ----------------
+// ---------------- ADMİN PARA GÖNDERME (HİBE) ----------------
 function openAdminGrantModal(defaultStateId = null) {
     if(!isAdmin) return;
     const targetOpts = db.states.map(x => `
@@ -1238,7 +1337,7 @@ function executeAdminGrant() {
     alert(`Başarıyla ${target.name} hazinesine ${money(amt)} aktarıldı!`);
 }
 
-// ---------------- İSTİHBARAT FONKSİYONU ----------------
+// ---------------- İSTİHBARAT ----------------
 function runSpyIntel(myStateId) {
     const targetId = document.getElementById("intel_target").value;
     const type = document.getElementById("intel_type").value;
@@ -1281,7 +1380,7 @@ function runSpyIntel(myStateId) {
     </div>`;
 }
 
-// ---------------- MEKTUP FONKSİYONLARI ----------------
+// ---------------- MEKTUPLAR ----------------
 function openLetterModal(fromStateId, defaultTargetId = null) {
     const sender = getState(fromStateId);
     const targetOpts = db.states.filter(x => x.id !== fromStateId).map(x => `
@@ -1708,7 +1807,7 @@ function startCampaign(id) {
     closeModal(); queueSave(); openDetail(id);
 }
 
-// ---------------- DEVLET FORMU (DİVAN KONTENJANI AYARLI) ----------------
+// ---------------- DEVLET FORMU (DİVAN KOTASI AYARLI) ----------------
 function openStateForm(id=null){
  if(!isAdmin) return;
  const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",rulerImage:"",bgImage:"",title:"Devlet",color:"#c5a059",treasury:0,population:0,tax:20,happiness:75,education:30,baseTaxPerPerson:5,civilExpense:0,advisorSlots:3,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,okul:0,istihbarat_binasi:0};
@@ -1763,9 +1862,10 @@ function saveState(id){
     let existing = getState(id);
     o.customLedger = existing.customLedger || []; o.permanentLedger = existing.permanentLedger || [];
     o.hiredAdvisors = existing.hiredAdvisors || [];
+    o.advisorHiredYears = existing.advisorHiredYears || {};
     Object.assign(existing,o); 
  } else { 
-    o.customLedger = []; o.permanentLedger = []; o.hiredAdvisors = []; db.states.push({id:crypto.randomUUID(),...o});
+    o.customLedger = []; o.permanentLedger = []; o.hiredAdvisors = []; o.advisorHiredYears = {}; db.states.push({id:crypto.randomUUID(),...o});
  }
  closeModal();queueSave();renderHome()
 }
@@ -1886,11 +1986,16 @@ function openPurchaseLogs(){
     <div class="actions"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
 }
 
+// ---------------- 1 YIL GEÇİR (PAŞA GELİŞİMİ, ÖMÜR VE SÖZLEŞME GÜNCELLEMESİ) ----------------
 function passOneYear(){
     if(!isAdmin) return;
-    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, otomatik giderler düşülecek. Onaylıyor musunuz?")) return;
+    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, paşalar yaşlanacak ve gelişim gösterecek. Onaylıyor musunuz?")) return;
     
-    let summaryHtml = "<h2>⏳ YIL SONU RAPORU</h2><div style='max-height:60vh; overflow:auto;'><div class='cards' style='grid-template-columns:1fr;'>";
+    // Sayaç sıfırlanır
+    db.timerSeconds = 0;
+    db.timerRunning = false;
+
+    let summaryHtml = "<h2>⏳ YIL SONU RAPORU & PAŞA GELİŞİMLERİ</h2><div style='max-height:60vh; overflow:auto;'><div class='cards' style='grid-template-columns:1fr;'>";
     
     db.states.forEach(s => {
         let inc = calcIncome(s);
@@ -1904,11 +2009,59 @@ function passOneYear(){
         s.treasury += net;
         s.customLedger = []; 
         let col = net >= 0 ? 'var(--green)' : 'var(--red)';
+
+        // 1. Paşaların sözleşme sürelerini 1 yıl artır
+        s.advisorHiredYears = s.advisorHiredYears || {};
+        (s.hiredAdvisors || []).forEach(advId => {
+            s.advisorHiredYears[advId] = (s.advisorHiredYears[advId] || 0) + 1;
+        });
+
+        // 2. Paşaların yaşını artır, ömrü bitenleri emekli et ve 3 yılda bir %1-%8 arası geliştir
+        let advisorReport = [];
+        let survivingHired = [];
+        
+        (s.hiredAdvisors || []).forEach(advId => {
+            let adv = (db.advisors||[]).find(a => a.id === advId);
+            if(!adv) return;
+
+            adv.ageYears = (adv.ageYears || 5) + 1;
+            adv.maxAge = adv.maxAge || Math.floor(Math.random() * 21) + 10; // 10 ile 30 yıl arası
+
+            // Ömür kontrolü (Vefat / Emeklilik)
+            if(adv.ageYears >= adv.maxAge) {
+                advisorReport.push(`⚠️ <b>${adv.name}</b> yaşlılıktan vefat etti / emekli oldu.`);
+                delete s.advisorHiredYears[advId];
+                return; // Divandan düşer
+            }
+
+            survivingHired.push(advId);
+
+            // Her 3 yılda bir %1 ile %8 arası iyileştirme
+            adv.yearsSinceUpgrade = (adv.yearsSinceUpgrade || 0) + 1;
+            if(adv.yearsSinceUpgrade >= 3) {
+                adv.yearsSinceUpgrade = 0;
+                let boostPercent = Math.floor(Math.random() * 8) + 1; // %1 ile %8 arası
+                
+                // Buff çarpanlarını artır
+                if(adv.taxBonus) adv.taxBonus = Number((adv.taxBonus * (1 + boostPercent/100)).toFixed(1));
+                if(adv.milUpkeepDiscount) adv.milUpkeepDiscount = Number((adv.milUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.navyUpkeepDiscount) adv.navyUpkeepDiscount = Number((adv.navyUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.artUpkeepDiscount) adv.artUpkeepDiscount = Number((adv.artUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.recruitDiscount) adv.recruitDiscount = Number((adv.recruitDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.infraDiscount) adv.infraDiscount = Number((adv.infraDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.happinessBonus) adv.happinessBonus = Number((adv.happinessBonus * (1 + boostPercent/100)).toFixed(1));
+
+                advisorReport.push(`📈 <b>${adv.name}</b> tecrübe kazandı ve %${boostPercent} oranında gelişti! (Yaş: ${adv.ageYears}/${adv.maxAge})`);
+            } else {
+                advisorReport.push(`👤 ${adv.name} (Yaş: ${adv.ageYears}/${adv.maxAge})`);
+            }
+        });
+        s.hiredAdvisors = survivingHired;
         
         addLog({
             stateId: s.id,
             stateName: s.name,
-            action: `Yıl Sonu Hasılası & Vergi Kapanışı`,
+            action: `Yıl Sonu Hasılası & Divan Güncellemesi`,
             cost: Math.abs(net),
             qty: 1,
             oldTreasury: oldT,
@@ -1917,15 +2070,17 @@ function passOneYear(){
 
         summaryHtml += `<div class="list-item" style="flex-direction:column; align-items:stretch;">
             <div style="border-bottom:1px solid var(--line); margin-bottom:4px; padding-bottom:4px;"><b>${esc(s.name)}</b></div>
-            <div style="display:flex; justify-content:space-between; font-size:12px;">
-                <div>Vergi: <span style="color:var(--green)">${money(inc)}</span> | Sabit: <span style="color:var(--green)">${money(permInc)}</span><br>Gider: <span style="color:var(--red)">${money(exp)}</span> | Tek Seferlik: <span style="color:${tempLedgerTotal>=0?'var(--green)':'var(--red)'}">${money(tempLedgerTotal)}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                <div>Vergi: <span style="color:var(--green)">${money(inc)}</span> | Sabit: <span style="color:var(--green)">${money(permInc)}</span><br>Gider: <span style="color:var(--red)">${money(exp)}</span></div>
                 <div style="text-align:right;">Net: <b style="color:${col}; font-size:14px;">${net>=0?'+':''}${money(net)}</b><br>Kasa: ${money(s.treasury)}</div>
             </div>
+            <div style="font-size:11px; color:var(--gold); background:rgba(10,12,14,0.6); padding:4px; border-radius:2px;"><b>Paşa Durumları:</b><br>${advisorReport.join('<br>') || 'Divanda paşa yok.'}</div>
         </div>`;
     });
     
     summaryHtml += "</div></div><div class='actions' style='margin-top:12px;'><button class='btn blue' style='width:100%;' onclick='closeModal()'>KAPAT</button></div>";
     queueSave(); modal(summaryHtml);
+    renderTopActions();
     if(currentId) openDetail(currentId); else renderHome();
 }
 
@@ -1957,26 +2112,27 @@ function openAdmin(){
             <button class="btn red small" style="padding:2px 6px;" onclick="removeAdvisor('${a.id}')">SİL</button>
         </div>
       </div>
-      <div style="font-size:11px; margin-top:3px;"><span style="color:var(--green)">Artı: ${esc(a.buff)}</span> | <span style="color:var(--red)">Eksi: ${esc(a.debuff)}</span> | <span style="color:var(--gold)">Maaş: ${money(a.salary)}/yıl</span></div>
+      <div style="font-size:11px; margin-top:3px;"><span style="color:var(--green)">Artı: ${esc(a.buff)}</span> | <span style="color:var(--red)">Eksi: ${esc(a.debuff)}</span> | <span style="color:var(--gold)">Maaş: ${money(a.salary)}/yıl</span> | <span style="color:var(--muted)">Yaş: ${a.ageYears||5}/${a.maxAge||20}</span></div>
     </div>`;
  }).join("");
 
  modal(`<h2>⚙ KÜRESEL AYARLAR</h2>
 
- <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN DANIŞMANLARI YÖNETİMİ (${(db.advisors||[]).length} Danışman)</h4>
- <p class="sub" style="margin-bottom:8px;">Danışmanların 1★ - 5★ seviyelerini, yıllık maaşlarını ve matematiksel çarpanlarını düzenleyin.</p>
- <div style="margin-bottom:12px; max-height:220px; overflow:auto;">${advisorsHtml || "<p class='sub'>Danışman yok.</p>"}</div>
+ <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN PAŞALARI YÖNETİMİ (${(db.advisors||[]).length} Paşa)</h4>
+ <p class="sub" style="margin-bottom:8px;">Paşaların ömürlerini, yıldızlarını, maaşlarını ve çarpanlarını düzenleyin.</p>
+ <div style="margin-bottom:12px; max-height:220px; overflow:auto;">${advisorsHtml || "<p class='sub'>Paşa yok.</p>"}</div>
  
  <div class="formgrid" style="background:rgba(10, 12, 14, 0.7); padding:10px; border-radius:3px; border:1px solid var(--border-gold); margin-bottom:15px;">
-    <div class="full" style="color:var(--border-gold); font-size:12px; font-weight:bold; font-family:'Oswald';">➕ YENİ DANIŞMAN EKLE</div>
-    ${field("adv_new_name", "Danışman İsmi", "", "text")}
+    <div class="full" style="color:var(--border-gold); font-size:12px; font-weight:bold; font-family:'Oswald';">➕ YENİ PAŞA / DANIŞMAN EKLE</div>
+    ${field("adv_new_name", "Paşa İsmi", "", "text")}
     ${field("adv_new_role", "Unvanı / Rolü", "", "text")}
     <div><label>Yıldız Seviyesi</label><select id="f_adv_new_stars"><option value="1">1 Yıldız (★)</option><option value="2">2 Yıldız (★★)</option><option value="3" selected>3 Yıldız (★★★)</option><option value="4">4 Yıldız (★★★★)</option><option value="5">5 Yıldız (★★★★★)</option></select></div>
     <div><label>Hangi Devlete Özel?</label><select id="f_adv_new_faction">${stateOpts}</select></div>
     ${field("adv_new_salary", "Yıllık Maaş (TL)", "25000", "number")}
+    ${field("adv_new_maxAge", "Ömür Beklentisi (Yıl)", "20", "number")}
     ${field("adv_new_icon", "Resim URL (İsteğe Bağlı)", "", "text")}
 
-    <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR (OTOMATİK HESAPLANIR):</div>
+    <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR:</div>
     ${field("adv_new_taxBonus", "Vergi Geliri Etkisi (+/- %)", "0", "number")}
     ${field("adv_new_milUpkeepDiscount", "Ordu Bakım İndirimi (%)", "0", "number")}
     ${field("adv_new_navyUpkeepDiscount", "Donanma Bakım İndirimi (%)", "0", "number")}
@@ -1989,7 +2145,7 @@ function openAdmin(){
 
     <div class="full">${field("adv_new_buff", "Artı Açıklaması (Görsel Metin)", "", "text")}</div>
     <div class="full">${field("adv_new_debuff", "Eksi Açıklaması (Görsel Metin)", "", "text")}</div>
-    <div class="full actions"><button class="btn green" style="width:100%;" onclick="addNewAdvisor()">➕ DANIŞMANI KAYDET</button></div>
+    <div class="full actions"><button class="btn green" style="width:100%;" onclick="addNewAdvisor()">➕ PAŞAYI KAYDET</button></div>
  </div>
 
  <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">🖼️ BİRLİK & BİNA GÖRSELLERİ (URL)</h4>
@@ -2040,9 +2196,9 @@ function openEditAdvisorModal(advId) {
     if(!a) return;
     const stateOpts = `<option value="" ${!a.faction ? 'selected' : ''}>🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}" ${a.faction===x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join("");
 
-    modal(`<h2>👑 DANIŞMANI DÜZENLE</h2>
+    modal(`<h2>👑 PAŞAYI DÜZENLE</h2>
     <div class="formgrid">
-        ${field("adv_edit_name", "Danışman İsmi", a.name, "text")}
+        ${field("adv_edit_name", "Paşa İsmi", a.name, "text")}
         ${field("adv_edit_role", "Unvanı / Rolü", a.role, "text")}
         <div><label>Yıldız Seviyesi</label><select id="f_adv_edit_stars">
             <option value="1" ${a.stars===1?'selected':''}>1 Yıldız (★)</option>
@@ -2053,9 +2209,10 @@ function openEditAdvisorModal(advId) {
         </select></div>
         <div><label>Hangi Devlete Özel?</label><select id="f_adv_edit_faction">${stateOpts}</select></div>
         ${field("adv_edit_salary", "Yıllık Maaş (TL)", a.salary, "number")}
+        ${field("adv_edit_maxAge", "Ömür Beklentisi (Yıl)", a.maxAge||20, "number")}
         ${field("adv_edit_icon", "Resim URL", a.icon||"", "text")}
         
-        <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR (OTOMATİK HESAPLANIR):</div>
+        <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR:</div>
         ${field("adv_edit_taxBonus", "Vergi Geliri Etkisi (+/- %)", a.taxBonus||0, "number")}
         ${field("adv_edit_milUpkeepDiscount", "Ordu Bakım İndirimi (%)", a.milUpkeepDiscount||0, "number")}
         ${field("adv_edit_navyUpkeepDiscount", "Donanma Bakım İndirimi (%)", a.navyUpkeepDiscount||0, "number")}
@@ -2066,8 +2223,8 @@ function openEditAdvisorModal(advId) {
         <div><label>İsyan / Anarşiyi Sıfırla?</label><select id="f_adv_edit_stopAnarchy"><option value="false" ${!a.stopAnarchy?'selected':''}>Hayır</option><option value="true" ${a.stopAnarchy?'selected':''}>Evet (%0 Yapar)</option></select></div>
         <div class="full"><label>Casusluk Sapmasını Sıfırla (Net Bilgi)?</label><select id="f_adv_edit_spyAccuracyBonus"><option value="false" ${!a.spyAccuracyBonus?'selected':''}>Hayır</option><option value="true" ${a.spyAccuracyBonus?'selected':''}>Evet (Tam Kesin Veri)</option></select></div>
 
-        <div class="full">${field("adv_edit_buff", "Artı Açıklaması (Görsel Metin)", a.buff, "text")}</div>
-        <div class="full">${field("adv_edit_debuff", "Eksi Açıklaması (Görsel Metin)", a.debuff, "text")}</div>
+        <div class="full">${field("adv_edit_buff", "Artı Açıklaması", a.buff, "text")}</div>
+        <div class="full">${field("adv_edit_debuff", "Eksi Açıklaması", a.debuff, "text")}</div>
         <div class="full actions" style="margin-top:10px;">
             <button class="btn" onclick="openAdmin()">GERİ</button>
             <button class="btn green" onclick="saveAdvisorEdit('${a.id}')">KAYDET</button>
@@ -2083,6 +2240,7 @@ function saveAdvisorEdit(advId) {
     a.stars = Number(document.getElementById("f_adv_edit_stars").value) || 1;
     a.faction = document.getElementById("f_adv_edit_faction").value;
     a.salary = Number(document.getElementById("f_adv_edit_salary").value) || 0;
+    a.maxAge = Number(document.getElementById("f_adv_edit_maxAge").value) || 20;
     a.icon = cleanUrl(document.getElementById("f_adv_edit_icon").value);
     
     a.taxBonus = Number(document.getElementById("f_adv_edit_taxBonus").value) || 0;
@@ -2107,6 +2265,7 @@ function addNewAdvisor() {
     const stars = Number(document.getElementById("f_adv_new_stars").value) || 1;
     const faction = document.getElementById("f_adv_new_faction").value;
     const salary = Number(document.getElementById("f_adv_new_salary").value) || 0;
+    const maxAge = Number(document.getElementById("f_adv_new_maxAge").value) || 20;
     const icon = cleanUrl(document.getElementById("f_adv_new_icon").value);
     
     const taxBonus = Number(document.getElementById("f_adv_new_taxBonus").value) || 0;
@@ -2122,12 +2281,13 @@ function addNewAdvisor() {
     const buff = document.getElementById("f_adv_new_buff").value.trim();
     const debuff = document.getElementById("f_adv_new_debuff").value.trim();
     
-    if(!name || !role) { alert("Danışman ismi ve rolü boş olamaz!"); return; }
+    if(!name || !role) { alert("Paşa ismi ve rolü boş olamaz!"); return; }
     
     db.advisors = db.advisors || [];
     db.advisors.push({
         id: "adv_" + crypto.randomUUID().split("-")[0],
-        name, role, stars, faction, salary, icon,
+        name, role, stars, faction, salary, maxAge, icon,
+        ageYears: 1, yearsSinceUpgrade: 0,
         taxBonus, milUpkeepDiscount, navyUpkeepDiscount, artUpkeepDiscount,
         recruitDiscount, infraDiscount, happinessBonus, stopAnarchy, spyAccuracyBonus,
         buff, debuff
@@ -2137,7 +2297,7 @@ function addNewAdvisor() {
 }
 
 function removeAdvisor(advId) {
-    if(!confirm("Bu danışmanı silmek istediğinize emin misiniz?")) return;
+    if(!confirm("Bu paşayı silmek istediğinize emin misiniz?")) return;
     db.advisors = (db.advisors||[]).filter(x => x.id !== advId);
     db.states.forEach(s => {
         if(s.hiredAdvisors) s.hiredAdvisors = s.hiredAdvisors.filter(id => id !== advId);
