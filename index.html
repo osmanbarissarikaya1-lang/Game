@@ -32,7 +32,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
 .sub{color:var(--muted);font-size:12px;}
 .actions{display:flex;gap:6px;flex-wrap:wrap}
 
-/* BUTONLAR (Opak ve Belirgin) */
+/* BUTONLAR */
 .btn {
     background: linear-gradient(180deg, #2c323b 0%, #1c2026 100%);
     border: 1px solid var(--border-steel);
@@ -284,6 +284,29 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     margin-left: 4px;
 }
 
+/* LOG KARTLARI (Önceki/Sonraki Değişimli) */
+.log-item {
+    background: rgba(22, 25, 30, 0.75);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--border-gold);
+    padding: 10px 12px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+}
+.log-diff-box {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(62, 68, 79, 0.5);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--muted);
+}
+.log-diff-box span b { color: var(--text); }
+.log-diff-box .diff-pos { color: var(--green); font-weight: bold; }
+.log-diff-box .diff-neg { color: var(--red); font-weight: bold; }
+
 /* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:12px;z-index:100;}
 .modal.show{display:flex}
@@ -429,7 +452,10 @@ async function showApp(session){
     <button class="btn blue" onclick="openAdmin()">⚙ ADMİN</button>
     <button class="btn red" onclick="logout()">ÇIKIŞ</button>`;
  } else {
-    actionsDiv.innerHTML = `<span style="color:var(--muted); font-size:12px; margin-right:6px;">👤 ${esc(currentUserEmail)}</span><button class="btn red" onclick="logout()">ÇIKIŞ</button>`;
+    actionsDiv.innerHTML = `
+    <button class="btn" onclick="openPurchaseLogs()">📜 LOGLAR</button>
+    <span style="color:var(--muted); font-size:12px; margin:0 6px;">👤 ${esc(currentUserEmail)}</span>
+    <button class="btn red" onclick="logout()">ÇIKIŞ</button>`;
  }
 
  await loadDB();
@@ -947,8 +973,18 @@ function executeAdminGrant() {
 
     if(!target || amt <= 0) { alert("Geçerli bir tutar ve hedef devlet seçmelisiniz!"); return; }
 
-    target.treasury = (target.treasury || 0) + amt;
-    addLog(target.name, `Admin Para Yardımı (${desc})`, 1, amt);
+    const oldT = target.treasury || 0;
+    target.treasury = oldT + amt;
+
+    addLog({
+        stateId: target.id,
+        stateName: target.name,
+        action: `Admin Para Yardımı (${desc})`,
+        cost: amt,
+        qty: 1,
+        oldTreasury: oldT,
+        newTreasury: target.treasury
+    });
     
     closeModal();
     queueSave();
@@ -1037,6 +1073,10 @@ function sendLetter(fromStateId) {
         if(nisanci > (sender.nisanci || 0)) { alert("Yeterli nişancınız yok!"); return; }
     }
 
+    const oldSenderT = sender.treasury;
+    const oldTargetT = target.treasury;
+    const oldSenderP = sender.piyade||0, oldTargetP = target.piyade||0;
+
     if(gold > 0) { sender.treasury -= gold; target.treasury = (target.treasury || 0) + gold; }
     if(piyade > 0) { sender.piyade = Math.max(0, (sender.piyade||0) - piyade); target.piyade = (target.piyade || 0) + piyade; }
     if(suvari > 0) { sender.suvari = Math.max(0, (sender.suvari||0) - suvari); target.suvari = (target.suvari || 0) + suvari; }
@@ -1058,6 +1098,34 @@ function sendLetter(fromStateId) {
         nisanci: nisanci,
         date: new Date().toLocaleDateString("tr-TR") + " " + new Date().toLocaleTimeString("tr-TR", {hour: '2-digit', minute:'2-digit'}),
         read: false
+    });
+
+    // Gönderici Logu
+    addLog({
+        stateId: sender.id,
+        stateName: sender.name,
+        action: `Mektup & Yardım Gönderildi -> ${target.name}`,
+        cost: gold,
+        qty: 1,
+        oldTreasury: oldSenderT,
+        newTreasury: sender.treasury,
+        unitName: piyade > 0 ? "Piyade" : (suvari > 0 ? "Süvari" : (nisanci > 0 ? "Nişancı" : "")),
+        oldUnit: oldSenderP,
+        newUnit: sender.piyade||0
+    });
+
+    // Alıcı Logu
+    addLog({
+        stateId: target.id,
+        stateName: target.name,
+        action: `Mektup & Yardım Alındı <- ${sender.name}`,
+        cost: gold,
+        qty: 1,
+        oldTreasury: oldTargetT,
+        newTreasury: target.treasury,
+        unitName: piyade > 0 ? "Piyade" : (suvari > 0 ? "Süvari" : (nisanci > 0 ? "Nişancı" : "")),
+        oldUnit: oldTargetP,
+        newUnit: target.piyade||0
     });
 
     closeModal();
@@ -1152,11 +1220,26 @@ function calcExpenses(s){
   return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + Number(s.civilExpense||0);
 }
 
-function addLog(stateName, itemLabel, qty, totalCost) {
+// ---------------- GELİŞMİŞ LOG EKLEME FONKSİYONU ----------------
+function addLog(data) {
     if(!db.purchaseLog) db.purchaseLog = [];
-    const dateStr = new Date().toLocaleString("tr-TR");
-    db.purchaseLog.unshift({ state: stateName, item: itemLabel, qty: qty, cost: totalCost, date: dateStr, user: currentUserEmail });
-    if(db.purchaseLog.length > 200) db.purchaseLog.pop();
+    const dateStr = new Date().toLocaleDateString("tr-TR") + " " + new Date().toLocaleTimeString("tr-TR", {hour:'2-digit', minute:'2-digit'});
+    
+    db.purchaseLog.unshift({
+        stateId: data.stateId || "",
+        state: data.stateName || "Bilinmeyen Devlet",
+        item: data.action || "",
+        qty: data.qty || 1,
+        cost: data.cost || 0,
+        date: dateStr,
+        user: currentUserEmail,
+        oldTreasury: data.oldTreasury,
+        newTreasury: data.newTreasury,
+        unitName: data.unitName || "",
+        oldUnit: data.oldUnit,
+        newUnit: data.newUnit
+    });
+    if(db.purchaseLog.length > 300) db.purchaseLog.pop();
 }
 
 function buyEdict(id, edictId) {
@@ -1167,9 +1250,21 @@ function buyEdict(id, edictId) {
     let totalCost = Math.floor(s.population * (db.settings.edictCost[edictId] || 0));
     if(s.treasury < totalCost) { alert(`Hazine yetersiz! Gerekli: ${money(totalCost)}`); return; }
     let pts = edictId === 'denetim' ? Math.floor(Math.random() * 5) + 5 : edict.pts; 
+    
+    const oldT = s.treasury;
     s.treasury -= totalCost;
     s.happiness = Math.min(100, (s.happiness||0) + (pts/10));
-    addLog(s.name, `Ferman: ${edict.name}`, 1, totalCost);
+    
+    addLog({
+        stateId: s.id,
+        stateName: s.name,
+        action: `Ferman: ${edict.name}`,
+        cost: totalCost,
+        qty: 1,
+        oldTreasury: oldT,
+        newTreasury: s.treasury
+    });
+
     queueSave(); openDetail(id);
 }
 
@@ -1191,11 +1286,30 @@ function buyBulk(id,key, labelName){
  if(["piyade","suvari","nisanci"].includes(key) && p.elig < qty){alert("Elverişli nüfus yetersiz!");return}
  if(key.includes("gemi") && (shipCapacity(s) + qty) > shipCapMax(s)){alert("Limanda boş kapasite yok.");return}
  if(key.includes("top") && (gunCapacity(s) + qty) > gunCapMax(s)){alert("Top ocağında boş kapasite yok.");return}
- s.treasury -= totalCost; s[key] = (s[key]||0) + qty;
+ 
+ const oldT = s.treasury;
+ const oldUnitCount = s[key] || 0;
+ 
+ s.treasury -= totalCost; 
+ s[key] = oldUnitCount + qty;
  if(key==="okul") s.education=Math.min(100,(s.education||0)+(db.settings.schoolEducation*qty));
- addLog(s.name, labelName, qty, totalCost);
+ 
+ addLog({
+     stateId: s.id,
+     stateName: s.name,
+     action: `Birim Üretimi: ${labelName}`,
+     cost: totalCost,
+     qty: qty,
+     oldTreasury: oldT,
+     newTreasury: s.treasury,
+     unitName: labelName,
+     oldUnit: oldUnitCount,
+     newUnit: s[key]
+ });
+
  queueSave(); openDetail(id);
 }
+
 function buyCustomBulk(id, itemId, labelName){
  const s = getState(id);
  if(!isAdmin && s.ownerEmail !== currentUserEmail) return; 
@@ -1207,8 +1321,26 @@ function buyCustomBulk(id, itemId, labelName){
  if(s.treasury < totalCost){alert(`Hazine yetersiz! Gerekli: ${money(totalCost)}`);return;}
  const p = calcPop(s);
  if(item.category === 'asker' && p.elig < qty){alert("Elverişli nüfus yetersiz!"); return;}
- s.treasury -= totalCost; s[item.id] = (s[item.id]||0) + qty;
- addLog(s.name, labelName, qty, totalCost);
+ 
+ const oldT = s.treasury;
+ const oldUnitCount = s[item.id] || 0;
+
+ s.treasury -= totalCost; 
+ s[item.id] = oldUnitCount + qty;
+
+ addLog({
+     stateId: s.id,
+     stateName: s.name,
+     action: `Özel Birim Üretimi: ${labelName}`,
+     cost: totalCost,
+     qty: qty,
+     oldTreasury: oldT,
+     newTreasury: s.treasury,
+     unitName: labelName,
+     oldUnit: oldUnitCount,
+     newUnit: s[item.id]
+ });
+
  queueSave(); openDetail(id);
 }
 
@@ -1269,8 +1401,20 @@ function startCampaign(id) {
     });
     if(total <= 0) return;
     if(s.treasury < total) { alert("Hazine yetersiz! Gerekli: " + money(total)); return; }
+    
+    const oldT = s.treasury;
     s.treasury -= total;
-    addLog(s.name, `Sefer Ordusu: ${details.join(', ')}`, 1, total);
+    
+    addLog({
+        stateId: s.id,
+        stateName: s.name,
+        action: `Sefer Ordusu İkmali (${details.join(', ')})`,
+        cost: total,
+        qty: 1,
+        oldTreasury: oldT,
+        newTreasury: s.treasury
+    });
+
     closeModal(); queueSave(); openDetail(id);
 }
 
@@ -1337,7 +1481,20 @@ function deduct(id){
  if(!isAdmin) return;
  let s=getState(id),a=Number(document.getElementById("deductAmt").value||0),d=document.getElementById("deductDesc").value.trim();
  if(a<=0||a>s.treasury) return;
- s.treasury-=a; addLog(s.name, "Kesinti: "+d, 1, a);
+ 
+ const oldT = s.treasury;
+ s.treasury -= a; 
+
+ addLog({
+     stateId: s.id,
+     stateName: s.name,
+     action: `Hazine Kesintisi (${d})`,
+     cost: a,
+     qty: 1,
+     oldTreasury: oldT,
+     newTreasury: s.treasury
+ });
+
  closeModal();queueSave();openDetail(id)
 }
 function openTransfer(id){
@@ -1350,17 +1507,88 @@ function transfer(id){
  let s=getState(id);
  let t=getState(document.getElementById("transferTarget").value),a=Number(document.getElementById("transferAmt").value||0),d=document.getElementById("transferDesc").value.trim();
  if(!t||a<=0||a>s.treasury) return;
- s.treasury-=a;t.treasury+=a; addLog(s.name, `Transfer -> ${t.name}`, 1, a);
+ 
+ const oldST = s.treasury;
+ const oldTT = t.treasury;
+ 
+ s.treasury -= a;
+ t.treasury += a; 
+ 
+ // Gönderen Logu
+ addLog({
+     stateId: s.id,
+     stateName: s.name,
+     action: `Transfer Gönderildi -> ${t.name} (${d})`,
+     cost: a,
+     qty: 1,
+     oldTreasury: oldST,
+     newTreasury: s.treasury
+ });
+
+ // Alıcı Logu
+ addLog({
+     stateId: t.id,
+     stateName: t.name,
+     action: `Transfer Alındı <- ${s.name} (${d})`,
+     cost: a,
+     qty: 1,
+     oldTreasury: oldTT,
+     newTreasury: t.treasury
+ });
+
  closeModal();queueSave();openDetail(id)
 }
 
 function openPurchaseLogs(){
-    if(!isAdmin) return;
-    let logHtml = db.purchaseLog && db.purchaseLog.length ? db.purchaseLog.map(l => 
-        `<div class="list-item"><div style="display:flex;flex-direction:column;"><b>${esc(l.state)}</b><span class="sub">${esc(l.user)} | ${l.date}</span></div>
-        <div style="text-align:right"><div>${l.qty}x ${esc(l.item)}</div><div style="color:var(--gold)">${money(l.cost)}</div></div></div>`
-    ).join("") : "<p class=\"sub\">Kayıt yok.</p>";
-    modal(`<h2>📜 İŞLEM LOGLARI</h2><div style="max-height:60vh; overflow:auto; margin-bottom:12px;">${logHtml}</div><div class="actions"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
+    const myState = currentId ? getState(currentId) : null;
+    let filteredLogs = db.purchaseLog || [];
+    
+    // Eğer admin değilse sadece kendi devletinin loglarını görsün
+    if(!isAdmin) {
+        if(myState) {
+            filteredLogs = filteredLogs.filter(l => l.stateId === myState.id || l.state === myState.name);
+        } else {
+            const myStateIds = db.states.filter(s => s.ownerEmail === currentUserEmail).map(s => s.id);
+            filteredLogs = filteredLogs.filter(l => myStateIds.includes(l.stateId));
+        }
+    }
+    
+    let logHtml = filteredLogs.length ? filteredLogs.map(l => {
+        let diffContent = [];
+        
+        if(l.oldTreasury !== undefined && l.newTreasury !== undefined) {
+            let tDiff = l.newTreasury - l.oldTreasury;
+            let diffClass = tDiff >= 0 ? 'diff-pos' : 'diff-neg';
+            let diffSign = tDiff >= 0 ? '+' : '';
+            diffContent.push(`<span>Hazine: <b>${money(l.oldTreasury)}</b> ➔ <b>${money(l.newTreasury)}</b> (<span class="${diffClass}">${diffSign}${money(tDiff)}</span>)</span>`);
+        }
+        
+        if(l.unitName && l.oldUnit !== undefined && l.newUnit !== undefined) {
+            let uDiff = l.newUnit - l.oldUnit;
+            let diffClass = uDiff >= 0 ? 'diff-pos' : 'diff-neg';
+            let diffSign = uDiff >= 0 ? '+' : '';
+            diffContent.push(`<span>${esc(l.unitName)}: <b>${num(l.oldUnit)}</b> ➔ <b>${num(l.newUnit)}</b> (<span class="${diffClass}">${diffSign}${num(uDiff)}</span>)</span>`);
+        }
+
+        return `
+        <div class="log-item">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <b>${esc(l.state)}</b>: ${esc(l.item)}
+                    <div class="sub">${esc(l.user)} | ${l.date}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div>${l.qty > 1 ? l.qty + 'x ' : ''}<span style="color:var(--gold)">${money(l.cost)}</span></div>
+                </div>
+            </div>
+            ${diffContent.length > 0 ? `<div class="log-diff-box">${diffContent.join(' | ')}</div>` : ''}
+        </div>`;
+    }).join("") : "<p class=\"sub\">Kayıtlı işlem bulunmuyor.</p>";
+
+    modal(`<h2>📜 İŞLEM LOGLARI & DEĞİŞİM DEFTERİ</h2>
+    <p class="sub" style="margin-bottom:12px;">Yapılan harcamalar, alımlar ve kaynak değişimleri.</p>
+    <div style="max-height:60vh; overflow:auto; margin-bottom:12px;">${logHtml}</div>
+    <div class="actions"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
 }
 
 function passOneYear(){
@@ -1377,10 +1605,21 @@ function passOneYear(){
         if(s.customLedger && s.customLedger.length > 0) s.customLedger.forEach(item => { tempLedgerTotal += item.amount; });
         
         let net = inc + permInc - exp + tempLedgerTotal;
+        const oldT = s.treasury;
         s.treasury += net;
         s.customLedger = []; 
         let col = net >= 0 ? 'var(--green)' : 'var(--red)';
         
+        addLog({
+            stateId: s.id,
+            stateName: s.name,
+            action: `Yıl Sonu Hasılası & Vergi Kapanışı`,
+            cost: Math.abs(net),
+            qty: 1,
+            oldTreasury: oldT,
+            newTreasury: s.treasury
+        });
+
         summaryHtml += `<div class="list-item" style="flex-direction:column; align-items:stretch;">
             <div style="border-bottom:1px solid var(--line); margin-bottom:4px; padding-bottom:4px;"><b>${esc(s.name)}</b></div>
             <div style="display:flex; justify-content:space-between; font-size:12px;">
