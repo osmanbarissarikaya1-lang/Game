@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Devlet Yönetim Paneli</title>
+<title>OSMOYUN - Devlet Bilgi Sistemi</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Playfair+Display:wght@700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -23,6 +23,8 @@
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Roboto Condensed', sans-serif;}
 button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
 .container{max-width:1350px;margin:auto;padding:12px;}
+
+.hidden{display:none !important;}
 
 /* ÜST BAR */
 .top{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border-steel);border-bottom:2px solid var(--border-gold);padding:10px 16px;border-radius:4px;position:sticky;top:5px;z-index:50;box-shadow: 0 4px 12px rgba(0,0,0,0.6);}
@@ -74,7 +76,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .money{color:var(--green);font-weight:700}
 .home-ruler-img { width:42px; height:42px; border-radius:3px; border:1px solid var(--border-gold); object-fit:cover; margin-right:10px; flex-shrink:0; background:#0a0c0e;}
 
-/* HOI4 TARZI KOMPAKT DETAY EKRANI */
+/* KOMPAKT DETAY EKRANI */
 .detail-layout {
     display: grid;
     grid-template-columns: 280px 1fr;
@@ -233,8 +235,9 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .modalbox{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--border-gold);border-radius:4px;padding:16px;}
 .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.full{grid-column:1/-1}
 
-.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px;}
-.authbox{width:min(380px,100%);background:var(--panel);padding:24px;border-radius:4px;border:1px solid var(--border-steel); text-align:center;}
+/* AUTH GİRİŞ EKRANI */
+.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px; background:var(--bg);}
+.authbox{width:min(380px,100%);background:var(--panel);padding:24px;border-radius:4px;border:1px solid var(--border-gold); box-shadow:0 8px 24px rgba(0,0,0,0.8); text-align:center;}
 .error{color:var(--red);font-size:12px;margin-top:8px}.success{color:var(--green);font-size:12px;margin-top:8px}
 
 @media(max-width:850px){
@@ -243,10 +246,12 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 </style>
 </head>
 <body>
-<div id="auth" class="auth hidden">
+
+<!-- GİRİŞ FORMU -->
+<div id="auth" class="auth">
  <div class="authbox">
-  <h1 class="brand" style="font-size:24px; margin-bottom:5px;">⚔️ STATE COMMAND</h1>
-  <p class="sub" style="margin-bottom:15px;">Divan-ı Hümayun Girişi</p>
+  <h1 class="brand" style="font-size:26px; margin:0 0 4px; color:var(--border-gold);">⚔️ OSMOYUN</h1>
+  <p class="sub" style="margin:0 0 16px; font-size:13px;">Devlet Bilgi Sistemi</p>
   <div style="display:flex;gap:5px;margin-bottom:12px;"><button id="loginTab" class="btn blue" style="flex:1;">Giriş Yap</button><button id="signupTab" class="btn" style="flex:1;">Kayıt Ol</button></div>
   <label style="text-align:left;">E-posta</label><input id="email" type="email" autocomplete="email">
   <label style="text-align:left; margin-top:8px;">Şifre</label><input id="password" type="password" autocomplete="current-password">
@@ -255,10 +260,11 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
  </div>
 </div>
 
+<!-- OYUN PANELİ -->
 <div id="app" class="hidden">
 <div class="container">
 <header class="top">
- <div><div class="brand">⚔️ GRAND STRATEGY PANEL</div><div id="syncText" class="sub">Bağlantı kuruluyor...</div></div>
+ <div><div class="brand">⚔️ OSMOYUN • Devlet Bilgi Sistemi</div><div id="syncText" class="sub">Bağlantı kuruluyor...</div></div>
  <div class="actions" id="topActions"></div>
 </header>
 <div id="home" class="screen">
@@ -271,6 +277,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 </div></div>
 
 <div id="modal" class="modal"><div class="modalbox"><div id="modalContent"></div></div></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
@@ -334,6 +341,7 @@ async function init(){
   console.error(e);
  }
 }
+
 function showAuth(){
     document.getElementById("app").classList.add("hidden");
     document.getElementById("auth").classList.remove("hidden");
@@ -362,16 +370,34 @@ async function showApp(session){
  renderHome();
 }
 
-function setAuthMode(m){authMode=m;document.getElementById("authBtn").textContent=m==="login"?"Giriş Yap":"Kayıt Ol";document.getElementById("loginTab").className="btn "+(m==="login"?"blue":"");document.getElementById("signupTab").className="btn "+(m==="signup"?"blue":"");}
-document.getElementById("loginTab").onclick=()=>setAuthMode("login");document.getElementById("signupTab").onclick=()=>setAuthMode("signup");
+function setAuthMode(m){
+    authMode=m;
+    document.getElementById("authBtn").textContent=m==="login"?"Giriş Yap":"Kayıt Ol";
+    document.getElementById("loginTab").className="btn "+(m==="login"?"blue":"");
+    document.getElementById("signupTab").className="btn "+(m==="signup"?"blue":"");
+}
+document.getElementById("loginTab").onclick=()=>setAuthMode("login");
+document.getElementById("signupTab").onclick=()=>setAuthMode("signup");
+
 document.getElementById("authBtn").onclick=async()=>{
  const email=document.getElementById("email").value.trim(), password=document.getElementById("password").value;
  const msg=document.getElementById("authMsg");msg.className="";msg.textContent="İşleniyor…";
  try{
-  if(authMode==="signup"){const r=await sb.auth.signUp({email,password});if(r.error)throw r.error;msg.className="success";msg.textContent=r.data.session?"Hesap oluşturuldu.":"Hesap oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et."}
-  else {const r=await sb.auth.signInWithPassword({email,password});if(r.error)throw r.error}
- }catch(e){msg.className="error";msg.textContent="❌ "+(e.message||e)}
+  if(authMode==="signup"){
+      const r=await sb.auth.signUp({email,password});
+      if(r.error)throw r.error;
+      msg.className="success";
+      msg.textContent=r.data.session?"Hesap oluşturuldu.":"Hesap oluşturuldu. E-posta doğrulaması açıksa gelen kutunu kontrol et.";
+  } else {
+      const r=await sb.auth.signInWithPassword({email,password});
+      if(r.error)throw r.error;
+  }
+ }catch(e){
+     msg.className="error";
+     msg.textContent="❌ "+(e.message||e);
+ }
 };
+
 async function logout(){await sb.auth.signOut()}
 
 async function loadDB(){
@@ -399,6 +425,7 @@ async function loadDB(){
  else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};await saveDB()}
  toast("Sistem Aktif",true);
 }
+
 async function saveDB(){
  if(!sb) return false;
  const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
@@ -604,7 +631,7 @@ function openDetail(id){
  });
  eylemHtml += `</div></div>`;
 
- // ANA LAYOUT
+ // ANA DETAY DÜZENİ
  document.getElementById("detail").innerHTML = `
  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
     <button class="btn" onclick="renderHome()">← HARİTAYA DÖN</button>
@@ -891,7 +918,8 @@ function openStateForm(id=null){
  ${field("kucuk_top","Küçük Top",s.kucuk_top,"number")}${field("orta_top","Orta Top",s.orta_top,"number")}${field("buyuk_top","Büyük Top",s.buyuk_top,"number")}
  ${field("kucuk_gemi","Küçük Gemi",s.kucuk_gemi,"number")}${field("orta_gemi","Orta Gemi",s.orta_gemi,"number")}${field("buyuk_gemi","Büyük Gemi",s.buyuk_gemi,"number")}
  ${field("kucuk_liman","Küçük Liman",s.kucuk_liman,"number")}${field("orta_liman","Orta Liman",s.orta_liman,"number")}${field("buyuk_liman","Büyük Liman",s.buyuk_liman,"number")}
- ${field("kucuk_ocak","Küçük Top Ocağı",s.kucuk_ocak,"number")}${field("orta_ocak","Orta Top Ocağı",s.orta_ocak,"number")}${field("buyuk_ocak","Büyük Top Ocağı",s.buyuk_ocak,"number")}${field("okul","Okul",s.okul,"number")}
+ ${field("kucuk_ocak","Küçük Top Ocağı",s.kucuk_ocak,"number")}${field("orta_ocak","Orta Top Ocağı",s.orta_ocak,"number")}${field("buyuk_ocak","Büyük Top Ocağı",s.buyuk_ocak,"number")}
+ ${field("okul","Okul",s.okul,"number")}
  ${customFields}
  <div class="full actions" style="margin-top:10px;"><button class="btn" onclick="closeModal()">VAZGEÇ</button><button class="btn green" onclick="saveState('${id||""}')">KAYDET</button>${id?`<button class="btn red" onclick="deleteState('${id}')">SİL</button>`:""}</div></div>`);
 }
@@ -995,7 +1023,7 @@ function openAdmin(){
     return `<div class="list-item">
       <div style="display:flex; align-items:center;">
          ${safeIcon ? `<img src="${esc(safeIcon)}" style="width:32px;height:32px;object-fit:cover;margin-right:8px;border-radius:2px;">` : ''}
-         <div><b>${esc(x.name)}</b> <span class="badge">${esc(fName)}</span><br><span class="sub">(${x.category}) Fyt:${num(x.price)} | Bkm:${num(x.upkeep)} | İkm:${num(x.campCost||0)}</span></div>
+         <div><b>${esc(x.name)}</b> <span class="badge">${esc(fName)}</span><br><span class="sub" style="font-size:11px;">(${x.category}) Fyt:${num(x.price)} | Bkm:${num(x.upkeep)} | İkm:${num(x.campCost||0)}</span></div>
       </div>
       <button class="btn red small" onclick="removeCustomItem('${x.id}')">SİL</button>
     </div>`
