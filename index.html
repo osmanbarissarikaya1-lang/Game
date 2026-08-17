@@ -302,6 +302,7 @@ const defaultSettings={
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
+ images:{piyade:"",suvari:"",nisanci:"",kucuk_top:"",orta_top:"",buyuk_top:"",kucuk_gemi:"",orta_gemi:"",buyuk_gemi:"",kucuk_liman:"",orta_liman:"",buyuk_liman:"",kucuk_ocak:"",orta_ocak:"",buyuk_ocak:"",okul:""},
  customItems: [] 
 };
 
@@ -413,6 +414,7 @@ async function loadDB(){
     db.settings.upkeep={...defaultSettings.upkeep,...(db.settings?.upkeep||{})};
     db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
+    db.settings.images={...defaultSettings.images,...(db.settings?.images||{})};
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
     db.states.forEach(s => { 
@@ -534,18 +536,19 @@ function openDetail(id){
  const canManage = isAdmin || isOwner;
  const editBtn = isAdmin ? `<button class="btn gold" onclick="openStateForm('${s.id}')">✎ DÜZENLE</button>` : ``;
  const rulerImgClean = cleanUrl(s.rulerImage);
+ const imgs = db.settings.images || {};
 
- // ASKERİYE SEKMESİ
+ // ASKERİYE SEKMESİ (Resimler db.settings.images üzerinden çekilir)
  let askeriyeHtml = `<div class="unit-grid">`;
- askeriyeHtml += buildUnitCard(s, 'piyade', 'Piyade', '', db.settings.prices.piyade, db.settings.upkeep.piyade, '', canManage, false);
- askeriyeHtml += buildUnitCard(s, 'suvari', 'Süvari', '', db.settings.prices.suvari, db.settings.upkeep.suvari, '', canManage, false);
- askeriyeHtml += buildUnitCard(s, 'nisanci', 'Nişancı', '', db.settings.prices.nisanci, db.settings.upkeep.nisanci, '', canManage, false);
- askeriyeHtml += buildUnitCard(s, 'kucuk_top', 'Küçük Top', '', db.settings.prices.kucuk_top, db.settings.upkeep.kucuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'orta_top', 'Orta Top', '', db.settings.prices.orta_top, db.settings.upkeep.orta_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'buyuk_top', 'Büyük Top', '', db.settings.prices.buyuk_top, db.settings.upkeep.buyuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'kucuk_gemi', 'Küçük Gemi', '', db.settings.prices.kucuk_gemi, db.settings.upkeep.kucuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'orta_gemi', 'Orta Gemi', '', db.settings.prices.orta_gemi, db.settings.upkeep.orta_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'buyuk_gemi', 'Büyük Gemi', '', db.settings.prices.buyuk_gemi, db.settings.upkeep.buyuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'piyade', 'Piyade', imgs.piyade, db.settings.prices.piyade, db.settings.upkeep.piyade, '', canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'suvari', 'Süvari', imgs.suvari, db.settings.prices.suvari, db.settings.upkeep.suvari, '', canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'nisanci', 'Nişancı', imgs.nisanci, db.settings.prices.nisanci, db.settings.upkeep.nisanci, '', canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'kucuk_top', 'Küçük Top', imgs.kucuk_top, db.settings.prices.kucuk_top, db.settings.upkeep.kucuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'orta_top', 'Orta Top', imgs.orta_top, db.settings.prices.orta_top, db.settings.upkeep.orta_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'buyuk_top', 'Büyük Top', imgs.buyuk_top, db.settings.prices.buyuk_top, db.settings.upkeep.buyuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'kucuk_gemi', 'Küçük Gemi', imgs.kucuk_gemi, db.settings.prices.kucuk_gemi, db.settings.upkeep.kucuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'orta_gemi', 'Orta Gemi', imgs.orta_gemi, db.settings.prices.orta_gemi, db.settings.upkeep.orta_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
+ askeriyeHtml += buildUnitCard(s, 'buyuk_gemi', 'Büyük Gemi', imgs.buyuk_gemi, db.settings.prices.buyuk_gemi, db.settings.upkeep.buyuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
  
  const customUnits = (db.settings.customItems || []).filter(item => (!item.faction || item.faction === s.id) && item.category === 'asker');
  customUnits.forEach(c => {
@@ -555,13 +558,13 @@ function openDetail(id){
 
  // ALTYAPI SEKMESİ
  let altyapiHtml = `<div class="unit-grid">`;
- altyapiHtml += buildUnitCard(s, 'kucuk_liman', 'Küçük Liman', '', db.settings.prices.kucuk_liman, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'orta_liman', 'Orta Liman', '', db.settings.prices.orta_liman, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'buyuk_liman', 'Büyük Liman', '', db.settings.prices.buyuk_liman, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'kucuk_ocak', 'Küçük Top Ocağı', '', db.settings.prices.kucuk_ocak, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'orta_ocak', 'Orta Top Ocağı', '', db.settings.prices.orta_ocak, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'buyuk_ocak', 'Büyük Top Ocağı', '', db.settings.prices.buyuk_ocak, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'okul', 'Okul', '', db.settings.prices.okul, 0, '', canManage, false);
+ altyapiHtml += buildUnitCard(s, 'kucuk_liman', 'Küçük Liman', imgs.kucuk_liman, db.settings.prices.kucuk_liman, 0, '', canManage, false);
+ altyapiHtml += buildUnitCard(s, 'orta_liman', 'Orta Liman', imgs.orta_liman, db.settings.prices.orta_liman, 0, '', canManage, false);
+ altyapiHtml += buildUnitCard(s, 'buyuk_liman', 'Büyük Liman', imgs.buyuk_liman, db.settings.prices.buyuk_liman, 0, '', canManage, false);
+ altyapiHtml += buildUnitCard(s, 'kucuk_ocak', 'Küçük Top Ocağı', imgs.kucuk_ocak, db.settings.prices.kucuk_ocak, 0, '', canManage, false);
+ altyapiHtml += buildUnitCard(s, 'orta_ocak', 'Orta Top Ocağı', imgs.orta_ocak, db.settings.prices.orta_ocak, 0, '', canManage, false);
+ altyapiHtml += buildUnitCard(s, 'buyuk_ocak', 'Büyük Top Ocağı', imgs.buyuk_ocak, db.settings.prices.buyuk_ocak, 0, '', canManage, false);
+ altyapiHtml += buildUnitCard(s, 'okul', 'Okul', imgs.okul, db.settings.prices.okul, 0, '', canManage, false);
  const customInfra = (db.settings.customItems || []).filter(item => (!item.faction || item.faction === s.id) && item.category !== 'asker');
  customInfra.forEach(c => {
      altyapiHtml += buildUnitCard(s, c.id, c.name, c.icon, c.price, c.upkeep, '', canManage, true);
@@ -815,7 +818,6 @@ function buyBulk(id,key, labelName){
 }
 function buyCustomBulk(id, itemId, labelName){
  const s = getState(id);
- if(!s) return;
  if(!isAdmin && s.ownerEmail !== currentUserEmail) return; 
  const item = (db.settings.customItems||[]).find(x=>x.id===itemId);
  if(!item) return;
@@ -1015,6 +1017,7 @@ function passOneYear(){
 function openAdmin(){
  if(!isAdmin) return; 
  const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost;
+ const img=db.settings.images||{};
  const stateOpts = `<option value="">🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
  
  let customHtml = (db.settings.customItems||[]).map(x => {
@@ -1023,25 +1026,42 @@ function openAdmin(){
     return `<div class="list-item">
       <div style="display:flex; align-items:center;">
          ${safeIcon ? `<img src="${esc(safeIcon)}" style="width:32px;height:32px;object-fit:cover;margin-right:8px;border-radius:2px;">` : ''}
-         <div><b>${esc(x.name)}</b> <span class="badge">${esc(fName)}</span><br><span class="sub" style="font-size:11px;">(${x.category}) Fyt:${num(x.price)} | Bkm:${num(x.upkeep)} | İkm:${num(x.campCost||0)}</span></div>
+         <div><b>${esc(x.name)}</b> <span class="badge">${esc(fName)}</span><br><span class="sub">(${x.category}) Fyt:${num(x.price)} | Bkm:${num(x.upkeep)} | İkm:${num(x.campCost||0)}</span></div>
       </div>
       <button class="btn red small" onclick="removeCustomItem('${x.id}')">SİL</button>
     </div>`
  }).join("");
 
  modal(`<h2>⚙ KÜRESEL AYARLAR</h2>
- <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">🌟 ÖZEL BİRİM / BİNA EKLE</h4>
+
+ <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">🖼️ TEMEL BİRLİK & DONANMA GÖRSELLERİ (URL)</h4>
+ <p class="sub" style="margin-bottom:8px;">Standart asker, top ve gemilerin kartlarında görünecek resim linklerini girin.</p>
+ <div class="formgrid" style="background:#0a0c0e; padding:10px; border-radius:3px; border:1px solid var(--border-steel);">
+    ${field("img_piyade", "Piyade Resmi URL", img.piyade||"", "text")}
+    ${field("img_suvari", "Süvari Resmi URL", img.suvari||"", "text")}
+    ${field("img_nisanci", "Nişancı Resmi URL", img.nisanci||"", "text")}
+    ${field("img_kucuk_top", "Küçük Top Resmi URL", img.kucuk_top||"", "text")}
+    ${field("img_orta_top", "Orta Top Resmi URL", img.orta_top||"", "text")}
+    ${field("img_buyuk_top", "Büyük Top Resmi URL", img.buyuk_top||"", "text")}
+    ${field("img_kucuk_gemi", "Küçük Gemi Resmi URL", img.kucuk_gemi||"", "text")}
+    ${field("img_orta_gemi", "Orta Gemi Resmi URL", img.orta_gemi||"", "text")}
+    ${field("img_buyuk_gemi", "Büyük Gemi Resmi URL", img.buyuk_gemi||"", "text")}
+    ${field("img_okul", "Okul Resmi URL", img.okul||"", "text")}
+ </div>
+
+ <h4 style="color:var(--border-gold); margin:16px 0 6px; font-family:'Oswald';">🌟 ÖZEL BİRİM / BİNA EKLE</h4>
  <div style="margin-bottom:12px; max-height:180px; overflow:auto;">${customHtml || "<p class='sub'>Özel birim yok.</p>"}</div>
  <div class="formgrid" style="background:#0a0c0e; padding:10px; border-radius:3px; border:1px solid var(--border-gold);">
     ${field("ci_name", "Birim Adı", "", "text")}
     <div class="full"><label>Hangi Devlete Özel?</label><select id="f_ci_faction">${stateOpts}</select></div>
     <div><label>Kategori</label><select id="f_ci_cat"><option value="asker">Askeri Birlik</option><option value="altyapi">Altyapı / Bina</option></select></div>
-    ${field("ci_icon", "Resim URL (İsteğe Bağlı)", "", "text")}
+    ${field("ci_icon", "Resim URL (Direct Link)", "", "text")}
     ${field("ci_price", "Satın Alma Fiyatı", "0", "number")}
     ${field("ci_upkeep", "Yıllık Bakım Gideri", "0", "number")}
     ${field("ci_campCost", "Sefer İkmal Maliyeti", "0", "number")}
     <div class="full actions"><button class="btn green" style="width:100%;" onclick="addCustomItem()">➕ BİRİMİ KAYDET</button></div>
  </div>
+
  <h4 style="margin-top:14px; color:var(--border-gold); font-family:'Oswald';">SATIN ALMA FİYATLARI</h4><div class="formgrid">${Object.keys(p).map(k=>field("p_"+k,k,p[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--border-gold); font-family:'Oswald';">KAPASİTELER</h4><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--border-gold); font-family:'Oswald';">BAKIM GİDERLERİ</h4><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
@@ -1070,6 +1090,15 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.upkeep).forEach(k=>{ const el=document.getElementById("f_u_"+k); if(el) db.settings.upkeep[k]=Number(el.value||0); });
  Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
  Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
+ 
+ // Birlik Resimlerini Kaydet
+ db.settings.images = db.settings.images || {};
+ const imgKeys = ["piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","okul"];
+ imgKeys.forEach(k => {
+     const el = document.getElementById("f_img_" + k);
+     if(el) db.settings.images[k] = cleanUrl(el.value);
+ });
+
  if(doClose){ closeModal(); queueSave(); if(currentId) openDetail(currentId); } else { queueSave(); openAdmin(); }
 }
 
