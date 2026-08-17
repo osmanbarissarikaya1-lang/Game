@@ -158,7 +158,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .hoi-tabs::-webkit-scrollbar { display: none; }
 .hoi-tab {
     flex: 1;
-    min-width: 90px;
+    min-width: 80px;
     padding: 10px 8px;
     text-align: center;
     background: var(--panel);
@@ -226,6 +226,30 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .unit-buy-row input { padding:3px; height:26px; font-size:12px; text-align:center;}
 .unit-buy-row button { height:26px; flex:1; font-size:11px; padding:0;}
 
+/* DANIŞMAN (ADVISOR) KARTLARI */
+.advisor-card {
+    background: rgba(17, 20, 24, 0.75);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--border-gold);
+    padding: 10px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 10px;
+}
+.advisor-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 3px;
+    border: 1px solid var(--border-gold);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #0a0c0e;
+}
+.advisor-info { flex: 1; font-size: 12px; }
+.adv-buff { color: var(--green); margin-top: 3px; }
+.adv-debuff { color: var(--red); margin-top: 2px; }
+
 /* LİSTE ELEMANLARI */
 .list-item {
     background: var(--panel-light);
@@ -284,7 +308,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     margin-left: 4px;
 }
 
-/* LOG KARTLARI (Önceki/Sonraki Değişimli) */
+/* LOG KARTLARI */
 .log-item {
     background: rgba(22, 25, 30, 0.75);
     border: 1px solid var(--line);
@@ -375,7 +399,80 @@ let isAdmin = false;
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
-let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[]}, currentId=null, authMode="login", saveTimer=null;
+let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[]}, currentId=null, authMode="login", saveTimer=null;
+
+// 60 ADET HAZIR DANIŞMAN LİSTESİ (VARSAYILAN HAVUZ)
+const DEFAULT_60_ADVISORS = [
+  // 1-12 Türk Ekolü
+  { id:"adv_1", name:"Gölge Halil Paşa", role:"Saray Entrikacısı", salary:25000, buff:"İsyan ve anarşi oranını %0 yapar.", debuff:"Yıllık 25.000 TL gizli saray masrafı çeker.", icon:"", faction:"" },
+  { id:"adv_2", name:"Körükçü Dursun Ağa", role:"Baruthane Nazırı", salary:12000, buff:"Top üretim maliyetini %20 ucuzlatır.", debuff:"Kaza riski sebebiyle ordu bakımını +5.000 TL artırır.", icon:"", faction:"" },
+  { id:"adv_3", name:"Poyraz Hasan Kaptan", role:"Akdeniz Korsanı", salary:15000, buff:"Donanma bakım masraflarını %25 düşürür.", debuff:"Yabancı ticaret gelirini %10 azaltır.", icon:"", faction:"" },
+  { id:"adv_4", name:"Defterzade Şemsi Efendi", role:"Kuruş Sayıcı", salary:18000, buff:"Sıradan halktan toplanan vergiyi +%15 artırır.", debuff:"Halk mutluluğu her yıl -3 puan düşer.", icon:"", faction:"" },
+  { id:"adv_5", name:"Akıncı Çakal Mahmud", role:"Sınır Gazisi", salary:14000, buff:"Süvari sefer ikmal maliyetlerini %30 ucuzlatır.", debuff:"Sınır sürtüşmeleri yüzünden diplomasi zorlaşır.", icon:"", faction:"" },
+  { id:"adv_6", name:"Molla Sadık Çelebi", role:"Bağnaz Müderris", salary:10000, buff:"Mutluluk fermanları %50 daha fazla etki sağlar.", debuff:"Okulların eğitim artış hızını %20 yavaşlatır.", icon:"", faction:"" },
+  { id:"adv_7", name:"Demirci Rüstem Usta", role:"İstihkam Mimarı", salary:15000, buff:"Tüm altyapı binaları %15 daha ucuza inşa edilir.", debuff:"Yıllık 15.000 TL şantiye ödeneği çeker.", icon:"", faction:"" },
+  { id:"adv_8", name:"Kara Cengiz Bey", role:"Sert Mizaçlı Subaşı", salary:16000, buff:"Anarşistlerin devlete verdiği ekonomik zararı keser.", debuff:"Şehir sivil giderleri %20 artar.", icon:"", faction:"" },
+  { id:"adv_9", name:"Kuşbaz İshak Efendi", role:"Haberleşme Casus Başı", salary:30000, buff:"İstihbarat raporlarındaki sapmayı %0-%5 arasına indirir.", debuff:"Yıllık 30.000 TL casus ağı maaşı ister.", icon:"", faction:"" },
+  { id:"adv_10", name:"Tüccarbaşı Behram Ağa", role:"Kervan Ağası", salary:20000, buff:"Uzun süreli sabit ticaret gelirini +%20 artırır.", debuff:"Hazineye giren paradan %5 komisyon kırpar.", icon:"", faction:"" },
+  { id:"adv_11", name:"Yetim Murtaza", role:"Fedai Başı", salary:11000, buff:"Piyade alımında her 100 piyadeye +10 bedava acemi katar.", debuff:"Piyade bakım masrafını +1 TL/adet artırır.", icon:"", faction:"" },
+  { id:"adv_12", name:"Bostancıbaşı Kudret", role:"Nizam Muhafızı", salary:10000, buff:"Halk mutluluğunu sabit +%5 yukarıda tutar.", debuff:"Yıllık 10.000 TL özel nöbetçi maaşı çeker.", icon:"", faction:"" },
+
+  // 13-24 İtalyan Ekolü
+  { id:"adv_13", name:"Lorenzo della Volpe", role:"Tilkivari Banker", salary:25000, buff:"Hazineye tek seferlik +100.000 TL faizsiz fon sokar.", debuff:"Sonraki 5 yıl vergi gelirinin %5'ine el koyar.", icon:"", faction:"" },
+  { id:"adv_14", name:"Matteo Grimaldi", role:"Kadırga Mühendisi", salary:20000, buff:"Büyük gemilerin bakım masrafını %30 azaltır.", debuff:"Liman başına +20.000 TL peşin işçi parası ister.", icon:"", faction:"" },
+  { id:"adv_15", name:"Valerio da Firenze", role:"Diplomasi & Zehir Ustası", salary:22000, buff:"İstihbarat operasyonlarını tamamen bedava yapar.", debuff:"İfşa olursa halk mutluluğu -10 puan düşer.", icon:"", faction:"" },
+  { id:"adv_16", name:"Bernardo Scaligero", role:"Paralı Şövalye Komutanı", salary:20000, buff:"Sefer hazırlık ve ikmal maliyetini %25 düşürür.", debuff:"Yıllık 20.000 TL peşin sözleşme talep eder.", icon:"", faction:"" },
+  { id:"adv_17", name:"Domenico Castiglione", role:"Levant Sarrafı", salary:18000, buff:"Eğitimli sınıf vergisini 1.5x yerine 2.0x yapar.", debuff:"Sıradan halkın vergisinden %5 kaçak oluşur.", icon:"", faction:"" },
+  { id:"adv_18", name:"Geronimo Malatesta", role:"Kıyı Tahkimatçısı", salary:14000, buff:"Limanların gemi kapasitesini +3 gemi artırır.", debuff:"Küçük liman inşa maliyeti %25 pahalanır.", icon:"", faction:"" },
+  { id:"adv_19", name:"Fabrizio Sforza", role:"Ağır Zırh Dökümcüsü", salary:16000, buff:"Süvari birliklerinin savaş gücünü artırır.", debuff:"Süvari bakım masrafı 5 TL yerine 7 TL olur.", icon:"", faction:"" },
+  { id:"adv_20", name:"Cosmo Bragadin", role:"Simyacı & Barutçu", salary:15000, buff:"Büyük topların tahrip gücünü ikiye katlar.", debuff:"Yılda bir %15 ihtimalle top ocağında patlama çıkar.", icon:"", faction:"" },
+  { id:"adv_21", name:"Luciano Bellini", role:"Saray Ressamı", salary:12000, buff:"Anıt ve Panayır fermanlarının mutluluğunu katlar.", debuff:"Sanat harcaması için yıllık 12.000 TL bütçe yer.", icon:"", faction:"" },
+  { id:"adv_22", name:"Vincenzo Barbarigo", role:"Gümrük Komiseri", salary:15000, buff:"Gelen mektup ve para transferlerinden %5 vergi çeker.", debuff:"Müttefik devletlerle diplomasiyi zedeler.", icon:"", faction:"" },
+  { id:"adv_23", name:"Rinaldo Donati", role:"Akdeniz Haritacısı", salary:13000, buff:"Küçük ve orta gemi fiyatlarını %20 ucuzlatır.", debuff:"Gemi batması halinde tazminat %30 pahalıdır.", icon:"", faction:"" },
+  { id:"adv_24", name:"Enzo Farnese", role:"Karanlık Borç Verici", salary:15000, buff:"Hazine eksiye düşse bile anarşi çıkmasını önler.", debuff:"Hazineden her yıl 15.000 TL gizli faiz keser.", icon:"", faction:"" },
+
+  // 25-36 Bizans & Balkan Ekolü
+  { id:"adv_25", name:"Konstantinos Mavros", role:"Eski Hanedan Katibi", salary:14000, buff:"Devlet binalarının sivil giderini %25 düşürür.", debuff:"Eğitimli sınıfın mutluluğu düşer.", icon:"", faction:"" },
+  { id:"adv_26", name:"Drakos Voyvoda", role:"Dağ Akıncısı", salary:12000, buff:"Nişancı birliklerinin ikmal masrafını %30 ucuzlatır.", debuff:"Düz arazide süvari etkinliğini azaltır.", icon:"", faction:"" },
+  { id:"adv_27", name:"Branislav Vukovic", role:"Gümüş Ocakçısı", salary:16000, buff:"Madenlerden her yıl +35.000 TL gelir akıtır.", debuff:"Maden kazalarında yıllık 500 sivil kaybedilir.", icon:"", faction:"" },
+  { id:"adv_28", name:"Alexios Komnenos", role:"Gizli Şifreci", salary:22000, buff:"Rakip devletlerin casus raporlarını %50 saptırır.", debuff:"Kendi casusluk operasyonları %20 daha pahalıdır.", icon:"", faction:"" },
+  { id:"adv_29", name:"Stefan Nelipic", role:"Garnizon Komutanı", salary:13000, buff:"Kuşatmalarda garnizon direncini maksimuma çıkarır.", debuff:"Sefer ordusu çıkarma maliyeti %15 artar.", icon:"", faction:"" },
+  { id:"adv_30", name:"Mihailo Balsa", role:"Balkan İsyancı Başı", salary:10000, buff:"Anarşistleri silah altına alıp bedava 500 Piyade yapar.", debuff:"Şehirdeki halk mutluluğu -5 puan kaybeder.", icon:"", faction:"" },
+  { id:"adv_31", name:"Eleni Doukas", role:"Lobi Lideri", salary:18000, buff:"Diplomatik mektuplarda prestij ve kabul sağlar.", debuff:"Saray lüks giderlerini +18.000 TL artırır.", icon:"", faction:"" },
+  { id:"adv_32", name:"Bogdan Hacı", role:"Tuna Nehir Korsanı", salary:11000, buff:"Küçük gemi üretimini yarı fiyatına indirir.", debuff:"Açık deniz kalyonlarına bakım yapamaz.", icon:"", faction:"" },
+  { id:"adv_33", name:"Theodoros Laskaris", role:"Kadim İlahiyatçı", salary:12000, buff:"İbadethane fermanından gelen bağlılığı kalıcı yapar.", debuff:"Farklı tebaanın vergi ödemesini aksatır.", icon:"", faction:"" },
+  { id:"adv_34", name:"Radivoj Kotromanic", role:"Orman Pusu Ustası", salary:14000, buff:"Topraklarınıza giren düşman ordusunun ikmalini keser.", debuff:"Kendi ordunuzun taarruz gücünü %10 törpüler.", icon:"", faction:"" },
+  { id:"adv_35", name:"Kaloian Knez", role:"Tahıl Toplayıcısı", salary:10000, buff:"Erzak Dağıtımı ferman maliyetini yarıya indirir.", debuff:"Köylülerden zorla aldığı için isyan riski doğar.", icon:"", faction:"" },
+  { id:"adv_36", name:"Nikiforos Paleolog", role:"Kütüphane Muhafızı", salary:14000, buff:"Okulların eğitim katkısını +2 yerine +4 yapar.", debuff:"Kitap alımı için yıllık 14.000 TL harcar.", icon:"", faction:"" },
+
+  // 37-48 Cermen & Macar Ekolü
+  { id:"adv_37", name:"Dietrich von Eisen", role:"Zırhlı Şövalye", salary:20000, buff:"Piyadeleri ağır zırhla donatır, kayıpları %20 azaltır.", debuff:"Piyade bakım masrafı 1 TL'den 2 TL'ye çıkar.", icon:"", faction:"" },
+  { id:"adv_38", name:"Kaspar van Houten", role:"Barut Değirmencisi", salary:17000, buff:"Küçük ve Orta topların fiyatını %25 ucuzlatır.", debuff:"Top ocaklarının kapasitesini -2 düşürür.", icon:"", faction:"" },
+  { id:"adv_39", name:"Gabor Bathory", role:"Gaddar Derebeyi", salary:15000, buff:"Vergi artışında mutluluk kaybını yarıya indirir.", debuff:"Anarşist nüfus tavanını %10 yukarı çeker.", icon:"", faction:"" },
+  { id:"adv_40", name:"Sigismund Adler", role:"Lonca Temsilcisi", salary:16000, buff:"Pazar denetimi fermanından gelen geliri ikiye katlar.", debuff:"Hazineden her yıl 16.000 TL lonca payı çeker.", icon:"", faction:"" },
+  { id:"adv_41", name:"Wilhelm Faust", role:"Kuşatma Mühendisi", salary:19000, buff:"Büyük Şahi Topların üretim sınırını aşmayı sağlar.", debuff:"Büyük top başına yıllık +500 TL ekstra bakım çıkar.", icon:"", faction:"" },
+  { id:"adv_42", name:"Ladislaus Varadi", role:"Hızlı Süvari Generali", salary:18000, buff:"Süvari birliklerinin sefer ikmal maliyetini sıfırlar.", debuff:"Süvariler sefer dönüşü maaşlarına zam ister.", icon:"", faction:"" },
+  { id:"adv_43", name:"Reinhard Wolff", role:"Paralı Asker Çavuşu", salary:25000, buff:"Nüfus harcamadan para ile anında 1.000 Asker kiralar.", debuff:"Paralı askerlerin yıllık bakımı normalin 3 katıdır.", icon:"", faction:"" },
+  { id:"adv_44", name:"Ernst Brauer", role:"Zahire Tedarikçisi", salary:12000, buff:"Panayır fermanında halk mutluluğu +15 puan fırlar.", debuff:"Panayır fermanı maliyeti %30 daha pahalıdır.", icon:"", faction:"" },
+  { id:"adv_45", name:"Balthasar Becker", role:"Kıdemli Sayman", salary:14000, buff:"Yıl sonu bütçesinde gözden kaçan %5 fazladan gelir bulur.", debuff:"Yıllık 8.000 TL atölye kirası ister.", icon:"", faction:"" },
+  { id:"adv_46", name:"Hermann von Salza", role:"Tarikat Komutanı", salary:16000, buff:"Karakol inşası fermanından sonra eşkıyalığı tamamen bitirir.", debuff:"Sivil idareye karışır, otoriteyi zorlar.", icon:"", faction:"" },
+  { id:"adv_47", name:"Otto Lindemann", role:"Gemi Kalafatçısı", salary:15000, buff:"Büyük Kalyonların dayanıklılığını ve gücünü artırır.", debuff:"Büyük kalyon yapım fiyatını %15 artırır.", icon:"", faction:"" },
+  { id:"adv_48", name:"Konrad Schöller", role:"Gümüş Sikkeci", salary:20000, buff:"Paranın ayarını düşürerek hazineye anında +150.000 TL basar.", debuff:"Halk mutluluğu kalıcı olarak -10 puan kaybeder.", icon:"", faction:"" },
+
+  // 49-60 Doğu & Bozkır Ekolü
+  { id:"adv_49", name:"Bahadır Mirza", role:"Bozkır At Terbiyecisi", salary:14000, buff:"Süvari satın alma fiyatını 50 TL'den 30 TL'ye düşürür.", debuff:"Süvariler şehirde durmaz, yıllık otlak parası ister.", icon:"", faction:"" },
+  { id:"adv_50", name:"Korkut Noyan", role:"Gece Baskıncısı", salary:15000, buff:"Sefer hazırlığı yapmadan küçük sınır akınları düzenler.", debuff:"Baskın başarısız olursa kriz çıkar.", icon:"", faction:"" },
+  { id:"adv_51", name:"Mirza Rükneddin", role:"İpek Kervan Katibi", salary:18000, buff:"Sabit ticaret antlaşmalarından her yıl +25.000 TL prim alır.", debuff:"Kervan güvenliği için 500 Süvariyi meşgul eder.", icon:"", faction:"" },
+  { id:"adv_52", name:"Cihangir Şahsuvar", role:"Ağır Yay İmalatçısı", salary:13000, buff:"Nişancıların bakım masrafını 2 TL'den 1 TL'ye indirir.", debuff:"Nişancı alım peşin fiyatını %20 artırır.", icon:"", faction:"" },
+  { id:"adv_53", name:"Şair Nevai", role:"Divan Katipler Başı", salary:12000, buff:"Diplomatik mektupların karşı devletteki etkisini artırır.", debuff:"Sürekli saray ziyafeti ister (-10.000 TL/yıl).", icon:"", faction:"" },
+  { id:"adv_54", name:"Togan Bey", role:"Sahte Ricat Ustası", salary:16000, buff:"Muharebelerde ordu kaybetme riskini %50 azaltır.", debuff:"Savaşları uzatır, sefer masrafı %20 artar.", icon:"", faction:"" },
+  { id:"adv_55", name:"Mansur el-Müneccim", role:"Gökbilimci & Kahin", salary:14000, buff:"Gelecek yılın krizlerini önceden tahmin eder.", debuff:"Yanılma payında %10 bütçe israfına sebep olabilir.", icon:"", faction:"" },
+  { id:"adv_56", name:"Kılıç Arslan Mirza", role:"Veliaht Muhafızı", salary:20000, buff:"Hükümdara karşı yapılacak darbe ve suikastleri engeller.", debuff:"Yıllık 20.000 TL özel koruma maaşı çeker.", icon:"", faction:"" },
+  { id:"adv_57", name:"Börte Çineli", role:"Bozkır Şifacısı", salary:11000, buff:"Yıllık nüfus artış hızını +%5 artırır.", debuff:"Modern okulların verimini %10 düşürür.", icon:"", faction:"" },
+  { id:"adv_58", name:"Hüsrev Han", role:"Ağır Süvari Ağası", salary:17000, buff:"Boştaki nüfusun askere dönüşme hızını ikiye katlar.", debuff:"Ordunun vergi vermeme yükü bütçeye biner.", icon:"", faction:"" },
+  { id:"adv_59", name:"Derviş Burhaneddin", role:"Gezgin Sufi", salary:8000, buff:"İbadethane fermanı maliyetini tamamen sıfırlar.", debuff:"Gençlerin bir kısmı dergaha çekilir (Elverişli -500).", icon:"", faction:"" },
+  { id:"adv_60", name:"Baybatu Bahadır", role:"Casus Boğan", salary:16000, buff:"Ülkeye sızan düşman casuslarını yakalar.", debuff:"Yabancı tüccarları korkuttuğu için ticaret %5 düşer.", icon:"", faction:"" }
+];
 
 function initSupabase(){
  if(!window.supabase || typeof window.supabase.createClient!=="function") throw new Error("Supabase kütüphanesi yüklenemedi.");
@@ -509,15 +606,25 @@ async function loadDB(){
     db.settings.customItems = db.settings.customItems || [];
     db.purchaseLog = db.purchaseLog || []; 
     db.letters = db.letters || [];
+    
+    // 60 Danışman Havuzu Başlatıcı
+    if(!db.advisors || db.advisors.length === 0) {
+        db.advisors = structuredClone(DEFAULT_60_ADVISORS);
+    }
+    
     db.states.forEach(s => { 
         s.customLedger = s.customLedger || []; 
         s.permanentLedger = s.permanentLedger || [];
         s.rulerImage = cleanUrl(s.rulerImage || "");
         s.bgImage = cleanUrl(s.bgImage || "");
         s.istihbarat_binasi = s.istihbarat_binasi || 0;
+        s.hiredAdvisors = s.hiredAdvisors || [];
     });
  }
- else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[]};await saveDB()}
+ else {
+    db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_60_ADVISORS)};
+    await saveDB();
+ }
  toast("Sistem Aktif",true);
 }
 
@@ -635,6 +742,7 @@ function openDetail(id){
  const artUpkeep = calcArtilleryUpkeep(s);
  const navUpkeep = calcNavyUpkeep(s);
  const cusUpkeep = calcCustomUpkeep(s);
+ const advSalary = calcAdvisorExpenses(s);
  const totalExpenses = calcExpenses(s);
  
  let tempLedgerTotal = 0;
@@ -726,6 +834,7 @@ function openDetail(id){
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Topçu Batarya Bakımı</span><b style="color:var(--red)">-${money(artUpkeep)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Donanma / Gemi Bakımı</span><b style="color:var(--red)">-${money(navUpkeep)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Özel Birim Giderleri</span><b style="color:var(--red)">-${money(cusUpkeep)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Danışman / Vezir Maaşları</span><b style="color:var(--red)">-${money(advSalary)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sivil Saray / Kamu Gideri</span><b style="color:var(--red)">-${money(s.civilExpense)}</b></div>
         <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; border-top:1px dashed var(--line); padding-top:4px;">
             <span>TOPLAM OTOMATİK GİDER:</span>
@@ -771,7 +880,58 @@ function openDetail(id){
  }
  ledgerHtml += `</div>`;
 
- // 4. MEKTUPLAR & DİPLOMASİ SEKMESİ
+ // 4. DANIŞMANLAR & DİVAN SEKMESİ
+ const hiredIds = s.hiredAdvisors || [];
+ const activeAdvisors = (db.advisors||[]).filter(a => hiredIds.includes(a.id));
+ const availableAdvisors = (db.advisors||[]).filter(a => (!a.faction || a.faction === s.id) && !hiredIds.includes(a.id));
+
+ let divanHtml = `<div>
+    <h4 style="color:var(--border-gold); margin:0 0 6px; font-family:'Oswald';">👑 AKTİF DİVAN-I HÜMAYUN DANIŞMANLARI</h4>
+    <p class="sub" style="margin-bottom:10px;">Devletinize hizmet veren ve yıllık maaş alan vezirler & uzmanlar.</p>`;
+
+ if(activeAdvisors.length > 0) {
+    divanHtml += activeAdvisors.map(a => `
+        <div class="advisor-card" style="border-left-color:var(--green);">
+            ${a.icon ? `<img src="${esc(a.icon)}" class="advisor-avatar">` : `<div class="advisor-avatar" style="display:flex;align-items:center;justify-content:center;font-size:20px;">👑</div>`}
+            <div class="advisor-info">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div><b>${esc(a.name)}</b> <span class="badge">${esc(a.role)}</span></div>
+                    <span style="color:var(--gold); font-weight:bold;">${money(a.salary)}/yıl</span>
+                </div>
+                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
+                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
+                ${canManage ? `<div style="text-align:right; margin-top:6px;"><button class="btn red small" onclick="fireAdvisor('${s.id}','${a.id}')">AZLET (GÖREVDEN AL)</button></div>` : ''}
+            </div>
+        </div>
+    `).join('');
+ } else {
+    divanHtml += `<p class="sub" style="margin-bottom:15px;">Şu an divanınızda atanmış bir danışman bulunmuyor.</p>`;
+ }
+
+ divanHtml += `<h4 style="color:var(--border-gold); margin:16px 0 6px; font-family:'Oswald'; border-top:1px solid var(--line); padding-top:10px;">📜 HİZMETE ALINABİLİR DANIŞMANLAR & VEZİRLER</h4>
+ <p class="sub" style="margin-bottom:10px;">Ülkenizin çağırabileceği tarihi şahsiyetler.</p>`;
+
+ if(availableAdvisors.length > 0) {
+    divanHtml += availableAdvisors.map(a => `
+        <div class="advisor-card">
+            ${a.icon ? `<img src="${esc(a.icon)}" class="advisor-avatar">` : `<div class="advisor-avatar" style="display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>`}
+            <div class="advisor-info">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div><b>${esc(a.name)}</b> <span class="badge" style="background:#111;">${esc(a.role)}</span></div>
+                    <span style="color:var(--gold); font-weight:bold;">Maaş: ${money(a.salary)}/yıl</span>
+                </div>
+                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
+                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
+                ${canManage ? `<div style="text-align:right; margin-top:6px;"><button class="btn green small" onclick="hireAdvisor('${s.id}','${a.id}')">DİVANA ATA (GÖREVE ÇAĞIR)</button></div>` : ''}
+            </div>
+        </div>
+    `).join('');
+ } else {
+    divanHtml += `<p class="sub">Hizmete alınabilir başka danışman kalmadı.</p>`;
+ }
+ divanHtml += `</div>`;
+
+ // 5. MEKTUPLAR & DİPLOMASİ SEKMESİ
  let mektupHtml = `<div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
         <h4 style="color:var(--border-gold); margin:0; font-family:'Oswald';">📜 DİPLOMATİK ULAK & MEKTUPLAR</h4>
@@ -819,7 +979,7 @@ function openDetail(id){
  }
  mektupHtml += `</div>`;
 
- // 5. İSTİHBARAT SEKMESİ
+ // 6. İSTİHBARAT SEKMESİ
  let istihbaratHtml = ``;
  if((s.istihbarat_binasi || 0) > 0) {
     const targetOpts = db.states.filter(x => x.id !== s.id).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('');
@@ -847,7 +1007,7 @@ function openDetail(id){
     </div>`;
  }
 
- // 6. SİYASET / EYLEMLER SEKMESİ
+ // 7. SİYASET / EYLEMLER SEKMESİ
  let eylemHtml = `<div>`;
  let tActs = ``;
  if (isAdmin) tActs = `<button class="btn red" style="flex:1; padding:10px;" onclick="openCampaign('${s.id}')">⚔️ SEFER HAZIRLIĞI</button>
@@ -918,6 +1078,7 @@ function openDetail(id){
             <div class="hoi-tab active" id="tab-btn-asker" onclick="switchTab('asker')">Askeriye</div>
             <div class="hoi-tab" id="tab-btn-altyapi" onclick="switchTab('altyapi')">Altyapı</div>
             <div class="hoi-tab" id="tab-btn-maliye" onclick="switchTab('maliye')">Maliye & Hasıla</div>
+            <div class="hoi-tab" id="tab-btn-divan" onclick="switchTab('divan')">👑 Divan (${activeAdvisors.length})</div>
             <div class="hoi-tab" id="tab-btn-mektup" onclick="switchTab('mektup')">Mektuplar ${unreadCount > 0 ? `<span class="badge-count">${unreadCount}</span>` : ''}</div>
             ${(s.istihbarat_binasi || 0) > 0 ? `<div class="hoi-tab" id="tab-btn-intel" onclick="switchTab('intel')">🕵️ İstihbarat</div>` : ''}
             <div class="hoi-tab" id="tab-btn-eylem" onclick="switchTab('eylem')">Siyaset</div>
@@ -932,6 +1093,9 @@ function openDetail(id){
         <div class="tab-content" id="tab-content-maliye">
             ${ledgerHtml}
         </div>
+        <div class="tab-content" id="tab-content-divan">
+            ${divanHtml}
+        </div>
         <div class="tab-content" id="tab-content-mektup">
             ${mektupHtml}
         </div>
@@ -945,6 +1109,50 @@ function openDetail(id){
     </div>
  </div>
  `;
+}
+
+// ---------------- DANIŞMAN ATAMA & AZLETME ----------------
+function hireAdvisor(stateId, advId) {
+    const s = getState(stateId);
+    const adv = (db.advisors||[]).find(a => a.id === advId);
+    if(!s || !adv) return;
+    
+    s.hiredAdvisors = s.hiredAdvisors || [];
+    if(s.hiredAdvisors.includes(advId)) return;
+    
+    s.hiredAdvisors.push(advId);
+    
+    addLog({
+        stateId: s.id,
+        stateName: s.name,
+        action: `Divana Atandı: ${adv.name} (${adv.role})`,
+        cost: adv.salary,
+        qty: 1
+    });
+
+    queueSave();
+    openDetail(stateId);
+}
+
+function fireAdvisor(stateId, advId) {
+    const s = getState(stateId);
+    const adv = (db.advisors||[]).find(a => a.id === advId);
+    if(!s || !adv) return;
+    
+    if(!confirm(`${adv.name} azledilsin (görevden alınsın) mı?`)) return;
+
+    s.hiredAdvisors = (s.hiredAdvisors || []).filter(id => id !== advId);
+    
+    addLog({
+        stateId: s.id,
+        stateName: s.name,
+        action: `Divandan Azledildi: ${adv.name}`,
+        cost: 0,
+        qty: 1
+    });
+
+    queueSave();
+    openDetail(stateId);
 }
 
 // ---------------- ADMİN PARA GÖNDERME (HİBE) FONKSİYONU ----------------
@@ -1100,7 +1308,6 @@ function sendLetter(fromStateId) {
         read: false
     });
 
-    // Gönderici Logu
     addLog({
         stateId: sender.id,
         stateName: sender.name,
@@ -1114,7 +1321,6 @@ function sendLetter(fromStateId) {
         newUnit: sender.piyade||0
     });
 
-    // Alıcı Logu
     addLog({
         stateId: target.id,
         stateName: target.name,
@@ -1216,11 +1422,20 @@ function calcCustomUpkeep(s){
   if(db.settings.customItems) db.settings.customItems.forEach(item => { c += (s[item.id]||0) * (item.upkeep||0); });
   return c;
 }
+function calcAdvisorExpenses(s){
+  let total = 0;
+  const hired = s.hiredAdvisors || [];
+  if(hired.length > 0 && db.advisors) {
+      db.advisors.forEach(a => {
+          if(hired.includes(a.id)) total += (Number(a.salary) || 0);
+      });
+  }
+  return total;
+}
 function calcExpenses(s){
-  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + Number(s.civilExpense||0);
+  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + Number(s.civilExpense||0);
 }
 
-// ---------------- GELİŞMİŞ LOG EKLEME FONKSİYONU ----------------
 function addLog(data) {
     if(!db.purchaseLog) db.purchaseLog = [];
     const dateStr = new Date().toLocaleDateString("tr-TR") + " " + new Date().toLocaleTimeString("tr-TR", {hour:'2-digit', minute:'2-digit'});
@@ -1465,9 +1680,10 @@ function saveState(id){
  if(id){ 
     let existing = getState(id);
     o.customLedger = existing.customLedger || []; o.permanentLedger = existing.permanentLedger || [];
+    o.hiredAdvisors = existing.hiredAdvisors || [];
     Object.assign(existing,o); 
  } else { 
-    o.customLedger = []; o.permanentLedger = []; db.states.push({id:crypto.randomUUID(),...o});
+    o.customLedger = []; o.permanentLedger = []; o.hiredAdvisors = []; db.states.push({id:crypto.randomUUID(),...o});
  }
  closeModal();queueSave();renderHome()
 }
@@ -1514,7 +1730,6 @@ function transfer(id){
  s.treasury -= a;
  t.treasury += a; 
  
- // Gönderen Logu
  addLog({
      stateId: s.id,
      stateName: s.name,
@@ -1525,7 +1740,6 @@ function transfer(id){
      newTreasury: s.treasury
  });
 
- // Alıcı Logu
  addLog({
      stateId: t.id,
      stateName: t.name,
@@ -1543,7 +1757,6 @@ function openPurchaseLogs(){
     const myState = currentId ? getState(currentId) : null;
     let filteredLogs = db.purchaseLog || [];
     
-    // Eğer admin değilse sadece kendi devletinin loglarını görsün
     if(!isAdmin) {
         if(myState) {
             filteredLogs = filteredLogs.filter(l => l.stateId === myState.id || l.state === myState.name);
@@ -1646,16 +1859,45 @@ function openAdmin(){
     return `<div class="list-item">
       <div style="display:flex; align-items:center;">
          ${safeIcon ? `<img src="${esc(safeIcon)}" style="width:32px;height:32px;object-fit:cover;margin-right:8px;border-radius:2px;">` : ''}
-         <div><b>${esc(x.name)}</b> <span class="badge">${esc(fName)}</span><br><span class="sub">(${x.category}) Fyt:${num(x.price)} | Bkm:${num(x.upkeep)} | İkm:${num(x.campCost||0)}</span></div>
+         <div><b>${esc(x.name)}</b> <span class="badge">${esc(fName)}</span><br><span class="sub" style="font-size:11px;">(${x.category}) Fyt:${num(x.price)} | Bkm:${num(x.upkeep)} | İkm:${num(x.campCost||0)}</span></div>
       </div>
       <button class="btn red small" onclick="removeCustomItem('${x.id}')">SİL</button>
     </div>`
  }).join("");
 
+ let advisorsHtml = (db.advisors||[]).map((a, idx) => {
+    let fName = a.faction ? (getState(a.faction)?.name || "Özel Devlet") : "Tümü";
+    return `<div class="list-item" style="flex-direction:column; align-items:stretch;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div><b>${esc(a.name)}</b> <span class="sub">(${esc(a.role)})</span> <span class="badge">${esc(fName)}</span></div>
+        <div>
+            <button class="btn gold small" style="padding:2px 6px;" onclick="openEditAdvisorModal('${a.id}')">DÜZENLE</button>
+            <button class="btn red small" style="padding:2px 6px;" onclick="removeAdvisor('${a.id}')">SİL</button>
+        </div>
+      </div>
+      <div style="font-size:11px; margin-top:3px;"><span style="color:var(--green)">Artı: ${esc(a.buff)}</span> | <span style="color:var(--red)">Eksi: ${esc(a.debuff)}</span> | <span style="color:var(--gold)">Maaş: ${money(a.salary)}/yıl</span></div>
+    </div>`;
+ }).join("");
+
  modal(`<h2>⚙ KÜRESEL AYARLAR</h2>
 
+ <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN DANIŞMANLARI YÖNETİMİ (${(db.advisors||[]).length} Danışman)</h4>
+ <p class="sub" style="margin-bottom:8px;">Danışmanların özelliklerini, buff/debuff ve maaşlarını düzenleyin veya yeni danışman ekleyin.</p>
+ <div style="margin-bottom:12px; max-height:220px; overflow:auto;">${advisorsHtml || "<p class='sub'>Danışman yok.</p>"}</div>
+ 
+ <div class="formgrid" style="background:rgba(10, 12, 14, 0.7); padding:10px; border-radius:3px; border:1px solid var(--border-gold); margin-bottom:15px;">
+    <div class="full" style="color:var(--border-gold); font-size:12px; font-weight:bold; font-family:'Oswald';">➕ YENİ DANIŞMAN EKLE</div>
+    ${field("adv_new_name", "Danışman İsmi", "", "text")}
+    ${field("adv_new_role", "Unvanı / Rolü", "", "text")}
+    <div class="full"><label>Hangi Devlete Özel?</label><select id="f_adv_new_faction">${stateOpts}</select></div>
+    ${field("adv_new_salary", "Yıllık Maaş (TL)", "15000", "number")}
+    ${field("adv_new_icon", "Resim URL (İsteğe Bağlı)", "", "text")}
+    <div class="full">${field("adv_new_buff", "Artı Özellik (Buff Açıklaması)", "", "text")}</div>
+    <div class="full">${field("adv_new_debuff", "Eksi Özellik (Debuff / Risk Açıklaması)", "", "text")}</div>
+    <div class="full actions"><button class="btn green" style="width:100%;" onclick="addNewAdvisor()">➕ DANIŞMANI KAYDET</button></div>
+ </div>
+
  <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">🖼️ BİRLİK & BİNA GÖRSELLERİ (URL)</h4>
- <p class="sub" style="margin-bottom:8px;">Standart asker, donanma ve binaların kartlarında görünecek resim linklerini girin.</p>
  <div class="formgrid" style="background:rgba(10, 12, 14, 0.7); padding:10px; border-radius:3px; border:1px solid var(--border-steel);">
     ${field("img_piyade", "Piyade Resmi URL", img.piyade||"", "text")}
     ${field("img_suvari", "Süvari Resmi URL", img.suvari||"", "text")}
@@ -1695,6 +1937,72 @@ function openAdmin(){
  <h4 style="margin-top:10px; color:var(--gold); font-family:'Oswald';">FERMAN ÇARPANLARI</h4><div class="formgrid">${Object.keys(ec).map(k=>field("ec_"+k,k,ec[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">SEFER & İKMAL (Birim Başı)</h4><div class="formgrid">${Object.keys(cc).map(k=>field("cc_"+k,k,cc[k],"number")).join("")}</div>
  <div class="actions" style="margin-top:14px"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn blue" onclick="saveAdmin(true)">KAYDET</button></div>`)
+}
+
+// ---------------- DANIŞMAN YÖNETİMİ (ADMİN) ----------------
+function openEditAdvisorModal(advId) {
+    const a = (db.advisors||[]).find(x => x.id === advId);
+    if(!a) return;
+    const stateOpts = `<option value="" ${!a.faction ? 'selected' : ''}>🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}" ${a.faction===x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join("");
+
+    modal(`<h2>👑 DANIŞMANI DÜZENLE</h2>
+    <div class="formgrid">
+        ${field("adv_edit_name", "Danışman İsmi", a.name, "text")}
+        ${field("adv_edit_role", "Unvanı / Rolü", a.role, "text")}
+        <div class="full"><label>Hangi Devlete Özel?</label><select id="f_adv_edit_faction">${stateOpts}</select></div>
+        ${field("adv_edit_salary", "Yıllık Maaş (TL)", a.salary, "number")}
+        ${field("adv_edit_icon", "Resim URL", a.icon||"", "text")}
+        <div class="full">${field("adv_edit_buff", "Artı Özellik (Buff Açıklaması)", a.buff, "text")}</div>
+        <div class="full">${field("adv_edit_debuff", "Eksi Özellik (Debuff Açıklaması)", a.debuff, "text")}</div>
+        <div class="full actions" style="margin-top:10px;">
+            <button class="btn" onclick="openAdmin()">GERİ</button>
+            <button class="btn green" onclick="saveAdvisorEdit('${a.id}')">KAYDET</button>
+        </div>
+    </div>`);
+}
+
+function saveAdvisorEdit(advId) {
+    const a = (db.advisors||[]).find(x => x.id === advId);
+    if(!a) return;
+    a.name = document.getElementById("f_adv_edit_name").value.trim() || a.name;
+    a.role = document.getElementById("f_adv_edit_role").value.trim() || a.role;
+    a.faction = document.getElementById("f_adv_edit_faction").value;
+    a.salary = Number(document.getElementById("f_adv_edit_salary").value) || 0;
+    a.icon = cleanUrl(document.getElementById("f_adv_edit_icon").value);
+    a.buff = document.getElementById("f_adv_edit_buff").value.trim();
+    a.debuff = document.getElementById("f_adv_edit_debuff").value.trim();
+    queueSave();
+    openAdmin();
+}
+
+function addNewAdvisor() {
+    const name = document.getElementById("f_adv_new_name").value.trim();
+    const role = document.getElementById("f_adv_new_role").value.trim();
+    const faction = document.getElementById("f_adv_new_faction").value;
+    const salary = Number(document.getElementById("f_adv_new_salary").value) || 0;
+    const icon = cleanUrl(document.getElementById("f_adv_new_icon").value);
+    const buff = document.getElementById("f_adv_new_buff").value.trim();
+    const debuff = document.getElementById("f_adv_new_debuff").value.trim();
+    
+    if(!name || !role) { alert("Danışman ismi ve rolü boş olamaz!"); return; }
+    
+    db.advisors = db.advisors || [];
+    db.advisors.push({
+        id: "adv_" + crypto.randomUUID().split("-")[0],
+        name, role, faction, salary, icon, buff, debuff
+    });
+    queueSave();
+    openAdmin();
+}
+
+function removeAdvisor(advId) {
+    if(!confirm("Bu danışmanı silmek istediğinize emin misiniz?")) return;
+    db.advisors = (db.advisors||[]).filter(x => x.id !== advId);
+    db.states.forEach(s => {
+        if(s.hiredAdvisors) s.hiredAdvisors = s.hiredAdvisors.filter(id => id !== advId);
+    });
+    queueSave();
+    openAdmin();
 }
 
 function addCustomItem(){
