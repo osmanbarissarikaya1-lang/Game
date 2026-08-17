@@ -415,7 +415,7 @@ const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
 
-// BAŞLANGIÇ İÇİN 3 ANA DEVLET (EĞİB VERİTABANI BOŞSA YÜKLENİR)
+// BAŞLANGIÇ İÇİN 3 ANA DEVLET
 const INITIAL_STATES = [
   {
     id: "state_osmanli",
@@ -621,7 +621,6 @@ const DYNAMIC_EVENTS = [
   { title: "Yabancı Elçinin Kabulü ve Rüşvet", desc: "Batılı bir elçi, sarayda bazı kararları kendi lehine çevirmek için teklifte bulunuyor.", condition: s => true, choiceA: { text: "Rüşveti kabul et (+200.000 TL Hazine)", cost: -200000, hap: -3, anar: 0 }, choiceB: { text: "Elçiyi huzurdan kov (Mutluluk +2)", cost: 0, hap: 2, anar: 0 } }
 ];
 
-// Geri kalan 75 olayı döngüyle ekle
 for(let i=26; i<=100; i++) {
   DYNAMIC_EVENTS.push({
     title: `Krallık Gündem Raporu #${i}`,
@@ -932,6 +931,7 @@ function renderHome(){
   const accent=s.color||"#c5a059";
   const rulerImgClean = cleanUrl(s.rulerImage);
   const unreadLetters = (db.letters||[]).filter(l => l.toStateId === s.id && !l.read).length;
+  const pendingCount = (s.pendingEvents || []).length;
 
   return `<div class="state-card" style="border-left: 3px solid ${esc(accent)};">
    <div class="state-head">
@@ -940,6 +940,7 @@ function renderHome(){
        <div><h2 style="color:${esc(accent)}; font-size:16px;">${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"Lider Yok")} ${isMine ? '<span style="color:var(--gold)">(Sen)</span>' : ''}</div></div>
      </div>
      <div style="display:flex; align-items:center; gap:5px;">
+       ${pendingCount > 0 ? `<span class="badge-count" style="background:var(--gold); color:#000;" title="Çözülecek Olay Var!">⚡ ${pendingCount}</span>` : ''}
        ${unreadLetters > 0 ? `<span class="badge-count" title="Yeni Mektup!">✉ ${unreadLetters}</span>` : ''}
        <span class="badge">${esc(s.title||"Devlet")}</span>
      </div>
@@ -1005,12 +1006,6 @@ function openDetail(id){
  document.getElementById("home").classList.add("hidden");
  document.getElementById("detail").classList.remove("hidden");
  
- // Yönetime girildiğinde bekleyen olay varsa pop-up aç
- if(s.pendingEvents && s.pendingEvents.length > 0) {
-     triggerNextEventModal(s);
-     return;
- }
-
  const bgImgClean = cleanUrl(s.bgImage);
  if(bgImgClean) {
     document.body.style.background = `linear-gradient(rgba(13,15,18,0.85), rgba(13,15,18,0.85)), url('${esc(bgImgClean)}') fixed center/cover`;
@@ -1123,7 +1118,7 @@ function openDetail(id){
  } else { ledgerHtml += `<p class="sub">Aktif antlaşma yok.</p>`; }
  ledgerHtml += `</div>`;
 
- // 4. DİVAN
+ // 4. DİVAN (YENİ SEKMEYLE KRİZLER / OLAYLAR ALANI EKLENDİ)
  const hiredIds = s.hiredAdvisors || [];
  const maxSlots = s.advisorSlots || 3;
  const activeAdvisors = (db.advisors||[]).filter(a => hiredIds.includes(a.id));
@@ -1188,7 +1183,31 @@ function openDetail(id){
  }
  divanHtml += `</div>`;
 
- // 5. MEKTUPLAR
+ // 5. DEVLET İÇİNDEKİ OLAYLAR SEKMESİ (YENİ)
+ let pendingList = s.pendingEvents || [];
+ let olaylarHtml = `<div>
+    <h4 style="color:var(--gold); margin:0 0 8px; font-family:'Oswald';">⚡ DEVLET KRİZLERİ & GÜNDEM OLAYLARI (${pendingList.length})</h4>
+    <p class="sub" style="margin-bottom:14px;">Yıl geçişlerinde devletinizin başına gelen olaylar burada listelenir. Kararlarınızı doğrudan devlet panelinden verebilirsiniz.</p>`;
+
+ if(pendingList.length > 0) {
+    olaylarHtml += pendingList.map((ev, idx) => `
+        <div style="background:rgba(21, 24, 29, 0.9); border:1px solid var(--border-gold); border-left:4px solid var(--gold); padding:12px; border-radius:3px; margin-bottom:10px;">
+            <h3 style="margin:0 0 6px; font-family:'Playfair Display'; color:var(--border-gold);">${esc(ev.title)}</h3>
+            <p style="font-size:13px; line-height:1.4; color:var(--text); margin-bottom:10px;">${esc(ev.desc)}</p>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+                <button class="btn green small" style="text-align:left; padding:8px;" onclick="resolveStateEvent('${s.id}', ${idx}, 'A')">✔ ${esc(ev.choiceA.text)}</button>
+                <button class="btn red small" style="text-align:left; padding:8px;" onclick="resolveStateEvent('${s.id}', ${idx}, 'B')">✖ ${esc(ev.choiceB.text)}</button>
+            </div>
+        </div>
+    `).join('');
+ } else {
+    olaylarHtml += `<div style="text-align:center; padding:30px; color:var(--muted); border:1px dashed var(--line); border-radius:3px;">
+        ☕ Şu an devletinizde bekleyen aktif bir kriz veya olay bulunmuyor. Yıl geçişini bekleyin.
+    </div>`;
+ }
+ olaylarHtml += `</div>`;
+
+ // 6. MEKTUPLAR
  let mektupHtml = `<div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
         <h4 style="color:var(--border-gold); margin:0; font-family:'Oswald';">📜 DİPLOMATİK ULAK & MEKTUPLAR</h4>
@@ -1213,7 +1232,7 @@ function openDetail(id){
  } else { mektupHtml += `<p class="sub">Mektup yok.</p>`; }
  mektupHtml += `</div>`;
 
- // 6. İSTİHBARAT
+ // 7. İSTİHBARAT
  let istihbaratHtml = ``;
  if((s.istihbarat_binasi || 0) > 0) {
     const targetOpts = db.states.filter(x => x.id !== s.id).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('');
@@ -1237,7 +1256,7 @@ function openDetail(id){
     </div>`;
  }
 
- // 7. SİYASET
+ // 8. SİYASET
  let eylemHtml = `<div>`;
  let tActs = isAdmin ? `<button class="btn red" style="flex:1; padding:10px;" onclick="openCampaign('${s.id}')">⚔️ SEFER</button><button class="btn gold" style="flex:1; padding:10px;" onclick="openAdminGrantModal('${s.id}')">💸 PARA GÖNDER</button>` : '';
  eylemHtml += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">${tActs}</div></div>`;
@@ -1276,6 +1295,7 @@ function openDetail(id){
             <div class="hoi-tab" id="tab-btn-altyapi" onclick="switchTab('altyapi')">Altyapı</div>
             <div class="hoi-tab" id="tab-btn-maliye" onclick="switchTab('maliye')">Maliye</div>
             <div class="hoi-tab" id="tab-btn-divan" onclick="switchTab('divan')">👑 Divan (${activeAdvisors.length}/${maxSlots})</div>
+            <div class="hoi-tab" id="tab-btn-olaylar" onclick="switchTab('olaylar')" style="color:${pendingCount>0?'var(--gold)':''}">⚡ Gündem ${pendingCount>0?`(${pendingCount})`:''}</div>
             <div class="hoi-tab" id="tab-btn-mektup" onclick="switchTab('mektup')">Mektuplar</div>
             ${(s.istihbarat_binasi || 0) > 0 ? `<div class="hoi-tab" id="tab-btn-intel" onclick="switchTab('intel')">🕵️ İstihbarat</div>` : ''}
             <div class="hoi-tab" id="tab-btn-eylem" onclick="switchTab('eylem')">Siyaset</div>
@@ -1284,6 +1304,7 @@ function openDetail(id){
         <div class="tab-content" id="tab-content-altyapi">${altyapiHtml}</div>
         <div class="tab-content" id="tab-content-maliye">${ledgerHtml}</div>
         <div class="tab-content" id="tab-content-divan">${divanHtml}</div>
+        <div class="tab-content" id="tab-content-olaylar">${olaylarHtml}</div>
         <div class="tab-content" id="tab-content-mektup">${mektupHtml}</div>
         ${(s.istihbarat_binasi || 0) > 0 ? `<div class="tab-content" id="tab-content-intel">${istihbaratHtml}</div>` : ''}
         <div class="tab-content" id="tab-content-eylem">${eylemHtml}</div>
@@ -1291,28 +1312,12 @@ function openDetail(id){
  </div>`;
 }
 
-// ---------------- RASTGELE OLAY POP-UP MOTORU ----------------
-function triggerNextEventModal(s) {
-    if(!s.pendingEvents || s.pendingEvents.length === 0) return;
-    const ev = s.pendingEvents[0];
-
-    modal(`<div style="border-left:4px solid var(--gold); padding-left:10px;">
-        <h2 style="color:var(--gold); margin-top:0;">⚡ KRİTİK DEVLET OLAYI</h2>
-        <h3 style="margin:4px 0 10px; font-family:'Playfair Display';">${esc(ev.title)}</h3>
-        <p style="font-size:15px; line-height:1.5; color:var(--text); margin-bottom:16px;">${esc(ev.desc)}</p>
-        
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="btn green" style="padding:10px; text-align:left;" onclick="resolveEvent('${s.id}', 'A')">✔ ${esc(ev.choiceA.text)}</button>
-            <button class="btn red" style="padding:10px; text-align:left;" onclick="resolveEvent('${s.id}', 'B')">✖ ${esc(ev.choiceB.text)}</button>
-        </div>
-    </div>`);
-}
-
-function resolveEvent(stateId, choiceKey) {
+// ---------------- DEVLET İÇİNDEN OLAY ÇÖZME ----------------
+function resolveStateEvent(stateId, eventIndex, choiceKey) {
     const s = getState(stateId);
-    if(!s || !s.pendingEvents || s.pendingEvents.length === 0) return;
-    const ev = s.pendingEvents.shift();
-
+    if(!s || !s.pendingEvents || !s.pendingEvents[eventIndex]) return;
+    
+    const ev = s.pendingEvents[eventIndex];
     const choice = choiceKey === 'A' ? ev.choiceA : ev.choiceB;
 
     const oldT = s.treasury;
@@ -1323,24 +1328,21 @@ function resolveEvent(stateId, choiceKey) {
         s.happiness = Math.max(0, Math.min(100, s.happiness + choice.hap));
     }
 
+    // Seçilen olayı listeden kaldır
+    s.pendingEvents.splice(eventIndex, 1);
+
     addLog({
         stateId: s.id,
         stateName: s.name,
-        action: `Olay Kararı (${ev.title} - Seçim ${choiceKey})`,
+        action: `Gündem Kararı (${ev.title} - Seçim ${choiceKey})`,
         cost: Math.abs(choice.cost || 0),
         qty: 1,
         oldTreasury: oldT,
         newTreasury: s.treasury
     });
 
-    closeModal();
     queueSave();
-
-    if(s.pendingEvents.length > 0) {
-        triggerNextEventModal(s);
-    } else {
-        openDetail(stateId);
-    }
+    openDetail(stateId);
 }
 
 // ---------------- 1 YIL GEÇİR ----------------
@@ -1366,14 +1368,14 @@ function passOneYear(){
         s.customLedger = []; 
         let col = net >= 0 ? 'var(--green)' : 'var(--red)';
 
-        s.pendingEvents = [];
+        s.pendingEvents = s.pendingEvents || [];
         let validEvents = DYNAMIC_EVENTS.filter(ev => {
             try { return ev.condition(s); } catch(e) { return false; }
         });
 
         validEvents.sort(() => Math.random() - 0.5);
         let selectedEvents = validEvents.slice(0, Math.floor(Math.random() * 2) + 1);
-        s.pendingEvents = selectedEvents;
+        s.pendingEvents = s.pendingEvents.concat(selectedEvents); // Eskilerin üstüne ekle
 
         s.advisorHiredYears = s.advisorHiredYears || {};
         (s.hiredAdvisors || []).forEach(advId => {
@@ -1432,7 +1434,7 @@ function passOneYear(){
             <div style="border-bottom:1px solid var(--line); margin-bottom:4px; padding-bottom:4px;"><b>${esc(s.name)}</b></div>
             <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
                 <div>Net: <b style="color:${col};">${net>=0?'+':''}${money(net)}</b> | Yeni Kasa: ${money(s.treasury)}</div>
-                <div>Bekleyen Olay: <b>${s.pendingEvents.length} Adet</b></div>
+                <div>Yeni Eklenen Olay: <b>${selectedEvents.length} Adet</b></div>
             </div>
             <div style="font-size:11px; color:var(--gold); background:rgba(10,12,14,0.6); padding:4px; border-radius:2px;"><b>Paşalar:</b> ${advisorReport.join(' | ') || 'Yok'}</div>
         </div>`;
