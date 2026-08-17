@@ -112,7 +112,15 @@ const defaultSettings={
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
- customItems: [] 
+ customItems: [],
+ visuals:{
+   siteBackground:"",
+   siteOverlay:"rgba(7,12,22,.72)",
+   cardOpacity:0.94,
+   showPortraits:true,
+   showEmblems:true,
+   coreImages:{piyade:"",suvari:"",nisanci:"",kucuk_top:"",orta_top:"",buyuk_top:"",kucuk_gemi:"",orta_gemi:"",buyuk_gemi:"",kucuk_liman:"",orta_liman:"",buyuk_liman:"",kucuk_ocak:"",orta_ocak:"",buyuk_ocak:"",okul:""}
+ }
 };
 
 const EDICTS = [
@@ -223,13 +231,20 @@ async function loadDB(){
     db.settings.customItems = db.settings.customItems || [];
      db.settings.visuals={...defaultSettings.visuals,...(db.settings.visuals||{})};
      db.settings.visuals.coreImages={...defaultSettings.visuals.coreImages,...(db.settings.visuals.coreImages||{})};
+     db.settings.visuals.showPortraits = db.settings.visuals.showPortraits !== false;
+     db.settings.visuals.showEmblems = db.settings.visuals.showEmblems !== false;
     db.purchaseLog = db.purchaseLog || []; 
     db.states.forEach(s => { 
         s.customLedger = s.customLedger || []; 
         s.permanentLedger = s.permanentLedger || []; // YENİ: Uzun süreli kontratlar/anlaşmalar
     });
  }
- else {db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};await saveDB()}
+ else {
+   db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[]};
+   applyVisualSettings();
+   await saveDB();
+ }
+ applyVisualSettings();
  toast("Çevrimiçi ve otomatik kayıt açık",true);
 }
 async function saveDB(){
