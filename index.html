@@ -235,6 +235,16 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     font-size: 13px;
 }
 
+/* EKONOMİ KARTLARI */
+.eco-kpi-card {
+    background: #0a0c0e;
+    border: 1px solid var(--border-gold);
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
 /* MEKTUP KARTLARI */
 .letter-box {
     background: #111418;
@@ -281,7 +291,6 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .authbox{width:min(380px,100%);background:var(--panel);padding:24px;border-radius:4px;border:1px solid var(--border-gold); box-shadow:0 8px 24px rgba(0,0,0,0.8); text-align:center;}
 .error{color:var(--red);font-size:12px;margin-top:8px}.success{color:var(--green);font-size:12px;margin-top:8px}
 
-/* MOBİL VE KÜÇÜK EKRAN UYUMLULUKLARI (RESPONSIVE) */
 @media(max-width:850px){
     .container { padding: 6px; }
     .top { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; }
@@ -591,6 +600,21 @@ function openDetail(id){
  const p = calcPop(s);
  const annualIncome = calcIncome(s);
  const permInc = calcPermIncome(s);
+ const milUpkeep = calcMilitaryUpkeep(s);
+ const artUpkeep = calcArtilleryUpkeep(s);
+ const navUpkeep = calcNavyUpkeep(s);
+ const cusUpkeep = calcCustomUpkeep(s);
+ const totalExpenses = calcExpenses(s);
+ 
+ // Bu yıla özel tek seferlik kalemlerin toplamı
+ let tempLedgerTotal = 0;
+ if(s.customLedger && s.customLedger.length > 0) {
+     s.customLedger.forEach(item => { tempLedgerTotal += item.amount; });
+ }
+ 
+ // Yıllık Net Hasıla (Yıl sonu hazineye girecek/çıkacak net miktar)
+ const netAnnualGain = annualIncome + permInc - totalExpenses + tempLedgerTotal;
+
  const isOwner = (s.ownerEmail === currentUserEmail);
  const canManage = isAdmin || isOwner;
  const editBtn = isAdmin ? `<button class="btn gold" onclick="openStateForm('${s.id}')">✎ DÜZENLE</button>` : ``;
@@ -636,9 +660,57 @@ function openDetail(id){
  });
  altyapiHtml += `</div>`;
 
- // 3. MALİYE DEFTERİ SEKMESİ
+ // 3. MALİYE & DETAYLI EKONOMİ & YILLIK HASILA SEKMESİ
  let ledgerHtml = `<div>`;
- ledgerHtml += `<h4 style="color:var(--border-gold); margin:0 0 6px; font-family:'Oswald';">UZUN SÜRELİ ANTLAŞMALAR (Yıllık Sabit)</h4>`;
+ 
+ // A. YILLIK NET HASILA PANOSU
+ const netSign = netAnnualGain >= 0 ? '+' : '';
+ const netColor = netAnnualGain >= 0 ? 'var(--green)' : 'var(--red)';
+ ledgerHtml += `
+ <div class="eco-kpi-card">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:8px;">
+        <div><span class="muted">MEVCUT HAZİNE:</span> <b class="money" style="font-size:16px;">${money(s.treasury)}</b></div>
+        <div><span class="muted">YILLIK NET HASILA:</span> <b style="color:${netColor}; font-size:16px;">${netSign}${money(netAnnualGain)} / Yıl</b></div>
+    </div>
+    <div style="font-size:12px; color:var(--muted);">
+        Yıl bittiğinde hazinenize eklenecek/kesilecek net tutardır. (Vergiler + Sabit Ticaret + Tek Seferlik Kalemler - Otomatik Giderler)
+    </div>
+ </div>`;
+
+ // B. DETAYLI EKONOMİ DÖKÜMÜ (ESKİ SİSTEM GERİ GETİRİLDİ)
+ const baseTax = (Number(s.baseTaxPerPerson)||5) * ((Number(s.tax)||0)/100);
+ ledgerHtml += `
+ <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+    <!-- GELİR DETAYLARI -->
+    <div style="background:var(--panel-light); border:1px solid var(--line); border-left:3px solid var(--green); padding:10px; border-radius:3px;">
+        <h4 style="color:var(--green); margin:0 0 6px; font-family:'Oswald';">📥 GELİR DETAYLARI</h4>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Eğitimli Sınıf Vergisi (1.5x)</span><b style="color:var(--green)">${money(Math.floor(p.edu * baseTax * 1.5))}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sıradan Halk Vergisi (1.0x)</span><b style="color:var(--green)">${money(Math.floor(p.other * baseTax))}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Boştaki Elverişli Vergisi (1.0x)</span><b style="color:var(--green)">${money(Math.floor(p.elig * baseTax))}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sabit Antlaşma Gelirleri</span><b style="color:var(--green)">${money(permInc)}</b></div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; border-top:1px dashed var(--line); padding-top:4px;">
+            <span>TOPLAM BRÜT GELİR:</span>
+            <span style="color:var(--green)">${money(annualIncome + permInc)}</span>
+        </div>
+    </div>
+
+    <!-- GİDER DETAYLARI -->
+    <div style="background:var(--panel-light); border:1px solid var(--line); border-left:3px solid var(--red); padding:10px; border-radius:3px;">
+        <h4 style="color:var(--red); margin:0 0 6px; font-family:'Oswald';">📤 GİDER DETAYLARI</h4>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Ordu Bakımı (Piyade/Süvari/Nişancı)</span><b style="color:var(--red)">-${money(milUpkeep)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Topçu Batarya Bakımı</span><b style="color:var(--red)">-${money(artUpkeep)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Donanma / Gemi Bakımı</span><b style="color:var(--red)">-${money(navUpkeep)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Özel Birim Giderleri</span><b style="color:var(--red)">-${money(cusUpkeep)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sivil Saray / Kamu Gideri</span><b style="color:var(--red)">-${money(s.civilExpense)}</b></div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; border-top:1px dashed var(--line); padding-top:4px;">
+            <span>TOPLAM OTOMATİK GİDER:</span>
+            <span style="color:var(--red)">-${money(totalExpenses)}</span>
+        </div>
+    </div>
+ </div>`;
+
+ // C. UZUN SÜRELİ ANTLAŞMALAR
+ ledgerHtml += `<h4 style="color:var(--border-gold); margin:0 0 6px; font-family:'Oswald';">📜 UZUN SÜRELİ ANTLAŞMALAR (Yıllık Sabit)</h4>`;
  if(s.permanentLedger && s.permanentLedger.length > 0) {
     ledgerHtml += s.permanentLedger.map((item, index) => `
         <div class="list-item">
@@ -648,7 +720,8 @@ function openDetail(id){
         </div>`).join('');
  } else { ledgerHtml += `<p class="sub">Aktif antlaşma yok.</p>`; }
 
- ledgerHtml += `<h4 style="color:var(--border-gold); margin:14px 0 6px; font-family:'Oswald';">TEK SEFERLİK KALEMLER (Sadece Bu Yıl)</h4>`;
+ // D. TEK SEFERLİK KALEMLER
+ ledgerHtml += `<h4 style="color:var(--border-gold); margin:14px 0 6px; font-family:'Oswald';">⚡ BU YILA MAHSUS TEK SEFERLİK KALEMLER</h4>`;
  if(s.customLedger && s.customLedger.length > 0) {
     ledgerHtml += s.customLedger.map((item, index) => `
         <div class="list-item">
@@ -663,11 +736,11 @@ function openDetail(id){
     <div style="margin-top:14px; background:#0a0c0e; padding:10px; border:1px solid var(--border-gold); border-radius:3px;">
         <div style="color:var(--border-gold); font-size:12px; font-weight:bold; margin-bottom:6px; font-family:'Oswald';">➕ YENİ KALEM EKLE</div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <input id="ledger_desc_${s.id}" type="text" placeholder="Açıklama" style="flex:2; min-width:140px;">
+            <input id="ledger_desc_${s.id}" type="text" placeholder="Açıklama (Örn: Venedik Ticareti)" style="flex:2; min-width:140px;">
             <input id="ledger_amt_${s.id}" type="number" placeholder="Tutar (Eksi/Artı)" style="flex:1; min-width:100px;">
             <select id="ledger_type_${s.id}" style="flex:1; min-width:120px;">
-                <option value="temp">Tek Seferlik</option>
-                <option value="perm">Sabit (Yıllık)</option>
+                <option value="temp">Tek Seferlik (Bu Yıl)</option>
+                <option value="perm">Sabit (Her Yıl)</option>
             </select>
             <button class="btn green" onclick="addLedgerItem('${s.id}')">EKLE</button>
         </div>
@@ -675,7 +748,7 @@ function openDetail(id){
  }
  ledgerHtml += `</div>`;
 
- // 4. MEKTUPLAR & DİPLOMASİ SEKMESİ (Silme ve Yanıtlama Desteğiyle)
+ // 4. MEKTUPLAR & DİPLOMASİ SEKMESİ
  let mektupHtml = `<div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
         <h4 style="color:var(--border-gold); margin:0; font-family:'Oswald';">📜 DİPLOMATİK ULAK & MEKTUPLAR</h4>
@@ -692,7 +765,6 @@ function openDetail(id){
         if(l.suvari > 0) attachments.push(`🐎 ${num(l.suvari)} Süvari`);
         if(l.nisanci > 0) attachments.push(`🏹 ${num(l.nisanci)} Nişancı`);
         
-        // Yanıtlama hedefi
         const replyTargetId = isIncoming ? l.fromStateId : l.toStateId;
 
         return `<div class="letter-box" style="border-left-color:${isIncoming ? 'var(--green)' : 'var(--blue)'};">
@@ -717,7 +789,6 @@ function openDetail(id){
             </div>` : ''}
         </div>`;
     }).join('');
-    // Mektupları okundu işaretle
     myLetters.forEach(l => { if(l.toStateId === s.id) l.read = true; });
     queueSave();
  } else {
@@ -785,7 +856,7 @@ function openDetail(id){
  </div>
  
  <div class="detail-layout">
-    <!-- SOL PANEL: LİDER & SİYASET -->
+    <!-- SOL PANEL: LİDER & SİYASET & NÜFUS (Maliye olmadan, sadece siyasi/sosyal) -->
     <div class="political-panel">
         <div class="political-header">
             <h1 style="color:${esc(s.color||"var(--border-gold)")};">${esc(s.name)}</h1>
@@ -805,16 +876,14 @@ function openDetail(id){
                 <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${Math.max(0,Math.min(100,s.happiness))}%;"></div></div>
             </div>
 
-            <div class="pol-stat-row"><span class="muted">Hazine</span><span class="money">${money(s.treasury)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Yıllık Net</span><span style="color:${(annualIncome+permInc-calcExpenses(s))>=0?'var(--green)':'var(--red)'}">${money(annualIncome + permInc - calcExpenses(s))}</span></div>
             <div class="pol-stat-row"><span class="muted">Vergi Oranı</span><span style="color:var(--gold)">%${num(s.tax)}</span></div>
             <div class="pol-stat-row"><span class="muted">Toplam Nüfus</span><span>${num(s.population)}</span></div>
             
-            <div style="color:var(--border-gold); margin:10px 0 4px; font-size:11px; font-family:'Oswald'; border-bottom:1px solid var(--line);">NÜFUS DAĞILIMI</div>
-            <div class="pol-stat-row"><span class="muted">Eğitimli (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div>
+            <div style="color:var(--border-gold); margin:12px 0 4px; font-size:11px; font-family:'Oswald'; border-bottom:1px solid var(--line);">👥 NÜFUS VE SINIF DAĞILIMI</div>
+            <div class="pol-stat-row"><span class="muted">Eğitimli Sınıf (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div>
             <div class="pol-stat-row"><span class="muted">Sıradan Halk</span><span>${num(p.other)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Boştaki Asker</span><span style="color:var(--green)">${num(p.elig)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Silahaltında</span><span>${num(p.armySize)}</span></div>
+            <div class="pol-stat-row"><span class="muted">Boştaki Elverişli Asker</span><span style="color:var(--green)">${num(p.elig)}</span></div>
+            <div class="pol-stat-row"><span class="muted">Silahaltındaki Ordu</span><span>${num(p.armySize)}</span></div>
             <div class="pol-stat-row"><span class="muted">Anarşistler</span><span style="color:var(--red)">${num(p.anar)}</span></div>
         </div>
     </div>
@@ -824,7 +893,7 @@ function openDetail(id){
         <div class="hoi-tabs">
             <div class="hoi-tab active" id="tab-btn-asker" onclick="switchTab('asker')">Askeriye</div>
             <div class="hoi-tab" id="tab-btn-altyapi" onclick="switchTab('altyapi')">Altyapı</div>
-            <div class="hoi-tab" id="tab-btn-maliye" onclick="switchTab('maliye')">Maliye</div>
+            <div class="hoi-tab" id="tab-btn-maliye" onclick="switchTab('maliye')">Maliye & Hasıla</div>
             <div class="hoi-tab" id="tab-btn-mektup" onclick="switchTab('mektup')">Mektuplar ${unreadCount > 0 ? `<span class="badge-count">${unreadCount}</span>` : ''}</div>
             ${(s.istihbarat_binasi || 0) > 0 ? `<div class="hoi-tab" id="tab-btn-intel" onclick="switchTab('intel')">🕵️ İstihbarat</div>` : ''}
             <div class="hoi-tab" id="tab-btn-eylem" onclick="switchTab('eylem')">Siyaset</div>
@@ -1032,13 +1101,22 @@ function calcPermIncome(s){
   if(s.permanentLedger && s.permanentLedger.length > 0) s.permanentLedger.forEach(item => { total += item.amount; });
   return total;
 }
-function calcExpenses(s){
-  let m = (s.piyade||0)*db.settings.upkeep.piyade+(s.suvari||0)*db.settings.upkeep.suvari+(s.nisanci||0)*db.settings.upkeep.nisanci;
-  let a = (s.kucuk_top||0)*db.settings.upkeep.kucuk_top+(s.orta_top||0)*db.settings.upkeep.orta_top+(s.buyuk_top||0)*db.settings.upkeep.buyuk_top;
-  let n = (s.kucuk_gemi||0)*db.settings.upkeep.kucuk_gemi+(s.orta_gemi||0)*db.settings.upkeep.orta_gemi+(s.buyuk_gemi||0)*db.settings.upkeep.buyuk_gemi;
+function calcMilitaryUpkeep(s){
+  return (s.piyade||0)*(db.settings.upkeep?.piyade||1)+(s.suvari||0)*(db.settings.upkeep?.suvari||5)+(s.nisanci||0)*(db.settings.upkeep?.nisanci||2);
+}
+function calcArtilleryUpkeep(s){
+  return (s.kucuk_top||0)*(db.settings.upkeep?.kucuk_top||250)+(s.orta_top||0)*(db.settings.upkeep?.orta_top||450)+(s.buyuk_top||0)*(db.settings.upkeep?.buyuk_top||800);
+}
+function calcNavyUpkeep(s){
+  return (s.kucuk_gemi||0)*(db.settings.upkeep?.kucuk_gemi||1200)+(s.orta_gemi||0)*(db.settings.upkeep?.orta_gemi||2200)+(s.buyuk_gemi||0)*(db.settings.upkeep?.buyuk_gemi||4000);
+}
+function calcCustomUpkeep(s){
   let c = 0;
   if(db.settings.customItems) db.settings.customItems.forEach(item => { c += (s[item.id]||0) * (item.upkeep||0); });
-  return m + a + n + c + Number(s.civilExpense||0);
+  return c;
+}
+function calcExpenses(s){
+  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + Number(s.civilExpense||0);
 }
 
 function addLog(stateName, itemLabel, qty, totalCost) {
