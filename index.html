@@ -8,8 +8,8 @@
 <style>
 :root{
  --bg: #0d0f12;
- --panel: rgba(21, 24, 29, 0.75);
- --panel-light: rgba(28, 32, 39, 0.65);
+ --panel: rgba(21, 24, 29, 0.85);
+ --panel-light: rgba(28, 32, 39, 0.75);
  --line: rgba(62, 68, 79, 0.45);
  --border-gold: #c5a059;
  --border-steel: rgba(80, 85, 92, 0.5);
@@ -69,7 +69,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
 
 /* FORM ELEMANLARI */
 label{display:block;color:var(--muted);font-size:11px;margin:8px 0 2px; text-transform:uppercase; font-family:'Oswald', sans-serif;}
-input,select,textarea{width:100%;padding:6px 8px;border-radius:3px;border:1px solid var(--line);background:rgba(10, 12, 14, 0.7);backdrop-filter:blur(4px);color:var(--text);outline:none;}
+input,select,textarea{width:100%;padding:6px 8px;border-radius:3px;border:1px solid var(--line);background:rgba(10, 12, 14, 0.8);backdrop-filter:blur(4px);color:var(--text);outline:none;}
 input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 
 /* ANA EKRAN KARTLARI */
@@ -1118,7 +1118,7 @@ function openDetail(id){
  } else { ledgerHtml += `<p class="sub">Aktif antlaşma yok.</p>`; }
  ledgerHtml += `</div>`;
 
- // 4. DİVAN (YENİ SEKMEYLE KRİZLER / OLAYLAR ALANI EKLENDİ)
+ // 4. DİVAN
  const hiredIds = s.hiredAdvisors || [];
  const maxSlots = s.advisorSlots || 3;
  const activeAdvisors = (db.advisors||[]).filter(a => hiredIds.includes(a.id));
@@ -1183,7 +1183,7 @@ function openDetail(id){
  }
  divanHtml += `</div>`;
 
- // 5. DEVLET İÇİNDEKİ OLAYLAR SEKMESİ (YENİ)
+ // 5. DEVLET İÇİNDEKİ OLAYLAR SEKMESİ
  let pendingList = s.pendingEvents || [];
  let olaylarHtml = `<div>
     <h4 style="color:var(--gold); margin:0 0 8px; font-family:'Oswald';">⚡ DEVLET KRİZLERİ & GÜNDEM OLAYLARI (${pendingList.length})</h4>
@@ -1328,7 +1328,6 @@ function resolveStateEvent(stateId, eventIndex, choiceKey) {
         s.happiness = Math.max(0, Math.min(100, s.happiness + choice.hap));
     }
 
-    // Seçilen olayı listeden kaldır
     s.pendingEvents.splice(eventIndex, 1);
 
     addLog({
@@ -1375,7 +1374,7 @@ function passOneYear(){
 
         validEvents.sort(() => Math.random() - 0.5);
         let selectedEvents = validEvents.slice(0, Math.floor(Math.random() * 2) + 1);
-        s.pendingEvents = s.pendingEvents.concat(selectedEvents); // Eskilerin üstüne ekle
+        s.pendingEvents = s.pendingEvents.concat(selectedEvents);
 
         s.advisorHiredYears = s.advisorHiredYears || {};
         (s.hiredAdvisors || []).forEach(advId => {
