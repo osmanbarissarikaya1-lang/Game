@@ -415,7 +415,7 @@ const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
 
-// VARSAYILAN 3 DEVLET (Eğer veritabanı boşsa otomatik yüklenir)
+// BAŞLANGIÇ İÇİN 3 ANA DEVLET (EĞİB VERİTABANI BOŞSA YÜKLENİR)
 const INITIAL_STATES = [
   {
     id: "state_osmanli",
@@ -592,7 +592,7 @@ const DEFAULT_45_ADVISORS = [
   { id:"adv_gn_15", name:"Karun Mirza", role:"Altın Simyacısı", stars:5, salary:130000, targetName:"Güneş Devleti", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -3 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:false, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 }
 ];
 
-// 100 ADET DİNAMİK OLAY LİSTESİ (50B - 750B TL Maliyet, -5 / +5 Mutluluk)
+// 100 ADET DİNAMİK OLAY LİSTESİ
 const DYNAMIC_EVENTS = [
   { title: "Celali Eşkıyaları Türedi", desc: "Taşrada eşkıyalar türedi ve ticaret yollarını kesiyor.", condition: s => (s.happiness < 50), choiceA: { text: "Asker gönderip temizle (-150.000 TL)", cost: 150000, hap: 3, anar: -0.05 }, choiceB: { text: "Yerel ağalara yetki ver (Mutluluk -3)", cost: 0, hap: -3, anar: 0 } },
   { title: "Kışla Disiplini ve Şikayetler", desc: "Askerler geciken iaşeler nedeniyle homurdanıyor.", condition: s => ((s.piyade||0)+(s.suvari||0) > 10000), choiceA: { text: "İaşe ikramiyesi dağıt (-120.000 TL)", cost: 120000, hap: 3, anar: 0 }, choiceB: { text: "Disiplini sertleştir (Mutluluk -4)", cost: 0, hap: -4, anar: 0 } },
@@ -621,7 +621,7 @@ const DYNAMIC_EVENTS = [
   { title: "Yabancı Elçinin Kabulü ve Rüşvet", desc: "Batılı bir elçi, sarayda bazı kararları kendi lehine çevirmek için teklifte bulunuyor.", condition: s => true, choiceA: { text: "Rüşveti kabul et (+200.000 TL Hazine)", cost: -200000, hap: -3, anar: 0 }, choiceB: { text: "Elçiyi huzurdan kov (Mutluluk +2)", cost: 0, hap: 2, anar: 0 } }
 ];
 
-// 100 olayı tamamla
+// Geri kalan 75 olayı döngüyle ekle
 for(let i=26; i<=100; i++) {
   DYNAMIC_EVENTS.push({
     title: `Krallık Gündem Raporu #${i}`,
@@ -869,7 +869,6 @@ async function loadDB(){
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
     }
     
-    // Eğer veritabanında devlet kaydı yoksa veya boşsa varsayılan 3 devleti yükle
     if(!db.states || db.states.length === 0) {
         db.states = structuredClone(INITIAL_STATES);
     } else {
@@ -887,7 +886,6 @@ async function loadDB(){
     }
  }
  else {
-    // Veritabanı bomboşsa ilk şablonu oluştur ve kaydet
     db = {
         states: structuredClone(INITIAL_STATES),
         settings: structuredClone(defaultSettings),
@@ -1345,7 +1343,7 @@ function resolveEvent(stateId, choiceKey) {
     }
 }
 
-// ---------------- 1 YIL GEÇİR (OLAY ÜRETİCİ VE LOG DÖNGÜSÜ) ----------------
+// ---------------- 1 YIL GEÇİR ----------------
 function passOneYear(){
     if(!isAdmin) return;
     if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, paşalar yaşlanacak ve rastgele olaylar tetiklenecek. Onaylıyor musunuz?")) return;
@@ -1368,7 +1366,6 @@ function passOneYear(){
         s.customLedger = []; 
         let col = net >= 0 ? 'var(--green)' : 'var(--red)';
 
-        // Rastgele Olay Üreteci (Yılda max 2 adet, koşula uygun)
         s.pendingEvents = [];
         let validEvents = DYNAMIC_EVENTS.filter(ev => {
             try { return ev.condition(s); } catch(e) { return false; }
