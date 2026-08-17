@@ -415,6 +415,130 @@ const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
 
+// VARSAYILAN 3 DEVLET (Eğer veritabanı boşsa otomatik yüklenir)
+const INITIAL_STATES = [
+  {
+    id: "state_osmanli",
+    name: "Osmanlı İmparatorluğu",
+    title: "İmparatorluk",
+    ruler: "1.Mustafa",
+    rulerImage: "",
+    bgImage: "",
+    color: "#c5a059",
+    ownerEmail: "",
+    treasury: 4029727,
+    population: 3200000,
+    tax: 40,
+    happiness: 75,
+    education: 30,
+    baseTaxPerPerson: 5,
+    civilExpense: 4650000,
+    advisorSlots: 3,
+    piyade: 50500,
+    suvari: 30000,
+    nisanci: 35000,
+    kucuk_top: 110,
+    orta_top: 80,
+    buyuk_top: 65,
+    kucuk_gemi: 65,
+    orta_gemi: 80,
+    buyuk_gemi: 65,
+    kucuk_liman: 5,
+    orta_liman: 5,
+    buyuk_liman: 5,
+    kucuk_ocak: 5,
+    orta_ocak: 5,
+    buyuk_ocak: 5,
+    okul: 5,
+    istihbarat_binasi: 1,
+    hiredAdvisors: [],
+    advisorHiredYears: {},
+    pendingEvents: [],
+    customLedger: [],
+    permanentLedger: []
+  },
+  {
+    id: "state_kirim",
+    name: "Kırım Hanlığı",
+    title: "Hanlık",
+    ruler: "Giray Han",
+    rulerImage: "",
+    bgImage: "",
+    color: "#8e44ad",
+    ownerEmail: "",
+    treasury: 865001,
+    population: 330000,
+    tax: 35,
+    happiness: 77.4,
+    education: 30,
+    baseTaxPerPerson: 5,
+    civilExpense: 0,
+    advisorSlots: 3,
+    piyade: 10000,
+    suvari: 4000,
+    nisanci: 6000,
+    kucuk_top: 4,
+    orta_top: 3,
+    buyuk_top: 5,
+    kucuk_gemi: 7,
+    orta_gemi: 5,
+    buyuk_gemi: 3,
+    kucuk_liman: 3,
+    orta_liman: 2,
+    buyuk_liman: 1,
+    kucuk_ocak: 2,
+    orta_ocak: 1,
+    buyuk_ocak: 1,
+    okul: 2,
+    istihbarat_binasi: 1,
+    hiredAdvisors: [],
+    advisorHiredYears: {},
+    pendingEvents: [],
+    customLedger: [],
+    permanentLedger: []
+  },
+  {
+    id: "state_gunes",
+    name: "Güneş Devleti",
+    title: "Tiranlık",
+    ruler: "1.Orhan",
+    rulerImage: "",
+    bgImage: "",
+    color: "#2980b9",
+    ownerEmail: "",
+    treasury: 1538153,
+    population: 410000,
+    tax: 65,
+    happiness: 45,
+    education: 25,
+    baseTaxPerPerson: 5,
+    civilExpense: 350000,
+    advisorSlots: 3,
+    piyade: 5420,
+    suvari: 3650,
+    nisanci: 7100,
+    kucuk_top: 16,
+    orta_top: 3,
+    buyuk_top: 5,
+    kucuk_gemi: 11,
+    orta_gemi: 4,
+    buyuk_gemi: 0,
+    kucuk_liman: 3,
+    orta_liman: 2,
+    buyuk_liman: 1,
+    kucuk_ocak: 2,
+    orta_ocak: 1,
+    buyuk_ocak: 1,
+    okul: 2,
+    istihbarat_binasi: 1,
+    hiredAdvisors: [],
+    advisorHiredYears: {},
+    pendingEvents: [],
+    customLedger: [],
+    permanentLedger: []
+  }
+];
+
 // 45 ÖZGÜN ADAY LİSTESİ
 const DEFAULT_45_ADVISORS = [
   { id:"adv_os_1", name:"Kâtip Hamdi Efendi", role:"Defterhane Çırağı", stars:1, salary:12000, targetName:"Osmanlı İmparatorluğu", buff:"+%1 Vergi Geliri", debuff:"Bina yapımı +%1 pahalı.", taxBonus:1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-1, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:2, maxAge:15, yearsSinceUpgrade:0 },
@@ -468,12 +592,12 @@ const DEFAULT_45_ADVISORS = [
   { id:"adv_gn_15", name:"Karun Mirza", role:"Altın Simyacısı", stars:5, salary:130000, targetName:"Güneş Devleti", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -3 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:false, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 }
 ];
 
-// 100 ADET DİNAMİK OLAY (Maliyet 50B - 750B TL, Mutluluk -5 / +5)
+// 100 ADET DİNAMİK OLAY LİSTESİ (50B - 750B TL Maliyet, -5 / +5 Mutluluk)
 const DYNAMIC_EVENTS = [
   { title: "Celali Eşkıyaları Türedi", desc: "Taşrada eşkıyalar türedi ve ticaret yollarını kesiyor.", condition: s => (s.happiness < 50), choiceA: { text: "Asker gönderip temizle (-150.000 TL)", cost: 150000, hap: 3, anar: -0.05 }, choiceB: { text: "Yerel ağalara yetki ver (Mutluluk -3)", cost: 0, hap: -3, anar: 0 } },
   { title: "Kışla Disiplini ve Şikayetler", desc: "Askerler geciken iaşeler nedeniyle homurdanıyor.", condition: s => ((s.piyade||0)+(s.suvari||0) > 10000), choiceA: { text: "İaşe ikramiyesi dağıt (-120.000 TL)", cost: 120000, hap: 3, anar: 0 }, choiceB: { text: "Disiplini sertleştir (Mutluluk -4)", cost: 0, hap: -4, anar: 0 } },
-  { title: "Kadim Tapınak Restorasyonu", desc: "Halk, başkentteki tarihi ibadethanenin onarılmasını istiyor.", condition: s => (s.happiness >= 65), choiceA: { text: "Devlet bütçesinden fon ayır (-90.000 TL)", cost: 90000, hap: 4, anar: 0 }, choiceB: { text: "Halk kendi toplasın (Etki yok)", cost: 0, hap: 0, anar: 0 } },
-  { title: "Saray Düğünü ve Şenlikler", desc: "Hükümdarın hanedan üyelerinden biri evleniyor.", condition: s => (s.happiness >= 50 && s.happiness < 70), choiceA: { text: "Şehirde büyük şenlikler düzenle (-180.000 TL)", cost: 180000, hap: 5, anar: 0 }, choiceB: { text: "Sade bir nikah yap (Etki yok)", cost: 0, hap: 0, anar: 0 } },
+  { title: "Kadim Tapınak Restorasyonu", desc: "Halk, başkentteki tarihi ibadethanenin onarılmasını istiyor.", condition: s => (s.happiness >= 65), choiceA: { text: "Devlet bütçesinden fon ayır (-90.000 TL)", cost: 90000, hap: 4, anar: 0 }, choiceB: { text: "Halk kendi toplasın", cost: 0, hap: 0, anar: 0 } },
+  { title: "Saray Düğünü ve Şenlikler", desc: "Hükümdarın hanedan üyelerinden biri evleniyor.", condition: s => (s.happiness >= 50 && s.happiness < 70), choiceA: { text: "Şehirde büyük şenlikler düzenle (-180.000 TL)", cost: 180000, hap: 5, anar: 0 }, choiceB: { text: "Sade bir nikah yap", cost: 0, hap: 0, anar: 0 } },
   { title: "Esnaf Loncası Dilekçesi", desc: "Çarşı esnafı artan girdi maliyetlerinden şikayetçi.", condition: s => true, choiceA: { text: "Geçici vergi indirimi tanı (-100.000 TL)", cost: 100000, hap: 3, anar: 0 }, choiceB: { text: "Talepleri reddet (Mutluluk -3)", cost: 0, hap: -3, anar: 0 } },
   { title: "Şehir Kilitlendi: Çöp ve Temizlik Krizi", desc: "Büyük şehirlerde çöp ve hijyen sorunları salgın riskini artırdı.", condition: s => (s.population > 200000), choiceA: { text: "Temizlik seferberliği başlat (-80.000 TL)", cost: 80000, hap: 2, anar: 0 }, choiceB: { text: "Görmezden gel (Mutluluk -3)", cost: 0, hap: -3, anar: 0 } },
   { title: "Kardeş Kavgası (Hanedan Çekişmesi)", desc: "Saray çevresinde taht üzerinde hak iddia eden küçük bir grup huzursuzluk çıkardı.", condition: s => true, choiceA: { text: "Unvan ve maaş ver (-70.000 TL)", cost: 70000, hap: 1, anar: 0 }, choiceB: { text: "Sürgüne gönder (-50.000 TL, Mutluluk -2)", cost: 50000, hap: -2, anar: 0 } },
@@ -497,7 +621,7 @@ const DYNAMIC_EVENTS = [
   { title: "Yabancı Elçinin Kabulü ve Rüşvet", desc: "Batılı bir elçi, sarayda bazı kararları kendi lehine çevirmek için teklifte bulunuyor.", condition: s => true, choiceA: { text: "Rüşveti kabul et (+200.000 TL Hazine)", cost: -200000, hap: -3, anar: 0 }, choiceB: { text: "Elçiyi huzurdan kov (Mutluluk +2)", cost: 0, hap: 2, anar: 0 } }
 ];
 
-// Geri kalan 75 olayı da dinamik şablondan türeterek 100'e tamamlayalım
+// 100 olayı tamamla
 for(let i=26; i<=100; i++) {
   DYNAMIC_EVENTS.push({
     title: `Krallık Gündem Raporu #${i}`,
@@ -725,6 +849,7 @@ async function loadDB(){
  toast("Veriler yükleniyor…");
  const {data,error}=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
  if(error){toast("Supabase okuma hatası: "+error.message);return}
+ 
  if(data?.data){
     db=data.data;
     db.settings={...defaultSettings,...(db.settings||{})};
@@ -744,21 +869,35 @@ async function loadDB(){
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
     }
     
-    db.states.forEach(s => { 
-        s.customLedger = s.customLedger || []; 
-        s.permanentLedger = s.permanentLedger || [];
-        s.rulerImage = cleanUrl(s.rulerImage || "");
-        s.bgImage = cleanUrl(s.bgImage || "");
-        s.istihbarat_binasi = s.istihbarat_binasi || 0;
-        s.hiredAdvisors = s.hiredAdvisors || [];
-        s.advisorHiredYears = s.advisorHiredYears || {};
-        s.advisorSlots = s.advisorSlots || 3;
-        s.pendingEvents = s.pendingEvents || []; // Bekleyen rastgele olaylar
-        s.eventsTriggeredThisYear = s.eventsTriggeredThisYear || 0;
-    });
+    // Eğer veritabanında devlet kaydı yoksa veya boşsa varsayılan 3 devleti yükle
+    if(!db.states || db.states.length === 0) {
+        db.states = structuredClone(INITIAL_STATES);
+    } else {
+        db.states.forEach(s => { 
+            s.customLedger = s.customLedger || []; 
+            s.permanentLedger = s.permanentLedger || [];
+            s.rulerImage = cleanUrl(s.rulerImage || "");
+            s.bgImage = cleanUrl(s.bgImage || "");
+            s.istihbarat_binasi = s.istihbarat_binasi || 0;
+            s.hiredAdvisors = s.hiredAdvisors || [];
+            s.advisorHiredYears = s.advisorHiredYears || {};
+            s.advisorSlots = s.advisorSlots || 3;
+            s.pendingEvents = s.pendingEvents || [];
+        });
+    }
  }
  else {
-    db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS), timerSeconds:0, timerRunning:false};
+    // Veritabanı bomboşsa ilk şablonu oluştur ve kaydet
+    db = {
+        states: structuredClone(INITIAL_STATES),
+        settings: structuredClone(defaultSettings),
+        transfers: [],
+        purchaseLog: [],
+        letters: [],
+        advisors: structuredClone(DEFAULT_45_ADVISORS),
+        timerSeconds: 0,
+        timerRunning: false
+    };
     await saveDB();
  }
  toast("Sistem Aktif",true);
@@ -868,10 +1007,10 @@ function openDetail(id){
  document.getElementById("home").classList.add("hidden");
  document.getElementById("detail").classList.remove("hidden");
  
- // Yönetime girildiğinde bekleyen olay varsa ilkini Pop-up olarak aç
+ // Yönetime girildiğinde bekleyen olay varsa pop-up aç
  if(s.pendingEvents && s.pendingEvents.length > 0) {
      triggerNextEventModal(s);
-     return; // Olay bitene beklet
+     return;
  }
 
  const bgImgClean = cleanUrl(s.bgImage);
@@ -906,7 +1045,7 @@ function openDetail(id){
  const myLetters = (db.letters || []).filter(l => l.toStateId === s.id || l.fromStateId === s.id);
  const unreadCount = myLetters.filter(l => l.toStateId === s.id && !l.read).length;
 
- // 1. ASKERİYE SEKMESİ
+ // 1. ASKERİYE
  let askeriyeHtml = `<div class="unit-grid">`;
  askeriyeHtml += buildUnitCard(s, 'piyade', 'Piyade', imgs.piyade, db.settings.prices.piyade, db.settings.upkeep.piyade, '', canManage, false);
  askeriyeHtml += buildUnitCard(s, 'suvari', 'Süvari', imgs.suvari, db.settings.prices.suvari, db.settings.upkeep.suvari, '', canManage, false);
@@ -924,7 +1063,7 @@ function openDetail(id){
  });
  askeriyeHtml += `</div>`;
 
- // 2. ALTYAPI SEKMESİ
+ // 2. ALTYAPI
  let altyapiHtml = `<div class="unit-grid">`;
  altyapiHtml += buildUnitCard(s, 'kucuk_liman', 'Küçük Liman', imgs.kucuk_liman, db.settings.prices.kucuk_liman, 0, '', canManage, false);
  altyapiHtml += buildUnitCard(s, 'orta_liman', 'Orta Liman', imgs.orta_liman, db.settings.prices.orta_liman, 0, '', canManage, false);
@@ -984,7 +1123,6 @@ function openDetail(id){
             ${isAdmin ? `<button class="btn red small" style="margin-left:8px;" onclick="removePermLedgerItem('${s.id}', ${index})">SİL</button>` : ''}</div>
         </div>`).join('');
  } else { ledgerHtml += `<p class="sub">Aktif antlaşma yok.</p>`; }
-
  ledgerHtml += `</div>`;
 
  // 4. DİVAN
@@ -1158,7 +1296,7 @@ function openDetail(id){
 // ---------------- RASTGELE OLAY POP-UP MOTORU ----------------
 function triggerNextEventModal(s) {
     if(!s.pendingEvents || s.pendingEvents.length === 0) return;
-    const ev = s.pendingEvents[0]; // sıradaki olay
+    const ev = s.pendingEvents[0];
 
     modal(`<div style="border-left:4px solid var(--gold); padding-left:10px;">
         <h2 style="color:var(--gold); margin-top:0;">⚡ KRİTİK DEVLET OLAYI</h2>
@@ -1175,15 +1313,14 @@ function triggerNextEventModal(s) {
 function resolveEvent(stateId, choiceKey) {
     const s = getState(stateId);
     if(!s || !s.pendingEvents || s.pendingEvents.length === 0) return;
-    const ev = s.pendingEvents.shift(); // sıradakini listeden çıkar
+    const ev = s.pendingEvents.shift();
 
     const choice = choiceKey === 'A' ? ev.choiceA : ev.choiceB;
 
-    // Maliyet / Hazine etkisi
+    const oldT = s.treasury;
     if(choice.cost) {
         s.treasury -= choice.cost;
     }
-    // Mutluluk etkisi (-5 ile +5 arası)
     if(choice.hap) {
         s.happiness = Math.max(0, Math.min(100, s.happiness + choice.hap));
     }
@@ -1193,13 +1330,14 @@ function resolveEvent(stateId, choiceKey) {
         stateName: s.name,
         action: `Olay Kararı (${ev.title} - Seçim ${choiceKey})`,
         cost: Math.abs(choice.cost || 0),
-        qty: 1
+        qty: 1,
+        oldTreasury: oldT,
+        newTreasury: s.treasury
     });
 
     closeModal();
     queueSave();
 
-    // Eğer sırada başka olay varsa hemen onu aç, yoksa normal detaya devam et
     if(s.pendingEvents.length > 0) {
         triggerNextEventModal(s);
     } else {
@@ -1207,7 +1345,7 @@ function resolveEvent(stateId, choiceKey) {
     }
 }
 
-// ---------------- 1 YIL GEÇİR (RASTGELE OLAY ÜRETİCİ DAHİL) ----------------
+// ---------------- 1 YIL GEÇİR (OLAY ÜRETİCİ VE LOG DÖNGÜSÜ) ----------------
 function passOneYear(){
     if(!isAdmin) return;
     if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, paşalar yaşlanacak ve rastgele olaylar tetiklenecek. Onaylıyor musunuz?")) return;
@@ -1230,18 +1368,16 @@ function passOneYear(){
         s.customLedger = []; 
         let col = net >= 0 ? 'var(--green)' : 'var(--red)';
 
-        // Rastgele Olay Üreteci (Yılda max 2 adet, mantıksal koşula uygun)
+        // Rastgele Olay Üreteci (Yılda max 2 adet, koşula uygun)
         s.pendingEvents = [];
         let validEvents = DYNAMIC_EVENTS.filter(ev => {
             try { return ev.condition(s); } catch(e) { return false; }
         });
 
-        // Karıştırıp en fazla 2 adet seç
         validEvents.sort(() => Math.random() - 0.5);
-        let selectedEvents = validEvents.slice(0, Math.floor(Math.random() * 2) + 1); // 1 veya 2 olay
+        let selectedEvents = validEvents.slice(0, Math.floor(Math.random() * 2) + 1);
         s.pendingEvents = selectedEvents;
 
-        // Paşa yaşlanma ve kıdem sistemi
         s.advisorHiredYears = s.advisorHiredYears || {};
         (s.hiredAdvisors || []).forEach(advId => {
             s.advisorHiredYears[advId] = (s.advisorHiredYears[advId] || 0) + 1;
@@ -1265,7 +1401,6 @@ function passOneYear(){
 
             survivingHired.push(advId);
 
-            // 3 yılda bir %1 - %8 arası gelişim
             adv.yearsSinceUpgrade = (adv.yearsSinceUpgrade || 0) + 1;
             if(adv.yearsSinceUpgrade >= 3) {
                 adv.yearsSinceUpgrade = 0;
@@ -1285,6 +1420,16 @@ function passOneYear(){
             }
         });
         s.hiredAdvisors = survivingHired;
+        
+        addLog({
+            stateId: s.id,
+            stateName: s.name,
+            action: `Yıl Sonu Hasılası & Divan Güncellemesi`,
+            cost: Math.abs(net),
+            qty: 1,
+            oldTreasury: oldT,
+            newTreasury: s.treasury
+        });
 
         summaryHtml += `<div class="list-item" style="flex-direction:column; align-items:stretch;">
             <div style="border-bottom:1px solid var(--line); margin-bottom:4px; padding-bottom:4px;"><b>${esc(s.name)}</b></div>
@@ -1343,7 +1488,6 @@ function openAdmin(){
 function openEditAdvisorModal(advId) {
     const a = (db.advisors||[]).find(x => x.id === advId);
     if(!a) return;
-    const stateOpts = `<option value="" ${!a.faction ? 'selected' : ''}>🌍 Tümü</option>` + db.states.map(x=>`<option value="${x.id}" ${a.faction===x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join("");
     modal(`<h2>👑 PAŞAYI DÜZENLE</h2>
     <div class="formgrid">
         ${field("adv_edit_name", "Paşa İsmi", a.name, "text")}
