@@ -410,6 +410,8 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 
 <div id="modal" class="modal"><div class="modalbox"><div id="modalContent"></div></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script>
 const SUPER_ADMINS = ["barisozasik1@gmail.com"]; 
 let currentUserEmail = null;
@@ -418,7 +420,7 @@ let isAdmin = false;
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
-const LOCAL_MODE=true;
+const LOCAL_MODE=false;
 const LOCAL_DB_KEY="osmoyun_exact_game_state_v1";
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
 
@@ -864,26 +866,9 @@ async function logout(){if(LOCAL_MODE){renderHome();toast("Yerel yönetici modu"
 
 async function loadDB(){
  toast("Veriler yükleniyor…");
- let data,error;
- if(LOCAL_MODE){
-   try{
-     const saved=localStorage.getItem(LOCAL_DB_KEY);
-     if(saved){data={data:JSON.parse(saved)};}
-     else{
-       const response=await fetch("game_state_rows.json?v=2",{cache:"no-store"});
-       if(!response.ok)throw new Error("game_state_rows.json okunamadı: HTTP "+response.status);
-       const rows=await response.json();
-       const row=(Array.isArray(rows)?rows:[rows]).find(item=>Number(item.id)===1);
-       if(!row||row.data==null)throw new Error("id=1 data kaydı bulunamadı");
-       data={data:typeof row.data==="string"?JSON.parse(row.data):row.data};
-     }
-     error=null;
-   }catch(localError){error=localError;data=null;}
- }else{
-   if(!sb){toast("Supabase bağlantısı kurulamadı.");return}
-   const result=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
-   data=result.data;error=result.error;
- }
+ if(!sb){toast("Supabase bağlantısı kurulamadı.");return}
+ const result=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+ const data=result.data,error=result.error;
  if(error){toast("Supabase okuma hatası: "+error.message);return}
  if(data?.data){
     db=data.data;
@@ -898,16 +883,6 @@ async function loadDB(){
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.images={...defaultSettings.images,...(db.settings?.images||{})};
     db.settings.customItems = db.settings.customItems || [];
-    if(LOCAL_MODE && db.settings.localEventPoolVersion!==4){
-        const eventResponse=await fetch("events-100.json?v=4",{cache:"no-store"});
-        if(!eventResponse.ok)throw new Error("100 olay havuzu okunamadı: HTTP "+eventResponse.status);
-        const newEvents=await eventResponse.json();
-        if(!Array.isArray(newEvents)||newEvents.length!==100)throw new Error("Olay havuzu tam olarak 100 olay içermiyor.");
-        db.settings.randomEvents=newEvents;
-        db.settings.localEventPoolVersion=4;
-        const newEventMap=new Map(newEvents.map(event=>[event.id,event]));
-        db.pendingEvents=(db.pendingEvents||[]).map(pending=>({...pending,event:newEventMap.get(pending.eventId||pending.event?.id)||pending.event}));
-    }
     db.purchaseLog = db.purchaseLog || []; 
     db.letters = db.letters || [];
     db.timerSeconds = db.timerSeconds || 0;
@@ -941,12 +916,10 @@ async function loadDB(){
     db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS), timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]};
     await saveDB();
  }
- if(LOCAL_MODE)localStorage.setItem(LOCAL_DB_KEY,JSON.stringify(db));
  toast("Sistem Aktif",true);
 }
 
 async function saveDB(){
- if(LOCAL_MODE){try{localStorage.setItem(LOCAL_DB_KEY,JSON.stringify(db));toast("Yerel kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true}catch(e){toast("Yerel kayıt hatası: "+e.message);return false}}
  if(!sb) return false;
  const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
  if(error){toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
