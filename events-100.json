@@ -1,0 +1,2802 @@
+[
+  {
+    "id": "evt_001",
+    "category": "Kuraklık",
+    "title": "Büyük Kuraklık",
+    "description": "Üç mevsimdir yağmur düşmedi; köylüler tohumluk tahılı yemeye başladı ve bazı aileler komşu bölgelere göç hazırlığında.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ambarları açıp tohumluk dağıt",
+        "gold": -50000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Ambarları ordu için kapalı tut",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_002",
+    "category": "Kuraklık",
+    "title": "Uzayan Kuraklık",
+    "description": "Kuyuların seviyesi düştü; kasaba ileri gelenleri yeni kuyular açılmasını isterken hazinede yeterli para bulunmuyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni kuyular kazdır",
+        "gold": -97000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Halkın kendi kuyusunu açmasını bekle",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_003",
+    "category": "Kuraklık",
+    "title": "Ambarları Zorlayan Kuraklık",
+    "description": "Tahıl fiyatları birkaç ayda iki katına çıktı; tüccarlar stoklarını yüksek fiyattan satıyor, kent yoksulları ekmek bulamıyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Narh koyup tahıl satın al",
+        "gold": -144000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Serbest satışa izin ver",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_004",
+    "category": "Kuraklık",
+    "title": "Tarlalarda Su Sıkıntısı",
+    "description": "Sulama kanalları kurudu; sipahiler ile köylüler kalan suyun paylaşımı yüzünden karşı karşıya geldi.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Suyu köyler arasında paylaştır",
+        "gold": 0,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Suyu büyük çiftliklere bırak",
+        "gold": -50000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_005",
+    "category": "Kuraklık",
+    "title": "Kuruyan Nehirler",
+    "description": "Nehir yatağı değişti ve değirmenler durdu; civar köylerde un kıtlığı başladı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni kanal ve değirmen yaptır",
+        "gold": -238000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Bölgeyi geçici olarak tahliye et",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_006",
+    "category": "Ticaret",
+    "title": "Ticaret Kervanları",
+    "description": "Doğudan gelen büyük bir kervan sınır kapısında bekliyor; güvenlik ve düşük gümrük karşılığında şehre yerleşmeyi teklif ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Kervana koruma ve pazar yeri sağla",
+        "gold": -60000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Yüksek gümrük alıp geçişine izin ver",
+        "gold": 212000,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_007",
+    "category": "Ticaret",
+    "title": "Liman Ticareti",
+    "description": "Liman tüccarları rıhtımın sığlaştığını bildiriyor; büyük gemiler başka limanlara yönelmeye başladı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Rıhtımı taratıp depoları onar",
+        "gold": -81000,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Liman harçlarını artır",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_008",
+    "category": "Ticaret",
+    "title": "Yeni Pazarlar",
+    "description": "Sınır kasabasında haftalık pazar kurulması çevre köylerden insan çekebilir, fakat yol ve güvenlik masrafı gerekiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni pazarı devlet desteğiyle kur",
+        "gold": -128000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Pazar imtiyazını bir loncaya ver",
+        "gold": -20000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_009",
+    "category": "Ticaret",
+    "title": "Tüccarların Şikâyeti",
+    "description": "Loncalar yabancı tüccarların ucuz malından şikâyet ediyor; halk ise düşük fiyatlardan memnun.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yerel esnafa geçici destek ver",
+        "gold": -175000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Yabancı mallara ek vergi koy",
+        "gold": 98000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_010",
+    "category": "Ticaret",
+    "title": "Ticaret Fırsatı",
+    "description": "Uzak bir devlet baharat ve ipek için imtiyaz istiyor; anlaşma gelir getirebilir ama yerli tüccarı rahatsız edebilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Karşılıklı ticaret anlaşması yap",
+        "gold": -100000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Tek seferlik imtiyaz bedeli al",
+        "gold": 127000,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_011",
+    "category": "Halk",
+    "title": "Halk Şenliği",
+    "description": "Uzun kışın ardından halk bahar şenliği istiyor; kadılar düzenin bozulmasından, esnaf ise satışların artmasından söz ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Şenliği güvenlik altında finanse et",
+        "gold": -269000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Şenliği masrafsız biçimde serbest bırak",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_012",
+    "category": "Halk",
+    "title": "Vergi İsyanı",
+    "description": "Yeni tahsilat usulü köylerde tepki doğurdu; vergi memurları bazı ailelerin mallarına el koydu.",
+    "options": [
+      {
+        "id": "A",
+        "text": "El konulan malları iade edip soruştur",
+        "gold": -65000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Tahsilatı askerle sürdür",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_013",
+    "category": "Halk",
+    "title": "Esnaf Grevi",
+    "description": "Demirciler ve dokumacılar düşük ücret yüzünden dükkân kapattı; ordu siparişleri gecikiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Loncalarla ücret uzlaşması yap",
+        "gold": -80000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Grevci ustaları loncadan çıkar",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_014",
+    "category": "Halk",
+    "title": "Şehir Kalabalığı",
+    "description": "Sur içi nüfus arttı, kiralar yükseldi ve çeşme başlarında uzun kuyruklar oluştu.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni mahalle ve çeşmeler kur",
+        "gold": -159000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Şehre giriş ve oturma harcı koy",
+        "gold": -50000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_015",
+    "category": "Halk",
+    "title": "Halkın Talebi",
+    "description": "Mahalle temsilcileri ekmek fiyatının düşürülmesini ve borçların ertelenmesini talep ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Borçları erteleyip ekmeği destekle",
+        "gold": -206000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Talebi reddedip düzeni koru",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_016",
+    "category": "Askeri",
+    "title": "Sınır Çatışması",
+    "description": "Hudut köyleri küçük akınlara uğradı; köylüler koruma istiyor, komutanlar bunun büyük savaşa dönüşmesinden çekiniyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sınıra takviye ve sığınak gönder",
+        "gold": -253000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 350,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Köyleri iç bölgelere taşı",
+        "gold": 0,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": -400,
+        "guns": -1,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_017",
+    "category": "Askeri",
+    "title": "Askeri Depo Sorunu",
+    "description": "Barut deposunda rutubet tespit edildi; mühimmatın bir bölümü kullanılamaz durumda.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Depoyu yenileyip barutu değiştir",
+        "gold": -300000,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 800,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Sağlam mühimmatı ayırıp kalanı imha et",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": -900,
+        "guns": -2,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_018",
+    "category": "Askeri",
+    "title": "Hudut Garnizonu",
+    "description": "Uzak garnizonda maaşlar gecikti; askerler ailelerini yanlarına getirmek ve bölgede kalıcı olmak istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Maaşları ödeyip asker ailelerini yerleştir",
+        "gold": -96000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 1500,
+        "guns": 3,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Garnizonu küçültüp askerleri geri çağır",
+        "gold": -20000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": -1800,
+        "guns": -3,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_019",
+    "category": "Askeri",
+    "title": "Silah Ustalarının Talebi",
+    "description": "Silah ustaları demir ve kömür fiyatlarından dolayı üretimi durdurma tehdidinde bulundu.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ustalara hammadde desteği ver",
+        "gold": 50000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 2400,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Silahı yabancı tüccarlardan satın al",
+        "gold": 160000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": -3200,
+        "guns": -4,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_020",
+    "category": "Askeri",
+    "title": "Orduda Disiplin Sorunu",
+    "description": "Uzun seferden dönen birliklerde firar ve yağma arttı; halk askerlerin şehirden çıkarılmasını istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Birlikleri maaşla terhis et",
+        "gold": -190000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 3000,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Sıkıyönetim ve ağır ceza uygula",
+        "gold": 0,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": -5000,
+        "guns": -5,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_021",
+    "category": "Doğa",
+    "title": "Büyük Sel",
+    "description": "Nehir taştı; köprüler yıkıldı, yüzlerce köylü yüksek bölgelere sığındı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Afetzedelere yardım ve yeni set yap",
+        "gold": -237000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Zarar gören köyleri başka bölgeye taşı",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": -400,
+        "guns": -1,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_022",
+    "category": "Doğa",
+    "title": "Şiddetli Fırtına",
+    "description": "Fırtına kıyı köylerini ve balıkçı teknelerini parçaladı; limana sığınan aileler iaşe bekliyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tekneleri onarıp ailelere yardım et",
+        "gold": -284000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Balıkçılık vergisini kaldır ama yardım verme",
+        "gold": -64000,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": -900,
+        "guns": -2,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_023",
+    "category": "Doğa",
+    "title": "Erken Kış",
+    "description": "Kar beklenenden erken bastırdı; dağ geçitlerinde kervanlar ve göçerler mahsur kaldı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Geçitlere kurtarma birlikleri gönder",
+        "gold": -80000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 3,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Geçitleri bahara kadar kapat",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": -1800,
+        "guns": -3,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_024",
+    "category": "Doğa",
+    "title": "Deprem Sarsıntısı",
+    "description": "Gece meydana gelen deprem evleri ve bir ibadethaneyi yıktı; artçı sarsıntılar sürüyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeniden inşayı hazineden karşıla",
+        "gold": -127000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Halkı geçici çadır kentlere yerleştir",
+        "gold": -158000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": -3200,
+        "guns": -4,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_025",
+    "category": "Doğa",
+    "title": "Orman Yangını",
+    "description": "Orman yangını köylere yaklaşıyor; kereste üretimi durdu ve hayvan sürüleri kaçırılıyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yangın hattı açıp köyleri koru",
+        "gold": -300000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Bölgeyi tahliye edip yangının sönmesini bekle",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": -5000,
+        "guns": -5,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_026",
+    "category": "Diplomasi",
+    "title": "Yabancı Elçiler",
+    "description": "Yabancı elçiler hükümdara değerli hediyeler sundu ve başkentte sürekli elçilik açmak istedi.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Elçiliğe izin verip karşı heyet gönder",
+        "gold": -60000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 500
+      },
+      {
+        "id": "B",
+        "text": "Hediyeleri kabul edip teklifi ertele",
+        "gold": 0,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": -400,
+        "guns": 0,
+        "educatedPopulation": -700
+      }
+    ]
+  },
+  {
+    "id": "evt_027",
+    "category": "Diplomasi",
+    "title": "Komşu Devletin Teklifi",
+    "description": "Komşu devlet kıtlık nedeniyle tahıl satın almak istiyor; satış kazançlı ancak iç piyasada fiyatları yükseltebilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sınırlı miktarda tahıl sat",
+        "gold": 0,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 800,
+        "guns": 0,
+        "educatedPopulation": 1200
+      },
+      {
+        "id": "B",
+        "text": "İnsani yardım olarak tahıl gönder",
+        "gold": -299000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": -900,
+        "guns": 0,
+        "educatedPopulation": -1800
+      }
+    ]
+  },
+  {
+    "id": "evt_028",
+    "category": "Diplomasi",
+    "title": "Sınır Anlaşmazlığı",
+    "description": "İki köyün otlakları yüzünden sınır muhafızları karşı karşıya geldi; küçük bir olay savaşı tetikleyebilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ortak bir hudut heyeti kur",
+        "gold": -64000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Tartışmalı araziye asker yerleştir",
+        "gold": -95000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": -1800,
+        "guns": 0,
+        "educatedPopulation": -3500
+      }
+    ]
+  },
+  {
+    "id": "evt_029",
+    "category": "Diplomasi",
+    "title": "Tüccar Elçileri",
+    "description": "Yabancı tüccar heyeti düşük gümrük karşılığında yüzlerce aileyi ve ustayı getirmeyi öneriyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yerleşim ve ticaret imtiyazı ver",
+        "gold": 50000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 2400,
+        "guns": 0,
+        "educatedPopulation": 4000
+      },
+      {
+        "id": "B",
+        "text": "Yalnızca ticaret izni ver",
+        "gold": 160000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": -3200,
+        "guns": 0,
+        "educatedPopulation": -6500
+      }
+    ]
+  },
+  {
+    "id": "evt_030",
+    "category": "Diplomasi",
+    "title": "Diplomatik Kriz",
+    "description": "Bir elçinin tutuklanması karşı devlette öfkeye yol açtı; özür isteniyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Elçiyi bırakıp tazminat öde",
+        "gold": -158000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "Casusluk suçlamasını ilan et",
+        "gold": 0,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": -5000,
+        "guns": 0,
+        "educatedPopulation": -10000
+      }
+    ]
+  },
+  {
+    "id": "evt_031",
+    "category": "Üretim",
+    "title": "Maden Damarları",
+    "description": "Dağ köylerinde yeni gümüş damarı bulundu; işletme bölgeye işçi çekecek fakat galeriler tehlikeli.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Devlet madeni ve işçi kasabası kur",
+        "gold": -205000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "İşletme hakkını mültezime sat",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": -1,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_032",
+    "category": "Üretim",
+    "title": "Zanaatkârların Talebi",
+    "description": "Dokuma ustaları kaliteli yün için vergi indirimi istiyor; karşılığında saraya kumaş sağlayacaklar.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Loncanın talebini kabul et",
+        "gold": -120000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Siparişi yabancı tüccara ver",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": -2,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_033",
+    "category": "Üretim",
+    "title": "Yeni Atölyeler",
+    "description": "Göçmen ustalar boş bir mahallede atölyeler kurmak istiyor; yerli esnaf rekabetten kaygılı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ustalara yerleşim ve sermaye ver",
+        "gold": -80000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 3,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Sınırlı sayıda ustaya izin ver",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": -3,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_034",
+    "category": "Üretim",
+    "title": "Tahıl Fazlası",
+    "description": "Hasat fazlası ambarları doldurdu; fiyatlar düşerken çiftçiler borçlarını ödeyemiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tahılı devlet adına satın al",
+        "gold": -95000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Fazlayı dışarı satıp vergi al",
+        "gold": 220000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": -4,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_035",
+    "category": "Üretim",
+    "title": "Üretim Darboğazı",
+    "description": "Demir, odun ve kömür kıtlığı üretimi yavaşlattı; fiyatlar hızla yükseliyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Hammadde sevkiyatını devlet üstlensin",
+        "gold": -142000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Üretimi askerî ihtiyaçlarla sınırla",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": -5,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_036",
+    "category": "Saray",
+    "title": "Saray Masrafları",
+    "description": "Saray görevlileri binaların onarımı için büyük bütçe istedi; şehirde ise su kemerleri de onarım bekliyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Saray onarımını sınırlı tut",
+        "gold": -189000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Masrafı eyaletlerden topla",
+        "gold": 0,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_037",
+    "category": "Saray",
+    "title": "Soylu Ailelerin Talebi",
+    "description": "Soylu aileler vergi muafiyetlerinin genişletilmesini istiyor; küçük toprak sahipleri buna karşı çıkıyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Muafiyet talebini reddet",
+        "gold": 0,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Muafiyet karşılığında hazine yardımı al",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_038",
+    "category": "Saray",
+    "title": "Taç Töreni",
+    "description": "Yeni hükümdarın taç töreni yaklaşıyor; görkemli tören meşruiyet sağlayabilir ama pahalı olacak.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Görkemli halk töreni düzenle",
+        "gold": -180000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Sade bir saray töreni yap",
+        "gold": -20000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_039",
+    "category": "Saray",
+    "title": "Saray Ziyafeti",
+    "description": "Yabancı heyet için büyük ziyafet hazırlanması istendi; kıtlık yaşayan mahallelerde tepki büyüyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ziyafeti küçültüp kalanını halka dağıt",
+        "gold": -79000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Ziyafeti özel bağışlarla düzenle",
+        "gold": 160000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_040",
+    "category": "Saray",
+    "title": "Divan Tartışması",
+    "description": "Divanda iki güçlü hizip memur atamaları yüzünden ayrıştı; karar gecikirse taşra yönetimi aksayacak.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tarafsız bir teftiş heyeti kur",
+        "gold": -126000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Güçlü hiziplerden biriyle anlaş",
+        "gold": 0,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_041",
+    "category": "Sağlık",
+    "title": "Şehirde Hastalık",
+    "description": "Dar sokaklarda ateşli hastalık yayılıyor; ölümler arttı ve varlıklı aileler şehri terk ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Geçici darüşşifalar kur ve ilaç dağıt",
+        "gold": -173000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 500
+      },
+      {
+        "id": "B",
+        "text": "Şehir kapılarını kapatıp karantina uygula",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": -400,
+        "guns": 0,
+        "educatedPopulation": -700
+      }
+    ]
+  },
+  {
+    "id": "evt_042",
+    "category": "Sağlık",
+    "title": "Hekimlerin Uyarısı",
+    "description": "Hekimler kirli kuyuların hastalık yaydığını bildirdi; yeni su hattı pahalı fakat kalıcı çözüm olabilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni su hattı ve kuyular yaptır",
+        "gold": -220000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 1200
+      },
+      {
+        "id": "B",
+        "text": "Kuyuları geçici olarak kapat",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": -900,
+        "guns": 0,
+        "educatedPopulation": -1800
+      }
+    ]
+  },
+  {
+    "id": "evt_043",
+    "category": "Sağlık",
+    "title": "Şifa Evleri",
+    "description": "Vakıf yöneticileri yoksullar için yeni şifa evi kurmak istiyor ve devletten arazi talep ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Arazi ve kuruluş parası ver",
+        "gold": -267000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Sadece arazi tahsis et",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": -1800,
+        "guns": 0,
+        "educatedPopulation": -3500
+      }
+    ]
+  },
+  {
+    "id": "evt_044",
+    "category": "Sağlık",
+    "title": "Şehir Temizliği Seferberliği",
+    "description": "Sokaklardaki atık ve hayvan leşleri hastalık korkusu doğurdu; esnaf temizlik vergisine karşı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Temizlik işçileri ve kanal sistemi kur",
+        "gold": -180000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 4000
+      },
+      {
+        "id": "B",
+        "text": "Mahallelere temizlik zorunluluğu getir",
+        "gold": 0,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": -3200,
+        "guns": 0,
+        "educatedPopulation": -6500
+      }
+    ]
+  },
+  {
+    "id": "evt_045",
+    "category": "Sağlık",
+    "title": "Karantina Tartışması",
+    "description": "Limana gelen gemide salgın şüphesi var; yük değerlidir fakat karaya çıkarılması riskli.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Gemiyi kırk gün karantinaya al",
+        "gold": -300000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "Yükü boşaltıp mürettebatı geri gönder",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": -5000,
+        "guns": 0,
+        "educatedPopulation": -10000
+      }
+    ]
+  },
+  {
+    "id": "evt_046",
+    "category": "Altyapı",
+    "title": "Köprü Hasarı",
+    "description": "Ana köprünün kemerlerinden biri çöktü; kervanlar uzun bir yola sapıyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Taş köprüyü yeniden inşa et",
+        "gold": -157000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Geçici ahşap köprü kur",
+        "gold": -188000,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_047",
+    "category": "Altyapı",
+    "title": "Yol Bakımı",
+    "description": "Kış yağmurları devlet yolunu çamura çevirdi; posta ve vergi kervanları gecikiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yolu taşla kaplat",
+        "gold": 0,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Bakımı çevre köylere yükle",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_048",
+    "category": "Altyapı",
+    "title": "Liman Onarımı",
+    "description": "Liman mendireği hasarlı; ilk büyük fırtınada gemiler tehlikeye girebilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Mendireği hemen onar",
+        "gold": -251000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Gemilerden geçici onarım harcı al",
+        "gold": -282000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_049",
+    "category": "Altyapı",
+    "title": "Su Kemerleri",
+    "description": "Eski su kemerlerinde kaçaklar arttı; bazı mahallelere günlerce su ulaşmıyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni kemer hattı inşa et",
+        "gold": -298000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Suyu dönüşümlü dağıt",
+        "gold": -78000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_050",
+    "category": "Altyapı",
+    "title": "Pazar Meydanı",
+    "description": "Dar pazar meydanı yangın ve izdiham riski taşıyor; çevredeki evlerin kamulaştırılması gerekiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Meydanı genişletip bedel öde",
+        "gold": -94000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Pazarı sur dışına taşı",
+        "gold": 0,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_051",
+    "category": "Eğitim",
+    "title": "Müderrislerin Talebi",
+    "description": "Müderrisler maaşların gecikmesi yüzünden dersleri bırakmayı düşünüyor; öğrenciler dağılmaya başladı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Maaşları ödeyip burs ver",
+        "gold": -141000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 500
+      },
+      {
+        "id": "B",
+        "text": "Dersleri vakıflara devret",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -700
+      }
+    ]
+  },
+  {
+    "id": "evt_052",
+    "category": "Eğitim",
+    "title": "Yeni Mektep",
+    "description": "Nüfusu artan kasaba çocuklar için mektep istiyor; uygun bina ve öğretmen bulunması gerekiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Devlet mektebi kur",
+        "gold": -188000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 1200
+      },
+      {
+        "id": "B",
+        "text": "Gezici öğretmenler gönder",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -1800
+      }
+    ]
+  },
+  {
+    "id": "evt_053",
+    "category": "Eğitim",
+    "title": "Kütüphane Fırsatı",
+    "description": "Vefat eden bir âlim kitaplarını devlete bırakmak istiyor; koleksiyon için güvenli bina şart.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Kütüphane ve kâtipler kur",
+        "gold": -235000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Kitapları mevcut medreseye ver",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -3500
+      }
+    ]
+  },
+  {
+    "id": "evt_054",
+    "category": "Eğitim",
+    "title": "Bilginlerin Gelişi",
+    "description": "Savaştan kaçan bilginler ve aileleri sınırda sığınma istiyor; kabul edilirlerse yeni bir ilim çevresi kurulabilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Bilginleri ve ailelerini yerleştir",
+        "gold": -282000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 4000
+      },
+      {
+        "id": "B",
+        "text": "Yalnızca bilginlere saray görevi ver",
+        "gold": -50000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -6500
+      }
+    ]
+  },
+  {
+    "id": "evt_055",
+    "category": "Eğitim",
+    "title": "Âlimlerin İsteği",
+    "description": "Âlimler takvim, harita ve tıp çalışmaları için gözlemevi talep ediyor; bazı çevreler masrafı gereksiz buluyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Araştırma kurumunu finanse et",
+        "gold": -78000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "Çalışmaları küçük bir heyetle sınırla",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -10000
+      }
+    ]
+  },
+  {
+    "id": "evt_056",
+    "category": "Güvenlik",
+    "title": "Eşkıya Baskını",
+    "description": "Dağ eşkıyası üç köyü bastı; halk koruma gelmezse bölgeyi terk edeceğini söylüyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Köylere muhafız ve tazminat gönder",
+        "gold": -125000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 350,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Bölgeyi boşaltıp büyük takip başlat",
+        "gold": 0,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": -400,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_057",
+    "category": "Güvenlik",
+    "title": "Şehir Güvenliği",
+    "description": "Şehirde hırsızlık arttı; mahalleler kendi silahlı nöbetçilerini kurmaya başladı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Düzenli şehir muhafızları kur",
+        "gold": -172000,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 800,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Mahalle nöbetlerini resmileştir",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": -900,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_058",
+    "category": "Güvenlik",
+    "title": "Gece Devriyeleri",
+    "description": "Gece devriyeleri için yeni fenerler ve ücret gerekiyor; tüccarlar dükkânlarının korunmasını istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Devriyeleri hazineden finanse et",
+        "gold": -219000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 1500,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Esnaftan koruma harcı al",
+        "gold": -20000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": -1800,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_059",
+    "category": "Güvenlik",
+    "title": "Kaçakçılık",
+    "description": "Gümrük görevlileri geniş bir kaçakçılık ağı buldu; bazı ileri gelenlerin adı dosyada geçiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Teftiş heyeti gönderip teslim olanları bağışla",
+        "gold": 50000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 2400,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Mallara el koyup ağır ceza uygula",
+        "gold": 141000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": -3200,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_060",
+    "category": "Güvenlik",
+    "title": "Sınırda Haydutlar",
+    "description": "Sınır yolundaki haydutlar göçmen ve kervanlara saldırıyor; yol neredeyse terk edildi.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Kalıcı karakollar kur",
+        "gold": -62000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 3000,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Silahlı kervanlara geçiş izni ver",
+        "gold": 0,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": -5000,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_061",
+    "category": "Tarım",
+    "title": "Bereketli Hasat",
+    "description": "Bu yıl hasat olağanüstü bereketli; ambarlar doldu fakat fiyatların çökmesi çiftçiyi zor durumda bırakabilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Devlet alımıyla fiyatı koru",
+        "gold": -109000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Fazla ürünü ihraç et",
+        "gold": 199000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_062",
+    "category": "Tarım",
+    "title": "Çiftçi Borçları",
+    "description": "Köylüler tefecilere olan borçlarını ödeyemiyor; toprakların el değiştirmesi göçü hızlandırabilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Borçları yeniden yapılandır",
+        "gold": -156000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Borç karşılığı toprak satışına izin ver",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_063",
+    "category": "Tarım",
+    "title": "Tohum Sıkıntısı",
+    "description": "İlkbahar ekimi öncesi tohumluk kıtlığı çıktı; bazı köyler tarlaları boş bırakacak.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tohumluk satın alıp dağıt",
+        "gold": -203000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Tohum için düşük faizli devlet akçesi ver",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_064",
+    "category": "Tarım",
+    "title": "Hayvan Salgını",
+    "description": "Sürü hayvanlarında bulaşıcı hastalık görüldü; pazarlar kapatılmazsa bütün bölgeye yayılabilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Hasta sürüleri tazminatla itlaf et",
+        "gold": -250000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Hayvan pazarlarını kapatıp bekle",
+        "gold": -50000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_065",
+    "category": "Tarım",
+    "title": "Yeni Tarım Usulü",
+    "description": "Bir çiftçi heyeti verimi artıran yeni sulama ve ekim yöntemleri gösterdi; gelenekçiler şüpheli.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Örnek çiftlikler kur",
+        "gold": -297000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Yöntemi isteyen köylere bırak",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_066",
+    "category": "Maliye",
+    "title": "Hazine Açığı",
+    "description": "Yıl ortasında hazine açığı oluştu; memur maaşları ve kamu işleri aynı anda ödenemiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Saray harcamalarını kes",
+        "gold": 80000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Sarraflardan kısa vadeli borç al",
+        "gold": 150000,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_067",
+    "category": "Maliye",
+    "title": "Vergi Tahsildarları",
+    "description": "Taşradaki tahsildarların halka fazla vergi yazdığı ortaya çıktı; hazine kayıtları da tutarsız.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tahsildarları yargılayıp parayı iade et",
+        "gold": -120000,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Eksik kayıtları kapatıp tahsilatı sürdür",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_068",
+    "category": "Maliye",
+    "title": "Sikke Sorunu",
+    "description": "Piyasada ayarı düşük sikkeler çoğaldı; tüccarlar sağlam para istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni ve güvenilir sikke bastır",
+        "gold": -180000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Eski sikkeleri düşük değerle geri al",
+        "gold": -20000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_069",
+    "category": "Maliye",
+    "title": "Borç Talebi",
+    "description": "Büyük tüccarlar yüksek faizle borç vermeyi teklif ediyor; ödeme için gelecek vergiler teminat gösterilecek.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sınırlı borç al",
+        "gold": 100000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Vergi gelirinin bir bölümünü peşin sat",
+        "gold": 180000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_070",
+    "category": "Maliye",
+    "title": "Beklenmedik Gelir",
+    "description": "Mirasçısız ölen zengin bir tacirin serveti hazineye kaldı; lonca bunun hayır işlerine ayrılmasını istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Servetin bir kısmını halka dağıt",
+        "gold": -150000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Servetin tamamını hazineye geçir",
+        "gold": 250000,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_071",
+    "category": "Denizcilik",
+    "title": "Fırtınalı Sefer",
+    "description": "Donanma fırtınada dağıldı; bazı gemiler yabancı limanlara sığındı, denizcilerin aileleri haber bekliyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Kurtarma filosu gönder",
+        "gold": -77000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Gemilerin kendi imkânıyla dönmesini bekle",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": -1,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_072",
+    "category": "Denizcilik",
+    "title": "Tersane İhtiyacı",
+    "description": "Tersanedeki kızaklar eskidi; yeni gemi yapımı gecikiyor ve ustalar başka limanlara gitmek istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tersaneyi yenileyip ustaları tut",
+        "gold": -124000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Gemi siparişini tüccar tersanesine ver",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": -2,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_073",
+    "category": "Denizcilik",
+    "title": "Deniz Tüccarları",
+    "description": "Deniz tüccarları korsanlara karşı silahlı koruma istiyor; karşılığında düzenli vergi teklif ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Konvoy sistemi kur",
+        "gold": -171000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 3,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Tüccarlara kendi korumasını kurdur",
+        "gold": -202000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": -3,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_074",
+    "category": "Denizcilik",
+    "title": "Gemi Kazası",
+    "description": "Kayalıklarda batan ticaret gemisinin yükü kıyıya vurdu; köylüler malları topladı, yabancı tüccar iade istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yükü toplayıp sahibine iade et",
+        "gold": -20000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Kurtarma vergisi kesip kalanı iade et",
+        "gold": 90000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": -4,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_075",
+    "category": "Denizcilik",
+    "title": "Yeni Deniz Rotası",
+    "description": "Kaptanlar daha kısa fakat tehlikeli yeni bir rota buldu; başarılı olursa liman zenginleşebilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Rotayı devlet gemileriyle dene",
+        "gold": -300000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Riski özel tüccarlara bırak",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": -5,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_076",
+    "category": "Kültür",
+    "title": "Büyük Şenlik",
+    "description": "Hasat sonrası büyük şenlik için farklı topluluklar başkente geliyor; güvenlik ve iaşe hazırlanmalı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Halka açık şenliği finanse et",
+        "gold": -61000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 500
+      },
+      {
+        "id": "B",
+        "text": "Şenliği loncaların bağışına bırak",
+        "gold": 0,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -700
+      }
+    ]
+  },
+  {
+    "id": "evt_077",
+    "category": "Kültür",
+    "title": "Sanatkârların Gelişi",
+    "description": "Savaştan kaçan taş ustaları, nakkaşlar ve müzisyenler şehre kabul edilmek istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sanatkârları aileleriyle yerleştir",
+        "gold": -108000,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "Yalnızca saray için çalışanları kabul et",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -1800
+      }
+    ]
+  },
+  {
+    "id": "evt_078",
+    "category": "Kültür",
+    "title": "Saray Sanatçıları",
+    "description": "Saray sanatçıları maaş ve atölye talep ediyor; halk pahalı eğlencelere tepki gösteriyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Atölyeleri halka da aç",
+        "gold": -180000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Saray kadrosunu küçült",
+        "gold": -20000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -3500
+      }
+    ]
+  },
+  {
+    "id": "evt_079",
+    "category": "Kültür",
+    "title": "Anıt Talebi",
+    "description": "Zafer anıtı için meydandaki dükkânların yıkılması önerildi; esnaf tazminat istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Anıtı başka yerde ve daha küçük yap",
+        "gold": -60000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 4000
+      },
+      {
+        "id": "B",
+        "text": "Dükkânları bedel ödeyerek kamulaştır",
+        "gold": -250000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -6500
+      }
+    ]
+  },
+  {
+    "id": "evt_080",
+    "category": "Kültür",
+    "title": "Halk Oyunları",
+    "description": "Köylerden gelen oyuncular ve ozanlar şehirde gösteri yapmak istiyor; bazı yöneticiler yasak talep ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Gösterilere izin ve küçük destek ver",
+        "gold": -249000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "İzin ver ama devlet desteği verme",
+        "gold": 0,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -10000
+      }
+    ]
+  },
+  {
+    "id": "evt_081",
+    "category": "Din",
+    "title": "Manevi Yardım",
+    "description": "Kıtlık bölgesindeki din görevlileri aşevi ve sığınak açmak için yardım istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Aşevi ve sığınakları finanse et",
+        "gold": -296000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 500
+      },
+      {
+        "id": "B",
+        "text": "Yardımı yerel bağışlara bırak",
+        "gold": -76000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -700
+      }
+    ]
+  },
+  {
+    "id": "evt_082",
+    "category": "Din",
+    "title": "İbadethane Talebi",
+    "description": "Yeni mahallede farklı topluluklar ibadet yeri talep ediyor; arazi konusunda anlaşmazlık var.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ortak kullanım için arazi tahsis et",
+        "gold": -120000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 1200
+      },
+      {
+        "id": "B",
+        "text": "Her topluluğun kendi kaynağını bulmasını iste",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -1800
+      }
+    ]
+  },
+  {
+    "id": "evt_083",
+    "category": "Din",
+    "title": "Din Âlimleri",
+    "description": "Âlimler hukuk ve vergi uygulamalarındaki çelişkileri görüşmek üzere büyük toplantı talep ediyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Toplantıyı finanse edip kararları uygula",
+        "gold": -139000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Küçük bir danışma heyeti kur",
+        "gold": -170000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -3500
+      }
+    ]
+  },
+  {
+    "id": "evt_084",
+    "category": "Din",
+    "title": "Vakıf İsteği",
+    "description": "Zengin bir vakıf yeni köprü ve hastane yapmayı teklif ediyor; geniş vergi muafiyeti istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sınırlı muafiyetle teklifi kabul et",
+        "gold": -50000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 4000
+      },
+      {
+        "id": "B",
+        "text": "Muafiyeti reddedip bağış iste",
+        "gold": 70000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -6500
+      }
+    ]
+  },
+  {
+    "id": "evt_085",
+    "category": "Din",
+    "title": "Bayram Hazırlıkları",
+    "description": "Bayram öncesi yiyecek fiyatları yükseldi; yoksul aileler yardım bekliyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Bayramlık erzak dağıt",
+        "gold": -233000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "Fiyat denetimi yap ama yardım dağıtma",
+        "gold": -264000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -10000
+      }
+    ]
+  },
+  {
+    "id": "evt_086",
+    "category": "Nüfus",
+    "title": "Göçmenler Geldi",
+    "description": "Savaş bölgesinden 18.000 kişilik göçmen kafilesi sınıra ulaştı; çoğu çiftçi ve zanaatkâr, fakat acil iaşe gerekiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Göçmenleri köylere ve kasabalara yerleştir",
+        "gold": -280000,
+        "happiness": -1,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Yalnızca usta ve çiftçi aileleri kabul et",
+        "gold": 0,
+        "happiness": -3,
+        "population": -5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 500
+      }
+    ]
+  },
+  {
+    "id": "evt_087",
+    "category": "Nüfus",
+    "title": "Şehirden Göç",
+    "description": "Yüksek kira ve vergiler yüzünden aileler şehri terk ediyor; boşalan dükkânlar ticareti zayıflatıyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Vergi indirimi ve kira desteği ver",
+        "gold": -120000,
+        "happiness": 0,
+        "population": 8000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 1200
+      },
+      {
+        "id": "B",
+        "text": "Göçü engelleme, şehri küçült",
+        "gold": 0,
+        "happiness": -2,
+        "population": -20000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -1800
+      }
+    ]
+  },
+  {
+    "id": "evt_088",
+    "category": "Nüfus",
+    "title": "Yeni Mahalle",
+    "description": "Sur dışında kendiliğinden yeni bir mahalle oluştu; su, yol ve güvenlik bulunmuyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Mahalleyi tanıyıp yol, çeşme ve karakol kur",
+        "gold": -123000,
+        "happiness": 2,
+        "population": 22000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Yerleşimi dağıtıp nüfusu köylere gönder",
+        "gold": -154000,
+        "happiness": 0,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -3500
+      }
+    ]
+  },
+  {
+    "id": "evt_089",
+    "category": "Nüfus",
+    "title": "Nüfus Baskısı",
+    "description": "Başkent nüfusu taşıma kapasitesini aştı; ekmek, su ve konut fiyatları yükseldi.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sur dışında yeni kasabalar kurup nüfusu dağıt",
+        "gold": -170000,
+        "happiness": 1,
+        "population": 50000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 4000
+      },
+      {
+        "id": "B",
+        "text": "Şehre yeni yerleşimi geçici yasakla",
+        "gold": 160000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -6500
+      }
+    ]
+  },
+  {
+    "id": "evt_090",
+    "category": "Nüfus",
+    "title": "Yerleşim Fırsatı",
+    "description": "Sınırdaki boş araziye 35.000 göçer ve çiftçi ailesi yerleşmek istiyor; bölge savunma açısından önemli.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Arazi ve vergi muafiyetiyle yerleştir",
+        "gold": -217000,
+        "happiness": 3,
+        "population": 35000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "Küçük bir öncü gruba izin ver",
+        "gold": 0,
+        "happiness": -2,
+        "population": 10000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -10000
+      }
+    ]
+  },
+  {
+    "id": "evt_091",
+    "category": "Casusluk",
+    "title": "Şüpheli Haberler",
+    "description": "Sınırdan gelen çelişkili haberler komşu ordunun hazırlandığını söylüyor; doğrulama için ajan ağı gerekiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Yeni ajanlar gönder ve haberleri doğrula",
+        "gold": -220000,
+        "happiness": 4,
+        "population": 18000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 500
+      },
+      {
+        "id": "B",
+        "text": "Sınır birliklerini sessizce hazırla",
+        "gold": 90000,
+        "happiness": -3,
+        "population": -7000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -700
+      }
+    ]
+  },
+  {
+    "id": "evt_092",
+    "category": "Casusluk",
+    "title": "Yabancı Casuslar",
+    "description": "Yabancı tüccarlar arasında çalışan bir casus hücresi bulundu; toplu tutuklama ticareti sarsabilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Gizli takip ve kontrollü tutuklama yap",
+        "gold": -120000,
+        "happiness": 2,
+        "population": 9000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 1200
+      },
+      {
+        "id": "B",
+        "text": "Bütün şüphelileri sınır dışı et",
+        "gold": 0,
+        "happiness": 0,
+        "population": -3000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -1800
+      }
+    ]
+  },
+  {
+    "id": "evt_093",
+    "category": "Casusluk",
+    "title": "Gizli Belgeler",
+    "description": "Bir kâtip devlet sırlarını içeren belgeleri satmayı teklif ediyor; belgelerin sahte olma ihtimali var.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Belgeleri satın alıp doğrulat",
+        "gold": -107000,
+        "happiness": 0,
+        "population": 15000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 2500
+      },
+      {
+        "id": "B",
+        "text": "Satıcıyı tutuklayıp sorgula",
+        "gold": 140000,
+        "happiness": -4,
+        "population": -12000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -3500
+      }
+    ]
+  },
+  {
+    "id": "evt_094",
+    "category": "Casusluk",
+    "title": "İstihbarat Fırsatı",
+    "description": "Rakip sarayda görevli biri düzenli bilgi karşılığında ailesi için sığınma istiyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ailesini kabul edip muhbir ağı kur",
+        "gold": -154000,
+        "happiness": 1,
+        "population": 5000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 4000
+      },
+      {
+        "id": "B",
+        "text": "Tek seferlik bilgi satın al",
+        "gold": -185000,
+        "happiness": -2,
+        "population": -6000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -6500
+      }
+    ]
+  },
+  {
+    "id": "evt_095",
+    "category": "Casusluk",
+    "title": "Saraydaki Fısıltılar",
+    "description": "Sarayda bazı görevlilerin yabancı elçilerle gizli görüştüğü konuşuluyor; açık soruşturma paniğe yol açabilir.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sessiz bir iç soruşturma başlat",
+        "gold": -300000,
+        "happiness": 3,
+        "population": 30000,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": 5000
+      },
+      {
+        "id": "B",
+        "text": "Görevlileri topluca görevden al",
+        "gold": 70000,
+        "happiness": -1,
+        "population": 0,
+        "soldiers": 0,
+        "guns": 0,
+        "educatedPopulation": -10000
+      }
+    ]
+  },
+  {
+    "id": "evt_096",
+    "category": "İsyan",
+    "title": "Taşrada Huzursuzluk",
+    "description": "Taşrada vergi ve angarya yüzünden toplantılar başladı; henüz silahlı çatışma yok.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Heyet gönderip vergiyi geçici azalt",
+        "gold": -60000,
+        "happiness": -1,
+        "population": 12000,
+        "soldiers": 350,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Liderleri tutuklayıp gösteriyi dağıt",
+        "gold": -279000,
+        "happiness": -3,
+        "population": -10000,
+        "soldiers": -400,
+        "guns": -1,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_097",
+    "category": "İsyan",
+    "title": "Yerel İsyan",
+    "description": "Bir sancakta yerel yöneticiye karşı silahlı isyan çıktı; çevre köyler hangi tarafı seçeceğini bekliyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Af ilan edip yönetici hakkında soruşturma aç",
+        "gold": -295000,
+        "happiness": 0,
+        "population": 0,
+        "soldiers": 800,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Ordu gönderip isyanı bastır",
+        "gold": 110000,
+        "happiness": -2,
+        "population": -5000,
+        "soldiers": -900,
+        "guns": -2,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_098",
+    "category": "İsyan",
+    "title": "Soylu Muhalefeti",
+    "description": "Soylu aileler yeni kanuna karşı divanı boykot ediyor; bazı askerî birlikler onlara bağlı.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tavizli bir uzlaşma meclisi kur",
+        "gold": -90000,
+        "happiness": 2,
+        "population": 25000,
+        "soldiers": 1500,
+        "guns": 3,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Muhaliflerin mülklerine el koy",
+        "gold": 200000,
+        "happiness": 0,
+        "population": 4000,
+        "soldiers": -1800,
+        "guns": -3,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_099",
+    "category": "İsyan",
+    "title": "Köylülerin Protestosu",
+    "description": "Köylüler ortak otlakların kapatılmasını protesto ediyor; hasat zamanı yaklaşıyor.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Otlakları yeniden halka aç",
+        "gold": 50000,
+        "happiness": 1,
+        "population": 8000,
+        "soldiers": 2400,
+        "guns": 1,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Protestoyu dağıtıp düzeni sürdür",
+        "gold": -169000,
+        "happiness": -4,
+        "population": -15000,
+        "soldiers": -3200,
+        "guns": -4,
+        "educatedPopulation": 0
+      }
+    ]
+  },
+  {
+    "id": "evt_100",
+    "category": "İsyan",
+    "title": "Şehir Ayaklanması",
+    "description": "Ekmek kıtlığı şehirde ayaklanmaya dönüştü; depolar yağmalanıyor ve kapılar kapanmış durumda.",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tahıl dağıtıp genel af ilan et",
+        "gold": -185000,
+        "happiness": 3,
+        "population": 0,
+        "soldiers": 3000,
+        "guns": 2,
+        "educatedPopulation": 0
+      },
+      {
+        "id": "B",
+        "text": "Askerle meydanı boşalt",
+        "gold": 0,
+        "happiness": -2,
+        "population": -2000,
+        "soldiers": -5000,
+        "guns": -5,
+        "educatedPopulation": 0
+      }
+    ]
+  }
+]
