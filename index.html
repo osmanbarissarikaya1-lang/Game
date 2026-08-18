@@ -172,6 +172,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     scrollbar-width: none;
 }
 .hoi-tabs::-webkit-scrollbar { display: none; }
+.mobile-tab-toggle { display:none; }
 .hoi-tab {
     flex: 1;
     min-width: 80px;
@@ -257,10 +258,54 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     color: var(--muted);
     margin-bottom: 4px;
 }
-.unit-info-grid strong { color: var(--text); }
-.unit-buy-row { display: flex; gap: 4px; }
-.unit-buy-row input { padding:3px; height:26px; font-size:12px; text-align:center;}
-.unit-buy-row button { height:26px; flex:1; font-size:11px; padding:0;}
+.unit-info-grid > div { color:#b8c0cc; }
+.unit-info-grid strong { color: var(--text); font-weight:700; }
+.unit-buy-row { display:grid; grid-template-columns:82px minmax(112px,auto); justify-content:end; align-items:stretch; gap:6px; margin-top:6px; }
+.unit-buy-row input { width:82px; min-width:0; padding:4px 6px; height:30px; font-size:13px; font-weight:700; text-align:center;}
+.unit-buy-row button { min-width:112px; height:30px; font-size:11px; padding:4px 12px; white-space:nowrap;}
+.population-building-grid{grid-template-columns:1fr;gap:12px;}
+.population-building-card{position:relative;align-items:center;min-height:162px;border:1px solid #755a2c;outline:1px solid rgba(185,145,71,.22);outline-offset:-5px;background-color:#0b0c0d;background-image:linear-gradient(100deg,rgba(20,22,23,.12),rgba(3,4,5,.32)),url('assets/panel-dark-texture.png');background-repeat:no-repeat,repeat;background-position:center,center;background-size:100% 100%,auto 100%;box-shadow:inset 0 0 0 2px #070809,inset 0 0 24px rgba(0,0,0,.72),0 4px 12px rgba(0,0,0,.42);overflow:hidden;}
+.population-building-card:hover{border-color:var(--border-gold);}
+.population-building-card .unit-img-box{position:relative;width:122px;height:142px;margin:10px 8px 10px 10px;flex:0 0 122px;border:4px double #9f7a38;border-radius:2px;background:#0b0c0d;box-shadow:inset 0 0 0 2px #17120b,inset 0 0 12px rgba(0,0,0,.7),0 4px 10px rgba(0,0,0,.62);}
+.population-building-card .unit-img-box:before,.population-building-card .unit-img-box:after{content:"";position:absolute;z-index:2;width:13px;height:13px;pointer-events:none;}
+.population-building-card .unit-img-box:before{left:3px;top:3px;border-left:2px solid #c7a35c;border-top:2px solid #c7a35c;}
+.population-building-card .unit-img-box:after{right:3px;bottom:3px;border-right:2px solid #c7a35c;border-bottom:2px solid #c7a35c;}
+.population-building-card .unit-img-box img{object-fit:cover;padding:0;background:#0b0c0d;}
+.population-building-card .unit-details{padding:13px 18px 11px 12px;}
+.population-building-card .unit-title{position:relative;color:#e4c681;font-family:'Playfair Display',serif;font-size:23px;letter-spacing:.7px;text-shadow:0 2px 2px #000;margin-bottom:13px;}
+.population-building-card .unit-title:after{content:"";display:block;width:78px;height:1px;margin-top:8px;background:linear-gradient(90deg,#b58b43,transparent);box-shadow:0 1px 0 #000;}
+.population-building-card .unit-info-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:3px 0 8px;}
+.population-building-card .unit-info-grid>div{padding:5px 12px;border-left:1px solid rgba(197,160,89,.42);color:#d2d5da;font-size:14px;text-shadow:0 1px 1px #000;}
+.population-building-card .unit-info-grid>div:first-child{border-left:0;}
+.population-building-card .unit-info-grid strong{display:inline;margin-left:4px;color:#e3bd70;font-size:17px;}
+.military-premium-card .unit-info-grid{grid-template-columns:repeat(auto-fit,minmax(105px,1fr));}
+.population-building-card .population-buy-line{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:7px;}
+.population-building-card .population-qty-control{display:grid;grid-template-columns:64px 27px;grid-template-rows:19px 19px;width:91px;height:38px;border:1px solid #755a2c;border-radius:3px;background:#08090a;box-shadow:inset 0 2px 5px #000,0 3px 6px rgba(0,0,0,.38);overflow:hidden;}
+.population-building-card .population-qty-control input{grid-row:1/3;grid-column:1;width:64px;height:38px;padding:0 0 5px;border:0;border-right:1px solid #4e3c20;border-radius:0;background:linear-gradient(#111315,#070809);box-shadow:inset 0 2px 5px #000;color:#f0e6d2;text-align:center;line-height:normal;font-size:17px;font-family:'Playfair Display',serif;font-weight:700;-moz-appearance:textfield;}
+.population-building-card .population-qty-control input::-webkit-inner-spin-button,.population-building-card .population-qty-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+.population-building-card .population-qty-step{display:flex;align-items:center;justify-content:center;width:27px;height:19px;padding:0;border:0;border-radius:0;background:linear-gradient(#1b1c1d,#0c0d0e);color:#bd9145;font-size:11px;line-height:1;box-shadow:inset 0 1px rgba(255,255,255,.04);}
+.population-building-card .population-qty-step:first-of-type{border-bottom:1px solid #4e3c20;}
+.population-building-card .population-qty-step:hover{background:#29251d;color:#e0bd72;}
+.population-building-card .population-build-btn{width:auto;min-width:126px;height:38px;padding:5px 17px;color:#21170a;border:1px solid #e2c174;outline:1px solid #73501d;outline-offset:-4px;background:linear-gradient(180deg,#e0c078 0%,#c59743 48%,#9f7128 100%);box-shadow:inset 0 2px 0 rgba(255,247,209,.6),inset 0 -3px 5px rgba(76,45,9,.45),0 4px 7px rgba(0,0,0,.48);font-size:12px;font-family:'Playfair Display',serif;white-space:nowrap;text-shadow:0 1px rgba(255,240,190,.35);}
+.population-building-card .population-build-btn:hover{color:#15100a;border-color:#f0d38a;background:linear-gradient(180deg,#e4c477 0%,#b98a36 100%);}
+.population-building-card .population-total{text-align:right;font-size:14px;font-family:'Roboto Condensed',sans-serif;font-weight:700;margin-top:7px;color:#dfc17e;text-shadow:0 2px 2px #000;}
+.finance-dashboard{font-family:'Roboto Condensed',sans-serif;}
+.finance-dashboard .finance-hero,.finance-dashboard .finance-panel{background-color:#0b0c0d;background-image:linear-gradient(100deg,rgba(20,22,23,.1),rgba(3,4,5,.28)),url('assets/panel-dark-texture.png');background-repeat:no-repeat,repeat;background-size:100% 100%,auto 100%;border:1px solid #755a2c;box-shadow:inset 0 0 0 2px #070809,inset 0 0 18px rgba(0,0,0,.6),0 3px 8px rgba(0,0,0,.35);}
+.finance-dashboard .finance-hero{padding:13px 15px;margin-bottom:12px;}
+.finance-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.finance-kpi{padding:7px 10px;border-left:2px solid #b88b3d;}
+.finance-kpi span{display:block;color:#aeb5c0;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.45px;}
+.finance-kpi b{display:block;margin-top:3px;font-size:20px;text-shadow:0 2px 2px #000;}
+.finance-note{margin-top:9px;padding-top:8px;border-top:1px solid rgba(197,160,89,.25);color:#aeb5c0;font-size:12px;}
+.finance-columns{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:14px;}
+.finance-dashboard .finance-panel{padding:11px;border-radius:3px;}
+.finance-dashboard .finance-income{border-left:3px solid var(--green);}
+.finance-dashboard .finance-expense{border-left:3px solid var(--red);}
+.finance-dashboard .finance-panel h4{margin:0 0 9px;padding-bottom:7px;border-bottom:1px solid rgba(197,160,89,.27);font-family:'Oswald',sans-serif;letter-spacing:.35px;}
+.finance-dashboard .finance-panel .list-item{margin:0;padding:7px 5px!important;border:0;border-bottom:1px solid rgba(80,85,92,.28);border-radius:0;background:transparent;font-size:13px!important;gap:12px;}
+.finance-dashboard .finance-panel .list-item span{color:#c8cdd5;}
+.finance-dashboard .finance-panel .list-item b{text-align:right;white-space:nowrap;}
+.finance-total{display:flex;justify-content:space-between;gap:12px;margin-top:8px;padding:8px 5px 2px;border-top:1px solid #755a2c;font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;}
 
 /* DANIŞMAN KARTLARI */
 .advisor-card {
@@ -391,9 +436,15 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     .political-panel { margin-bottom:8px; }
     .ruler-portrait-container { width:100%; max-width:100%; padding:8px; overflow:hidden; }
     .ruler-name-plate { width:100%; max-width:100%; margin-top:8px; overflow:hidden; overflow-wrap:anywhere; }
-    .hoi-tabs { width:100%; overflow-x:auto; justify-content:flex-start; }
-    .hoi-tab { flex:0 0 auto; min-width:105px; padding:10px 7px; font-size:11px; }
-    .tab-content { padding:8px; width:100%; overflow-x:hidden; }
+    .content-panel { position:relative; display:grid; grid-template-columns:minmax(0,1fr); align-items:start; overflow:visible; }
+    .mobile-tab-toggle { display:flex; align-items:center; justify-content:space-between; grid-column:1; grid-row:1; width:100%; padding:10px 12px; border:0; border-bottom:2px solid var(--border-gold); background:linear-gradient(180deg,var(--panel-light),var(--panel)); color:var(--border-gold); font-family:'Oswald',sans-serif; font-size:12px; text-align:left; cursor:pointer; }
+    .mobile-tab-toggle:after { content:'▼'; font-size:10px; transition:transform .18s ease; }
+    .content-panel:has(> .hoi-tabs.mobile-open) .mobile-tab-toggle:after { transform:rotate(180deg); }
+    .content-panel > .hoi-tabs { display:none; grid-column:1; grid-row:2; width:100%; padding:7px; overflow:visible; grid-template-columns:repeat(2,minmax(0,1fr)); flex-direction:initial; position:static; border:0; border-bottom:1px solid var(--border-gold); white-space:normal; background:rgba(10,12,15,.98); box-shadow:inset 0 -8px 18px rgba(0,0,0,.35); }
+    .content-panel > .hoi-tabs.mobile-open { display:grid; }
+    .content-panel > .hoi-tabs .hoi-tab { width:100%; min-width:0; padding:10px 5px; font-size:10px; line-height:1.25; border:1px solid var(--line); overflow-wrap:anywhere; }
+    .content-panel > .hoi-tabs .hoi-tab.active { border-color:var(--border-gold); box-shadow:inset 3px 0 0 var(--border-gold); }
+    .content-panel > .tab-content { grid-column:1; grid-row:3; padding:8px; width:100%; min-width:0; overflow-x:hidden; }
     .unit-grid { grid-template-columns: 1fr; }
     .cards { grid-template-columns: 1fr; }
     .formgrid { grid-template-columns: 1fr; }
@@ -404,6 +455,33 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     .game-map-viewport { height:calc(100dvh - 175px); min-height:340px; }
     .map-toolbar .sub { flex-basis:100%; }
     .list-item,.unit-card { max-width:100%; min-width:0; }
+    .unit-buy-row { grid-template-columns:80px minmax(108px,1fr); width:100%; justify-content:stretch; }
+    .unit-buy-row input { width:80px; }
+    .unit-buy-row button { width:100%; min-width:0; }
+    .population-building-grid{gap:9px;}
+    .population-building-card{min-height:128px;}
+    .population-building-card .unit-details{padding:9px 11px 8px 7px;}
+    .population-building-card .unit-title{font-size:17px;margin-bottom:7px;}
+    .population-building-card .unit-title:after{margin-top:5px;width:55px;}
+    .population-building-card .unit-info-grid{grid-template-columns:1fr;gap:2px;}
+    .military-premium-card .unit-info-grid{grid-template-columns:1fr;}
+    .population-building-card .unit-info-grid>div{padding:4px 3px;font-size:11px;}
+    .population-building-card .unit-info-grid>div{border-left:0;padding:2px 3px;font-size:11px;}
+    .population-building-card .unit-info-grid strong{font-size:12px;overflow-wrap:anywhere;}
+    .population-building-card .population-buy-line{justify-content:flex-end;flex-wrap:nowrap;}
+    .population-building-card .population-build-btn{width:auto;min-width:88px;}
+    .population-building-card .unit-img-box{width:96px;height:112px;flex-basis:96px;margin:8px 3px 8px 8px;}
+    .population-building-card .population-buy-line{gap:6px;margin-top:4px;}
+    .population-building-card .population-qty-control{grid-template-columns:48px 23px;grid-template-rows:16px 15px;width:71px;height:31px;}
+    .population-building-card .population-qty-control input{width:48px;height:31px;padding-bottom:5px;line-height:normal;font-size:14px;}
+    .population-building-card .population-qty-step{width:23px;height:15px;font-size:9px;}
+    .population-building-card .population-build-btn{min-width:91px;height:31px;padding:4px 9px;font-size:10px;}
+    .population-building-card .population-total{font-size:11px;margin-top:4px;}
+    .finance-kpi-grid,.finance-columns{grid-template-columns:1fr;}
+    .finance-kpi b{font-size:17px;}
+    .finance-dashboard .finance-panel .list-item{align-items:flex-start;}
+    .finance-dashboard .finance-panel .list-item span{padding-right:6px;}
+    .finance-dashboard .finance-panel .list-item b{white-space:normal;max-width:48%;overflow-wrap:anywhere;}
     input,select,textarea { min-width:0; max-width:100%; }
 }
 </style>
@@ -446,7 +524,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
-const SUPER_ADMINS = ["osman.baris.sarikaya1@gmail.com"]; 
+const SUPER_ADMINS = ["barisozasik1@gmail.com"]; 
 let currentUserEmail = null;
 let isAdmin = false;
 
@@ -456,7 +534,7 @@ let sb=null;
 const LOCAL_MODE=false;
 const LOCAL_DB_KEY="osmoyun_exact_game_state_v1";
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
-let mapSvgCache="",mapConfigCache=null,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
+let mapSvgCache="",mapConfigCache=null,eventAssetCache=null,mapSaveDirty=false,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
 
 // 45 ÖZGÜN ADAY LİSTESİ (ÖMür ve Yıldız Sistemli)
 const DEFAULT_45_ADVISORS = [
@@ -556,8 +634,24 @@ function buildDefaultEvents(){
 }
 const DEFAULT_RANDOM_EVENTS=buildDefaultEvents();
 function getEventPool(){
- db.settings.randomEvents = Array.isArray(db.settings.randomEvents)&&db.settings.randomEvents.length ? db.settings.randomEvents : structuredClone(DEFAULT_RANDOM_EVENTS);
+ db.settings.randomEvents = Array.isArray(eventAssetCache)&&eventAssetCache.length ? structuredClone(eventAssetCache) : (Array.isArray(db.settings.randomEvents)&&db.settings.randomEvents.length ? db.settings.randomEvents : structuredClone(DEFAULT_RANDOM_EVENTS));
  return db.settings.randomEvents;
+}
+async function loadEventAssets(){
+ try{
+  const response=await fetch('events-100.json?v='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const events=await response.json();
+  if(!Array.isArray(events)||!events.length||events.some(e=>!e?.id||!Array.isArray(e.options)||e.options.length!==2))throw new Error('olay dosyası biçimi geçersiz');
+  eventAssetCache=events;
+  db.settings.randomEvents=structuredClone(events);
+  const byId=new Map(events.map(e=>[e.id,e]));
+  db.pendingEvents=(db.pendingEvents||[]).map(p=>byId.has(p.eventId)?{...p,event:structuredClone(byId.get(p.eventId))}:p);
+  return true;
+ }catch(error){
+  console.error('events-100.json yüklenemedi:',error);
+  return false;
+ }
 }
 function randomEventCount(){
  const r=Math.random();
@@ -646,6 +740,7 @@ function applyEventChoice(pendingOrUid,optionId){
  closeModal();
  alert(`${event.title}\n\nSeçenek ${optionId}: ${opt.text}\n\n${eventEffectSummary({gold:actualGold,happiness:Number(opt.happiness||0),population:actualPopulation,soldiers:actualSoldiers,guns:actualGuns,educatedPopulation:actualEducated})}`);
  openDetail(s.id);
+ switchTab('olaylar');
 }
 function openRandomEvent(uid){
  const pending=(db.pendingEvents||[]).find(x=>x.uid===uid); if(!pending)return;
@@ -654,9 +749,12 @@ function openRandomEvent(uid){
  const opts=e.options.map(o=>`<button type="button" class="event-option" onclick="applyEventChoice('${pending.uid}','${o.id}')"><div style="font-size:15px;font-weight:bold;">${o.id}) ${esc(o.text)}</div><div class="sub" style="margin-top:5px;">${eventEffectSummary(o)}</div></button>`).join('');
  modal(`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><h2 style="margin-top:0;">🎲 ${esc(e.title)}</h2><button type="button" class="btn red small" onclick="closeModal()">✕ ÇIKIŞ</button></div><div class="badge">${esc(e.category)} • ${pending.year}</div><p style="font-size:14px;line-height:1.5;margin-top:12px;">${esc(e.description)}</p><p class="sub">Devlet: <b>${esc(s.name)}</b></p>${opts}<p class="sub" style="margin-top:10px;">⚠️ Seçim yapıldığında geri alınamaz.</p>`);
 }
+function getVisiblePendingEvents(){
+ return isAdmin?(db.pendingEvents||[]):(db.pendingEvents||[]).filter(e=>e.stateId && getState(e.stateId)?.ownerEmail===currentUserEmail);
+}
 function renderPendingEvents(){
- const mine=isAdmin?(db.pendingEvents||[]):(db.pendingEvents||[]).filter(e=>e.stateId && getState(e.stateId)?.ownerEmail===currentUserEmail);
- if(!mine.length)return "";
+ const mine=getVisiblePendingEvents();
+ if(!mine.length)return `<div class="event-result"><b>Şu anda bekleyen olay bulunmuyor.</b><div class="sub" style="margin-top:5px;">Yeni bir olay oluştuğunda bu sekmede görünecek.</div></div>`;
  return `<div style="margin-bottom:12px;"><h4 style="color:var(--border-gold);font-family:'Oswald';margin:0 0 7px;">🎲 BEKLEYEN RASTGELE OLAYLAR</h4>${mine.map(e=>`<div class="event-card"><div style="display:flex;justify-content:space-between;gap:8px;"><b>${esc(e.event.title)}</b><span class="badge">${e.year}</span></div><div class="sub">${esc(e.stateName)} • ${esc(e.event.category)}</div><button class="btn gold small" style="margin-top:7px;" onclick="openRandomEvent('${e.uid}')">OLAYI AÇ →</button></div>`).join('')}</div>`;
 }
 function openEventHistoryAdmin(){
@@ -734,19 +832,33 @@ function getAdvisorEffects(s) {
     if(hired.length > 0 && db.advisors) {
         db.advisors.forEach(a => {
             if(hired.includes(a.id)) {
-                eff.taxBonus += Number(a.taxBonus || 0);
-                eff.milUpkeepDiscount += Number(a.milUpkeepDiscount || 0);
-                eff.navyUpkeepDiscount += Number(a.navyUpkeepDiscount || 0);
-                eff.artUpkeepDiscount += Number(a.artUpkeepDiscount || 0);
-                eff.recruitDiscount += Number(a.recruitDiscount || 0);
-                eff.infraDiscount += Number(a.infraDiscount || 0);
-                eff.happinessBonus += Number(a.happinessBonus || 0);
+                eff.taxBonus += Math.max(0,Number(a.taxBonus || 0));
+                eff.milUpkeepDiscount += Math.max(0,Number(a.milUpkeepDiscount || 0));
+                eff.navyUpkeepDiscount += Math.max(0,Number(a.navyUpkeepDiscount || 0));
+                eff.artUpkeepDiscount += Math.max(0,Number(a.artUpkeepDiscount || 0));
+                eff.recruitDiscount += Math.max(0,Number(a.recruitDiscount || 0));
+                eff.infraDiscount += Math.max(0,Number(a.infraDiscount || 0));
+                eff.happinessBonus += Math.max(0,Number(a.happinessBonus || 0));
                 if(a.stopAnarchy) eff.stopAnarchy = true;
                 if(a.spyAccuracyBonus) eff.spyAccuracyBonus = true;
             }
         });
     }
     return eff;
+}
+function advisorBuffText(a){
+ const parts=[];
+ const add=(value,text)=>{const n=Math.max(0,Number(value)||0);if(n>0)parts.push(text(n));};
+ add(a.taxBonus,n=>`Vergi geliri +%${n}`);
+ add(a.milUpkeepDiscount,n=>`Ordu bakımı -%${n}`);
+ add(a.navyUpkeepDiscount,n=>`Donanma bakımı -%${n}`);
+ add(a.artUpkeepDiscount,n=>`Topçu bakımı -%${n}`);
+ add(a.recruitDiscount,n=>`Asker alımı -%${n}`);
+ add(a.infraDiscount,n=>`Bina maliyeti -%${n}`);
+ add(a.happinessBonus,n=>`Mutluluk +${n}`);
+ if(a.stopAnarchy)parts.push('Anarşiyi durdurur');
+ if(a.spyAccuracyBonus)parts.push('İstihbaratı kesinleştirir');
+ return parts.join(' • ')||'Sayısal bonusu bulunmuyor';
 }
 
 async function init(){
@@ -927,6 +1039,7 @@ async function loadDB(){
     db.eventHistory = db.eventHistory || [];
     db.mapProvinceOwners = db.mapProvinceOwners || {};
     db.mapProvinceDetails = db.mapProvinceDetails || {};
+    await loadEventAssets();
     
     if(!db.advisors || db.advisors.length !== 45) {
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
@@ -951,6 +1064,7 @@ async function loadDB(){
  }
  else {
     db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS), timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]};
+    await loadEventAssets();
     await saveDB();
  }
  toast("Sistem Aktif",true);
@@ -958,10 +1072,21 @@ async function loadDB(){
 
 async function saveDB(){
  if(!sb) return false;
+ if(!mapSaveDirty){
+  const latest=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+  if(latest.data?.data){
+   db.mapProvinceOwners=latest.data.data.mapProvinceOwners||db.mapProvinceOwners||{};
+   db.mapProvinceDetails=latest.data.data.mapProvinceDetails||db.mapProvinceDetails||{};
+   db.mapOwnershipInitialized=latest.data.data.mapOwnershipInitialized??db.mapOwnershipInitialized;
+  }
+ }
+ const savingMap=mapSaveDirty;
+ mapSaveDirty=false;
  const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
- if(error){toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
+ if(error){if(savingMap)mapSaveDirty=true;toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
+function queueMapSave(){mapSaveDirty=true;queueSave()}
 
 function normalizeMapName(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('tr-TR').replace(/[^a-z0-9]+/g,'')}
 function normalizeMapColor(value,fallback='#c5a059'){const v=String(value||'').trim();if(/^#[0-9a-f]{6}$/i.test(v))return v;if(/^#[0-9a-f]{3}$/i.test(v))return '#'+v.slice(1).split('').map(x=>x+x).join('');const m=v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);if(m)return '#'+[m[1],m[2],m[3]].map(x=>Math.max(0,Math.min(255,Number(x))).toString(16).padStart(2,'0')).join('');return fallback;}
@@ -974,8 +1099,8 @@ function distributeFortressGarrisonToMap(s,total){const ids=getOwnedMapProvinceI
 async function loadMapAssets(){
  if(mapSvgCache&&mapConfigCache)return;
  const [svgResponse,configResponse]=await Promise.all([
-   fetch('MapChart_Map.svg?v=1',{cache:'no-store'}),
-   fetch('map-config.json?v=1',{cache:'no-store'})
+   fetch('MapChart_Map.svg?v=57',{cache:'no-store'}),
+   fetch('map-config.json?v=57',{cache:'no-store'})
  ]);
  if(!svgResponse.ok)throw new Error('MapChart_Map.svg yüklenemedi: HTTP '+svgResponse.status);
  if(!configResponse.ok)throw new Error('map-config.json yüklenemedi: HTTP '+configResponse.status);
@@ -993,7 +1118,7 @@ function initializeMapOwnersFromConfig(){
  });
  db.mapOwnershipInitialized=true;
  refreshMapFortressCounts();
- queueSave();
+ queueMapSave();
 }
 
 function applyMapOwnership(){
@@ -1019,21 +1144,24 @@ function renderStrategicMapLabels(){
  const countries=new Map();
  canvas.querySelectorAll('path[id][d]').forEach(path=>{
    const owner=getState(db.mapProvinceOwners?.[path.id]),detail=db.mapProvinceDetails?.[path.id],name=owner?.name||detail?.countryName||'';if(!name)return;
-   const key=owner?.id||normalizeMapName(name);try{const b=path.getBBox(),area=Math.max(.1,b.width*b.height),item={b,area,x:b.x+b.width/2,y:b.y+b.height/2};if(!countries.has(key))countries.set(key,{name,items:[]});countries.get(key).items.push(item);}catch(_){}
+   const key=owner?.id||normalizeMapName(name);try{const b=path.getBBox(),area=Math.max(.1,b.width*b.height),item={b,area,x:b.x+b.width/2,y:b.y+b.height/2,pathId:path.id};if(!countries.has(key))countries.set(key,{name,items:[]});countries.get(key).items.push(item);}catch(_){}
  });
  const bboxGap=(a,b)=>{const dx=Math.max(0,Math.max(a.x,b.x)-Math.min(a.x+a.width,b.x+b.width)),dy=Math.max(0,Math.max(a.y,b.y)-Math.min(a.y+a.height,b.y+b.height));return Math.hypot(dx,dy);};
  countries.forEach(country=>{
    const items=country.items,n=items.length,parent=items.map((_,i)=>i),find=i=>parent[i]===i?i:(parent[i]=find(parent[i])),join=(a,b)=>{a=find(a);b=find(b);if(a!==b)parent[b]=a;};
    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const scale=Math.max(1,Math.min(4,(Math.sqrt(items[i].area)+Math.sqrt(items[j].area))*.18));if(bboxGap(items[i].b,items[j].b)<=scale)join(i,j);}
    const components=new Map();items.forEach((item,i)=>{const root=find(i);if(!components.has(root))components.set(root,[]);components.get(root).push(item);});
-   components.forEach(points=>{
+   components.forEach((points,componentIndex)=>{
      let total=0,sumX=0,sumY=0;points.forEach(p=>{total+=p.area;sumX+=p.x*p.area;sumY+=p.y*p.area;});const cx=sumX/total,cy=sumY/total;
      let xx=0,yy=0,xy=0;points.forEach(p=>{const dx=p.x-cx,dy=p.y-cy;xx+=p.area*dx*dx;yy+=p.area*dy*dy;xy+=p.area*dx*dy;});
      let angle=points.length>1?(Math.atan2(2*xy,xx-yy)*90/Math.PI)/2:((points[0].b.height>points[0].b.width*1.2)?90:0);if(angle>90)angle-=180;if(angle<-90)angle+=180;
      const rad=angle*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad);let along=0,cross=0;
      points.forEach(p=>[[p.b.x,p.b.y],[p.b.x+p.b.width,p.b.y],[p.b.x,p.b.y+p.b.height],[p.b.x+p.b.width,p.b.y+p.b.height]].forEach(([x,y])=>{const dx=x-cx,dy=y-cy;along=Math.max(along,Math.abs(dx*cos+dy*sin));cross=Math.max(cross,Math.abs(-dx*sin+dy*cos));}));
      const usableLength=Math.max(.5,along*1.72),usableHeight=Math.max(.35,cross*1.3),fontSize=Math.max(.25,Math.min(16,usableLength/Math.max(3,country.name.length*.66),usableHeight*.72));
-     const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('class','strategic-country-label');t.setAttribute('x',cx);t.setAttribute('y',cy);t.setAttribute('transform',`rotate(${angle} ${cx} ${cy})`);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Georgia, serif');t.setAttribute('font-size',fontSize);t.setAttribute('font-weight','800');t.setAttribute('letter-spacing',Math.max(.03,fontSize*.055));t.setAttribute('fill','#f4ead2');t.setAttribute('stroke','#111');t.setAttribute('stroke-width',Math.max(.08,Math.min(1.5,fontSize*.14)));t.setAttribute('paint-order','stroke');t.setAttribute('pointer-events','none');t.textContent=country.name.toLocaleUpperCase('tr-TR');svg.appendChild(t);
+     let defs=svg.querySelector('defs');if(!defs){defs=document.createElementNS('http://www.w3.org/2000/svg','defs');svg.insertBefore(defs,svg.firstChild);}
+     const clipId=`strategic-country-${String(country.name).replace(/[^a-z0-9]/gi,'-')}-${componentIndex}-${Math.random().toString(36).slice(2,7)}`;
+     const clip=document.createElementNS('http://www.w3.org/2000/svg','clipPath');clip.setAttribute('id',clipId);clip.setAttribute('class','strategic-country-clip');points.forEach(point=>{const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#'+point.pathId);clip.appendChild(use);});defs.appendChild(clip);
+     const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('class','strategic-country-label');t.setAttribute('clip-path',`url(#${clipId})`);t.setAttribute('x',cx);t.setAttribute('y',cy);t.setAttribute('transform',`rotate(${angle} ${cx} ${cy})`);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Georgia, serif');t.setAttribute('font-size',fontSize);t.setAttribute('font-weight','800');t.setAttribute('letter-spacing',Math.max(.03,fontSize*.055));t.setAttribute('fill','#f4ead2');t.setAttribute('stroke','#111');t.setAttribute('stroke-width',Math.max(.08,Math.min(1.5,fontSize*.14)));t.setAttribute('paint-order','stroke');t.setAttribute('pointer-events','none');t.textContent=country.name.toLocaleUpperCase('tr-TR');svg.appendChild(t);
    });
  });
 }
@@ -1093,7 +1221,7 @@ function finishMapBatch(){
  for(const id of mapBatchSelection){const previousOwnerId=db.mapProvinceOwners[id];if(previousOwnerId)affectedStateIds.push(previousOwnerId);db.mapProvinceOwners[id]=mapBatch.ownerId;db.mapProvinceDetails[id]={countryName:mapBatch.countryName,garrison:0,color:mapBatch.color};}
  refreshMapFortressCounts();redistributeMapGarrisonsForStateIds(affectedStateIds);const count=mapBatchSelection.size,name=mapBatch.countryName,ownerId=mapBatch.ownerId;
  addLog({stateId:ownerId,stateName:name,action:`Harita çoklu atama: ${count} toprak → ${name}`,qty:count,cost:0});
- for(const id of mapBatchSelection)removeBatchProvinceLabel(id);mapBatch=null;mapBatchSelection.clear();queueSave();applyMapOwnership();updateMapBatchUi();
+ for(const id of mapBatchSelection)removeBatchProvinceLabel(id);mapBatch=null;mapBatchSelection.clear();queueMapSave();applyMapOwnership();updateMapBatchUi();
  const s=document.getElementById('mapBrushStatus');if(s)s.textContent=`${count} toprak ${name} devletine atandı.`;toast(`${count} toprak → ${name}`,true);
 }
 
@@ -1142,7 +1270,7 @@ function paintProvinceWithBrush(provinceId){
  if(mapBrush.ownerId)db.mapProvinceOwners[provinceId]=mapBrush.ownerId;else delete db.mapProvinceOwners[provinceId];
  db.mapProvinceDetails[provinceId]={countryName:mapBrush.countryName,garrison:mapBrush.garrison,color:mapBrush.color};
  addLog({stateId:mapBrush.ownerId,stateName:mapBrush.countryName,action:`Harita fırçası: ${provinceId.replaceAll('_',' ')} boyandı`,qty:1,cost:0});
- refreshMapFortressCounts();redistributeMapGarrisonsForStateIds([previousOwnerId,mapBrush.ownerId]);queueSave();applyMapOwnership();toast(`${provinceId.replaceAll('_',' ')} → ${mapBrush.countryName}`,true);
+ refreshMapFortressCounts();redistributeMapGarrisonsForStateIds([previousOwnerId,mapBrush.ownerId]);queueMapSave();applyMapOwnership();toast(`${provinceId.replaceAll('_',' ')} → ${mapBrush.countryName}`,true);
 }
 
 function getCurrentPlayerState(){return db.states.find(s=>String(s.ownerEmail||'').toLocaleLowerCase('tr-TR')===String(currentUserEmail||'').toLocaleLowerCase('tr-TR'))||null}
@@ -1222,7 +1350,7 @@ function saveProvinceOwner(provinceId){
  }
  const displayName=countryName||newOwner?.name||'Sahipsiz';
  addLog({stateId:newOwnerId||oldOwner?.id||'',stateName:newOwner?.name||oldOwner?.name||displayName,action:`Toprak bilgisi: ${provinceId.replaceAll('_',' ')} → ${displayName}, garnizon ${num(garrison)}, renk ${color}${applyAll?' (tüm ülkeye uygulandı)':''}`,qty:1,cost:0});
- refreshMapFortressCounts();redistributeMapGarrisonsForStateIds([oldOwner?.id,newOwnerId]);queueSave();closeModal();applyMapOwnership();toast(`${provinceId.replaceAll('_',' ')}: ${displayName}, ${num(db.mapProvinceDetails[provinceId]?.garrison||0)} garnizon.`,true);
+ refreshMapFortressCounts();redistributeMapGarrisonsForStateIds([oldOwner?.id,newOwnerId]);queueMapSave();closeModal();applyMapOwnership();toast(`${provinceId.replaceAll('_',' ')}: ${displayName}, ${num(db.mapProvinceDetails[provinceId]?.garrison||0)} garnizon.`,true);
 }
 
 function renderHome(){
@@ -1281,9 +1409,16 @@ function switchTab(tabId) {
     const content = document.getElementById('tab-content-' + tabId);
     if(btn) btn.classList.add('active');
     if(content) content.classList.add('active');
+    const activeLabel=document.getElementById('mobile-active-tab');
+    if(activeLabel&&btn) activeLabel.textContent=btn.textContent.trim();
+    document.getElementById('player-tabs')?.classList.remove('mobile-open');
 }
 
-function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canManage, isCustom) {
+function toggleMobileTabs(){
+ document.getElementById('player-tabs')?.classList.toggle('mobile-open');
+}
+
+function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canManage, isCustom, isInfrastructure=false, usePremiumStyle=false) {
     let count = s[key] || 0;
     let safeImg = cleanUrl(imgUrl);
     
@@ -1291,8 +1426,10 @@ function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canM
     let disc = key.includes("liman") || key.includes("ocak") || key === "okul" || key === "istihbarat_binasi" ? adv.infraDiscount : adv.recruitDiscount;
     let actualPrice = Math.max(1, Math.round(basePrice * (1 - (disc / 100))));
 
-    const actionsHtml = canManage 
-    ? `<div class="unit-buy-row">
+    const premiumStyle=isInfrastructure||usePremiumStyle;
+    const actionsHtml = canManage && premiumStyle
+    ? `<div class="population-buy-line"><div class="population-qty-control"><input id="qty_${s.id}_${key}" type="number" min="1" value="1" aria-label="Alınacak adet" oninput="document.getElementById('tot_${s.id}_${key}').innerText='Toplam: '+money(${actualPrice}*(this.value||0))"><button type="button" class="population-qty-step" aria-label="Adedi artır" onclick="adjustPopulationBuildingQty('qty_${s.id}_${key}',1)">▲</button><button type="button" class="population-qty-step" aria-label="Adedi azalt" onclick="adjustPopulationBuildingQty('qty_${s.id}_${key}',-1)">▼</button></div><button class="btn population-build-btn" onclick="${isCustom ? `buyCustomBulk('${s.id}','${key}','${esc(name)}')` : `buyBulk('${s.id}','${key}','${esc(name)}')`}">${isInfrastructure?'🔨 İNŞA ET':'⚔ AL'}</button></div><div id="tot_${s.id}_${key}" class="population-total">Toplam: ${money(actualPrice)}</div>`
+    : canManage ? `<div class="unit-buy-row">
          <input id="qty_${s.id}_${key}" type="number" min="1" value="1" oninput="document.getElementById('tot_${s.id}_${key}').innerText = money(${actualPrice} * (this.value||0))">
          <button class="btn green" onclick="${isCustom ? `buyCustomBulk('${s.id}','${key}','${esc(name)}')` : `buyBulk('${s.id}','${key}','${esc(name)}')`}">AL</button>
        </div>
@@ -1300,7 +1437,7 @@ function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canM
     : `<div style="text-align:center; padding:3px; background:var(--red); color:#fff; font-size:10px; border-radius:2px;">YETKİ YOK</div>`;
 
     return `
-    <div class="unit-card">
+    <div class="unit-card${premiumStyle?' population-building-card':''}${isInfrastructure?' infrastructure-building-card':''}${usePremiumStyle?' military-premium-card':''}">
         ${safeImg ? `<div class="unit-img-box"><img src="${esc(safeImg)}"></div>` : ''}
         <div class="unit-details">
             <div class="unit-title">${esc(name)}</div>
@@ -1308,7 +1445,7 @@ function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canM
                 <div>Mevcut: <strong>${num(count)}</strong></div>
                 <div>Fiyat: <strong>${num(actualPrice)}</strong></div>
                 <div>Bakım: <strong style="color:var(--red)">-${num(baseUpkeep)}</strong></div>
-                <div>${capStr ? `Lmt: <strong>${capStr}</strong>` : ''}</div>
+                ${capStr ? `<div>Lmt: <strong>${capStr}</strong></div>` : ''}
             </div>
             ${actionsHtml}
         </div>
@@ -1316,11 +1453,11 @@ function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canM
 }
 
 function buildPopulationBuildingCard(s,key,name,imgUrl,canManage){
- const safeImg=cleanUrl(imgUrl);
+ const safeImg=cleanUrl(imgUrl)||(key==="hastane"?"assets/building-hospital.png":"");
  const growth=Math.max(0,Number(db.settings.populationBuildingGrowth?.[key])||0);
  const costPerPerson=Math.max(0,Number(db.settings.populationBuildingCostPerPerson?.[key])||0);
  const price=Math.max(0,Math.round((Number(s.population)||0)*costPerPerson));
- return `<div class="unit-card">
+ return `<div class="unit-card population-building-card">
    ${safeImg?`<div class="unit-img-box"><img src="${esc(safeImg)}"></div>`:''}
    <div class="unit-details">
      <div class="unit-title">${esc(name)}</div>
@@ -1329,7 +1466,7 @@ function buildPopulationBuildingCard(s,key,name,imgUrl,canManage){
        <div>Nüfus: <strong style="color:var(--green)">+%${num(growth)}</strong></div>
        <div>Fiyat: <strong style="color:var(--gold)">${money(price)}</strong></div>
      </div>
-     ${canManage?`<div class="unit-buy-row"><input id="qty_${s.id}_${key}" type="number" min="1" value="1" oninput="document.getElementById('tot_${s.id}_${key}').innerText=money(${price}*(this.value||0))"><button class="btn green" onclick="buildPopulationBuilding('${s.id}','${key}','${esc(name)}')">İNŞA ET</button></div><div id="tot_${s.id}_${key}" style="text-align:center;font-size:10px;margin-top:2px;color:var(--gold);">${money(price)}</div>`:'<div style="text-align:center;padding:3px;background:var(--red);color:#fff;font-size:10px;border-radius:2px;">YETKİ YOK</div>'}
+     ${canManage?`<div class="population-buy-line"><div class="population-qty-control"><input id="qty_${s.id}_${key}" type="number" min="1" value="1" aria-label="İnşa edilecek adet" oninput="document.getElementById('tot_${s.id}_${key}').innerText='Toplam: '+money(${price}*(this.value||0))"><button type="button" class="population-qty-step" aria-label="Adedi artır" onclick="adjustPopulationBuildingQty('qty_${s.id}_${key}',1)">▲</button><button type="button" class="population-qty-step" aria-label="Adedi azalt" onclick="adjustPopulationBuildingQty('qty_${s.id}_${key}',-1)">▼</button></div><button class="btn population-build-btn" onclick="buildPopulationBuilding('${s.id}','${key}','${esc(name)}')">🔨 İNŞA ET</button></div><div id="tot_${s.id}_${key}" class="population-total">Toplam: ${money(price)}</div>`:'<div style="text-align:center;padding:3px;background:var(--red);color:#fff;font-size:10px;border-radius:2px;">YETKİ YOK</div>'}
    </div>
  </div>`;
 }
@@ -1378,52 +1515,53 @@ function openDetail(id){
  const unreadCount = myLetters.filter(l => l.toStateId === s.id && !l.read).length;
 
  // 1. ASKERİYE SEKMESİ
- let pendingEventHtml = renderPendingEvents();
-  let askeriyeHtml = pendingEventHtml + `<div class="unit-grid">`;
- askeriyeHtml += buildUnitCard(s, 'piyade', 'Piyade', imgs.piyade, db.settings.prices.piyade, db.settings.upkeep.piyade, '', canManage, false);
- askeriyeHtml += buildUnitCard(s, 'suvari', 'Süvari', imgs.suvari, db.settings.prices.suvari, db.settings.upkeep.suvari, '', canManage, false);
- askeriyeHtml += buildUnitCard(s, 'nisanci', 'Nişancı', imgs.nisanci, db.settings.prices.nisanci, db.settings.upkeep.nisanci, '', canManage, false);
- askeriyeHtml += buildUnitCard(s, 'kucuk_top', 'Küçük Top', imgs.kucuk_top, db.settings.prices.kucuk_top, db.settings.upkeep.kucuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'orta_top', 'Orta Top', imgs.orta_top, db.settings.prices.orta_top, db.settings.upkeep.orta_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'buyuk_top', 'Büyük Top', imgs.buyuk_top, db.settings.prices.buyuk_top, db.settings.upkeep.buyuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'kucuk_gemi', 'Küçük Gemi', imgs.kucuk_gemi, db.settings.prices.kucuk_gemi, db.settings.upkeep.kucuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'orta_gemi', 'Orta Gemi', imgs.orta_gemi, db.settings.prices.orta_gemi, db.settings.upkeep.orta_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
- askeriyeHtml += buildUnitCard(s, 'buyuk_gemi', 'Büyük Gemi', imgs.buyuk_gemi, db.settings.prices.buyuk_gemi, db.settings.upkeep.buyuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false);
+ const pendingEventCount=getVisiblePendingEvents().length;
+ const olaylarHtml=renderPendingEvents();
+  let askeriyeHtml = `<div class="unit-grid population-building-grid">`;
+ askeriyeHtml += buildUnitCard(s, 'piyade', 'Piyade', imgs.piyade, db.settings.prices.piyade, db.settings.upkeep.piyade, '', canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'suvari', 'Süvari', imgs.suvari, db.settings.prices.suvari, db.settings.upkeep.suvari, '', canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'nisanci', 'Nişancı', imgs.nisanci, db.settings.prices.nisanci, db.settings.upkeep.nisanci, '', canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'kucuk_top', 'Küçük Top', imgs.kucuk_top, db.settings.prices.kucuk_top, db.settings.upkeep.kucuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'orta_top', 'Orta Top', imgs.orta_top, db.settings.prices.orta_top, db.settings.upkeep.orta_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'buyuk_top', 'Büyük Top', imgs.buyuk_top, db.settings.prices.buyuk_top, db.settings.upkeep.buyuk_top, `${num(gunCapacity(s))}/${num(gunCapMax(s))}`, canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'kucuk_gemi', 'Küçük Gemi', imgs.kucuk_gemi, db.settings.prices.kucuk_gemi, db.settings.upkeep.kucuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'orta_gemi', 'Orta Gemi', imgs.orta_gemi, db.settings.prices.orta_gemi, db.settings.upkeep.orta_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false, false, true);
+ askeriyeHtml += buildUnitCard(s, 'buyuk_gemi', 'Büyük Gemi', imgs.buyuk_gemi, db.settings.prices.buyuk_gemi, db.settings.upkeep.buyuk_gemi, `${num(shipCapacity(s))}/${num(shipCapMax(s))}`, canManage, false, false, true);
  
  const customUnits = (db.settings.customItems || []).filter(item => (!item.faction || item.faction === s.id) && item.category === 'asker');
  customUnits.forEach(c => {
-     askeriyeHtml += buildUnitCard(s, c.id, c.name, c.icon, c.price, c.upkeep, '', canManage, true);
+     askeriyeHtml += buildUnitCard(s, c.id, c.name, c.icon, c.price, c.upkeep, '', canManage, true, false, true);
  });
  askeriyeHtml += `</div>`;
 
  // 2. ALTYAPI SEKMESİ
- let altyapiHtml = `<div class="unit-grid">`;
- altyapiHtml += buildUnitCard(s, 'kucuk_liman', 'Küçük Liman', imgs.kucuk_liman, db.settings.prices.kucuk_liman, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'orta_liman', 'Orta Liman', imgs.orta_liman, db.settings.prices.orta_liman, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'buyuk_liman', 'Büyük Liman', imgs.buyuk_liman, db.settings.prices.buyuk_liman, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'kucuk_ocak', 'Küçük Top Ocağı', imgs.kucuk_ocak, db.settings.prices.kucuk_ocak, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'orta_ocak', 'Orta Top Ocağı', imgs.orta_ocak, db.settings.prices.orta_ocak, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'buyuk_ocak', 'Büyük Top Ocağı', imgs.buyuk_ocak, db.settings.prices.buyuk_ocak, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'okul', 'Okul', imgs.okul, db.settings.prices.okul, 0, '', canManage, false);
- altyapiHtml += buildUnitCard(s, 'istihbarat_binasi', 'İstihbarat Dairesi', imgs.istihbarat_binasi, db.settings.prices.istihbarat_binasi, 0, '', canManage, false);
+ let altyapiHtml = `<div class="unit-grid population-building-grid">`;
+ altyapiHtml += buildUnitCard(s, 'kucuk_liman', 'Küçük Liman', imgs.kucuk_liman, db.settings.prices.kucuk_liman, 0, '', canManage, false, true);
+ altyapiHtml += buildUnitCard(s, 'orta_liman', 'Orta Liman', imgs.orta_liman, db.settings.prices.orta_liman, 0, '', canManage, false, true);
+ altyapiHtml += buildUnitCard(s, 'buyuk_liman', 'Büyük Liman', imgs.buyuk_liman, db.settings.prices.buyuk_liman, 0, '', canManage, false, true);
+ altyapiHtml += buildUnitCard(s, 'kucuk_ocak', 'Küçük Top Ocağı', imgs.kucuk_ocak, db.settings.prices.kucuk_ocak, 0, '', canManage, false, true);
+ altyapiHtml += buildUnitCard(s, 'orta_ocak', 'Orta Top Ocağı', imgs.orta_ocak, db.settings.prices.orta_ocak, 0, '', canManage, false, true);
+ altyapiHtml += buildUnitCard(s, 'buyuk_ocak', 'Büyük Top Ocağı', imgs.buyuk_ocak, db.settings.prices.buyuk_ocak, 0, '', canManage, false, true);
+ altyapiHtml += buildUnitCard(s, 'okul', 'Okul', imgs.okul, db.settings.prices.okul, 0, '', canManage, false, true);
+ altyapiHtml += buildUnitCard(s, 'istihbarat_binasi', 'İstihbarat Dairesi', imgs.istihbarat_binasi, db.settings.prices.istihbarat_binasi, 0, '', canManage, false, true);
  
  const customInfra = (db.settings.customItems || []).filter(item => (!item.faction || item.faction === s.id) && item.category !== 'asker');
  customInfra.forEach(c => {
-     altyapiHtml += buildUnitCard(s, c.id, c.name, c.icon, c.price, c.upkeep, '', canManage, true);
+     altyapiHtml += buildUnitCard(s, c.id, c.name, c.icon, c.price, c.upkeep, '', canManage, true, true);
  });
  altyapiHtml += `</div>`;
 
  // 3. MALİYE & DETAYLI EKONOMİ & YILLIK HASILA SEKMESİ
- let ledgerHtml = `<div>`;
+ let ledgerHtml = `<div class="finance-dashboard">`;
  const netSign = netAnnualGain >= 0 ? '+' : '';
  const netColor = netAnnualGain >= 0 ? 'var(--green)' : 'var(--red)';
  ledgerHtml += `
- <div class="eco-kpi-card">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:8px;">
-        <div><span class="muted">MEVCUT HAZİNE:</span> <b class="money" style="font-size:16px;">${money(s.treasury)}</b></div>
-        <div><span class="muted">YILLIK NET HASILA:</span> <b style="color:${netColor}; font-size:16px;">${netSign}${money(netAnnualGain)} / Yıl</b></div>
+ <div class="eco-kpi-card finance-hero">
+    <div class="finance-kpi-grid">
+        <div class="finance-kpi"><span>MEVCUT HAZİNE</span><b class="money">${money(s.treasury)}</b></div>
+        <div class="finance-kpi"><span>YILLIK NET HASILA</span><b style="color:${netColor};">${netSign}${money(netAnnualGain)} / Yıl</b></div>
     </div>
-    <div style="font-size:12px; color:var(--muted);">
+    <div class="finance-note">
         Yıl bittiğinde hazinenize eklenecek/kesilecek net tutardır. (Vergiler + Sabit Ticaret + Tek Seferlik Kalemler - Otomatik Giderler)
     </div>
  </div>`;
@@ -1433,22 +1571,22 @@ function openDetail(id){
  const actualBaseTax = baseTax * (1 + (adv.taxBonus / 100));
 
  ledgerHtml += `
- <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+ <div class="finance-columns">
     <!-- GELİR DETAYLARI -->
-    <div style="background:var(--panel-light); border:1px solid var(--line); border-left:3px solid var(--green); padding:10px; border-radius:3px;">
+    <div class="finance-panel finance-income">
         <h4 style="color:var(--green); margin:0 0 6px; font-family:'Oswald';">📥 GELİR DETAYLARI</h4>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Eğitimli Sınıf Vergisi (1.5x)</span><b style="color:var(--green)">${money(Math.floor(p.edu * actualBaseTax * 1.5))}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sıradan Halk Vergisi (1.0x)</span><b style="color:var(--green)">${money(Math.floor(p.other * actualBaseTax))}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Boştaki Elverişli Vergisi (1.0x)</span><b style="color:var(--green)">${money(Math.floor(p.elig * actualBaseTax))}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sabit Antlaşma Gelirleri</span><b style="color:var(--green)">${money(permInc)}</b></div>
-        <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; border-top:1px dashed var(--line); padding-top:4px;">
+        <div class="finance-total">
             <span>TOPLAM BRÜT GELİR:</span>
             <span style="color:var(--green)">${money(annualIncome + permInc)} ${adv.taxBonus !== 0 ? `<small style="color:var(--gold)">(%+${adv.taxBonus} Danışman)</small>` : ''}</span>
         </div>
     </div>
 
     <!-- GİDER DETAYLARI -->
-    <div style="background:var(--panel-light); border:1px solid var(--line); border-left:3px solid var(--red); padding:10px; border-radius:3px;">
+    <div class="finance-panel finance-expense">
         <h4 style="color:var(--red); margin:0 0 6px; font-family:'Oswald';">📤 GİDER DETAYLARI</h4>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Ordu Bakımı (Piyade/Süvari/Nişancı)</span><b style="color:var(--red)">-${money(milUpkeep)} ${adv.milUpkeepDiscount > 0 ? `<small style="color:var(--green)">(-%${adv.milUpkeepDiscount})</small>` : ''}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Topçu Batarya Bakımı</span><b style="color:var(--red)">-${money(artUpkeep)} ${adv.artUpkeepDiscount > 0 ? `<small style="color:var(--green)">(-%${adv.artUpkeepDiscount})</small>` : ''}</b></div>
@@ -1457,7 +1595,7 @@ function openDetail(id){
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Danışman / Vezir Maaşları</span><b style="color:var(--red)">-${money(advSalary)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Kale Garnizonu (${num(s.fortressGarrison||0)} asker)</span><b style="color:var(--red)">-${money(fortressGarrisonExpense)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sivil Saray / Kamu Gideri</span><b style="color:var(--red)">-${money(s.civilExpense)}</b></div>
-        <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; border-top:1px dashed var(--line); padding-top:4px;">
+        <div class="finance-total">
             <span>TOPLAM OTOMATİK GİDER:</span>
             <span style="color:var(--red)">-${money(totalExpenses)}</span>
         </div>
@@ -1531,8 +1669,7 @@ function openDetail(id){
                     <span style="color:var(--gold); font-weight:bold;">${money(a.salary)}/yıl</span>
                 </div>
                 <div style="font-size:10px; color:var(--muted); margin:2px 0;">Hizmet Süresi: <b>${hiredYears} Yıl</b> | Kalan Ömür: ${Math.max(0, (a.maxAge||20) - (a.ageYears||5))} Yıl</div>
-                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
-                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
+                <div class="adv-buff"><b>Güncel bonus:</b> ${esc(advisorBuffText(a))}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;">
                     ${locked ? '<span style="color:var(--gold); font-size:11px; font-weight:bold; margin-right:8px;">🔒 1 Yıl Sözleşme Sürüyor</span>' : ''}
                     <button class="btn red small" onclick="fireAdvisor('${s.id}','${a.id}')" ${locked ? 'disabled title="Aynı yıl içinde iade edilemez!" style="opacity:0.5;"' : ''}>AZLET (İADE ET)</button>
@@ -1557,8 +1694,7 @@ function openDetail(id){
                     <span style="color:var(--gold); font-weight:bold;">Maaş: ${money(a.salary)}/yıl</span>
                 </div>
                 <div style="font-size:10px; color:var(--muted); margin:2px 0;">Yaş: ${a.ageYears||5} | Ömür Beklentisi: ${a.maxAge||20} Yıl</div>
-                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
-                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
+                <div class="adv-buff"><b>Güncel bonus:</b> ${esc(advisorBuffText(a))}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;"><button class="btn green small" onclick="hireAdvisor('${s.id}','${a.id}')" ${activeAdvisors.length >= maxSlots ? 'disabled title="Kontenjan Dolu!" style="opacity:0.5;"' : ''}>DİVANA ATA (GÖREVE ÇAĞIR)</button></div>` : ''}
             </div>
         </div>
@@ -1698,7 +1834,7 @@ function openDetail(id){
    ${canManage?`<button class="btn green" style="width:100%;margin-top:10px;" onclick="saveCountryManagement('${s.id}')">ÜLKE YÖNETİMİNİ KAYDET</button>`:'<p class="sub">Bu devleti düzenleme yetkiniz yok.</p>'}
    <h4 style="color:var(--border-gold);margin:18px 0 8px;font-family:'Oswald';">🏗️ NÜFUSU GELİŞTİREN BİNALAR</h4>
    <p class="sub">Her bina, inşa edildiği andaki toplam nüfusu admin panelinde belirlenen oran kadar artırır.</p>
-   <div class="unit-grid">${populationBuildingsHtml}</div>
+   <div class="unit-grid population-building-grid">${populationBuildingsHtml}</div>
  </div>`;
 
  // ANA DETAY DÜZENİ
@@ -1743,10 +1879,12 @@ function openDetail(id){
 
     <!-- SAĞ PANEL: SEKMELER -->
     <div class="content-panel">
-        <div class="hoi-tabs">
+        <button type="button" class="mobile-tab-toggle" onclick="toggleMobileTabs()"><span>☰ <span id="mobile-active-tab">ASKERİYE</span></span></button>
+        <div class="hoi-tabs" id="player-tabs">
             <div class="hoi-tab active" id="tab-btn-asker" onclick="switchTab('asker')">Askeriye</div>
             <div class="hoi-tab" id="tab-btn-altyapi" onclick="switchTab('altyapi')">Altyapı</div>
             <div class="hoi-tab" id="tab-btn-maliye" onclick="switchTab('maliye')">Maliye & Hasıla</div>
+            <div class="hoi-tab" id="tab-btn-olaylar" onclick="switchTab('olaylar')">🎲 Olaylar <span class="badge-count">${pendingEventCount}</span></div>
             <div class="hoi-tab" id="tab-btn-divan" onclick="switchTab('divan')">👑 Divan (${activeAdvisors.length}/${maxSlots})</div>
             <div class="hoi-tab" id="tab-btn-mektup" onclick="switchTab('mektup')">Mektuplar ${unreadCount > 0 ? `<span class="badge-count">${unreadCount}</span>` : ''}</div>
             ${(s.istihbarat_binasi || 0) > 0 ? `<div class="hoi-tab" id="tab-btn-intel" onclick="switchTab('intel')">🕵️ İstihbarat</div>` : ''}
@@ -1762,6 +1900,9 @@ function openDetail(id){
         </div>
         <div class="tab-content" id="tab-content-maliye">
             ${ledgerHtml}
+        </div>
+        <div class="tab-content" id="tab-content-olaylar">
+            ${olaylarHtml}
         </div>
         <div class="tab-content" id="tab-content-divan">
             ${divanHtml}
@@ -1802,6 +1943,7 @@ function saveCountryManagement(stateId){
  switchTab('country');
 }
 
+function adjustPopulationBuildingQty(inputId,change){const input=document.getElementById(inputId);if(!input)return;input.value=Math.max(1,Math.floor(Number(input.value)||1)+change);input.dispatchEvent(new Event('input',{bubbles:true}));}
 function buildPopulationBuilding(stateId,key,labelName){
  const s=getState(stateId); if(!s)return;
  if(!isAdmin&&s.ownerEmail!==currentUserEmail)return;
@@ -2669,13 +2811,13 @@ function passOneYear(){
                 let boostPercent = Math.floor(Math.random() * 8) + 1; // %1 ile %8 arası
                 
                 // Buff çarpanlarını artır
-                if(adv.taxBonus) adv.taxBonus = Number((adv.taxBonus * (1 + boostPercent/100)).toFixed(1));
-                if(adv.milUpkeepDiscount) adv.milUpkeepDiscount = Number((adv.milUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
-                if(adv.navyUpkeepDiscount) adv.navyUpkeepDiscount = Number((adv.navyUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
-                if(adv.artUpkeepDiscount) adv.artUpkeepDiscount = Number((adv.artUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
-                if(adv.recruitDiscount) adv.recruitDiscount = Number((adv.recruitDiscount * (1 + boostPercent/100)).toFixed(1));
-                if(adv.infraDiscount) adv.infraDiscount = Number((adv.infraDiscount * (1 + boostPercent/100)).toFixed(1));
-                if(adv.happinessBonus) adv.happinessBonus = Number((adv.happinessBonus * (1 + boostPercent/100)).toFixed(1));
+                if(adv.taxBonus>0) adv.taxBonus = Number((adv.taxBonus * (1 + boostPercent/100)).toFixed(1));
+                if(adv.milUpkeepDiscount>0) adv.milUpkeepDiscount = Number((adv.milUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.navyUpkeepDiscount>0) adv.navyUpkeepDiscount = Number((adv.navyUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.artUpkeepDiscount>0) adv.artUpkeepDiscount = Number((adv.artUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.recruitDiscount>0) adv.recruitDiscount = Number((adv.recruitDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.infraDiscount>0) adv.infraDiscount = Number((adv.infraDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.happinessBonus>0) adv.happinessBonus = Number((adv.happinessBonus * (1 + boostPercent/100)).toFixed(1));
 
                 advisorReport.push(`📈 <b>${adv.name}</b> tecrübe kazandı ve %${boostPercent} oranında gelişti! (Yaş: ${adv.ageYears}/${adv.maxAge})`);
             } else {
