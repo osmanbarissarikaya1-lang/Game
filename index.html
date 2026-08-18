@@ -1099,6 +1099,7 @@ async function saveDB(){
   db.mapProvinceOwners=latest.data.data.mapProvinceOwners||db.mapProvinceOwners||{};
   db.mapProvinceDetails=latest.data.data.mapProvinceDetails||db.mapProvinceDetails||{};
   db.mapOwnershipInitialized=latest.data.data.mapOwnershipInitialized??db.mapOwnershipInitialized;
+  db.purchaseLog=mergePurchaseLogs(latest.data.data.purchaseLog,db.purchaseLog);
  }
  const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
  if(error){toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
@@ -1112,7 +1113,7 @@ async function saveMapDB(){
  try{
   const latest=await sb.from('game_state').select('data').eq('id',1).maybeSingle();
   if(latest.error)throw latest.error;
-  const merged={...(latest.data?.data||db),mapProvinceOwners:owners,mapProvinceDetails:details,mapOwnershipInitialized:true};
+  const merged={...(latest.data?.data||db),mapProvinceOwners:owners,mapProvinceDetails:details,mapOwnershipInitialized:true,purchaseLog:mergePurchaseLogs(latest.data?.data?.purchaseLog,db.purchaseLog)};
   const write=await sb.from('game_state').upsert({id:1,data:merged,updated_at:new Date().toISOString()});
   if(write.error)throw write.error;
   const verify=await sb.from('game_state').select('data').eq('id',1).maybeSingle();
@@ -2392,6 +2393,7 @@ function addLog(data) {
     const dateStr = new Date().toLocaleDateString("tr-TR") + " " + new Date().toLocaleTimeString("tr-TR", {hour:'2-digit', minute:'2-digit'});
     
     db.purchaseLog.unshift({
+        logId: crypto.randomUUID(),
         stateId: data.stateId || "",
         state: data.stateName || "Bilinmeyen Devlet",
         item: data.action || "",
@@ -2410,6 +2412,16 @@ function addLog(data) {
         eventChanges: Array.isArray(data.eventChanges) ? data.eventChanges : []
     });
     if(db.purchaseLog.length > 300) db.purchaseLog.pop();
+}
+function mergePurchaseLogs(remoteLogs,localLogs){
+ const result=[],seen=new Set();
+ for(const log of [...(localLogs||[]),...(remoteLogs||[])]){
+  const key=log.logId||[log.stateId,log.state,log.item,log.date,log.user,log.qty,log.cost].join('|');
+  if(seen.has(key))continue;
+  seen.add(key);result.push(log);
+  if(result.length>=300)break;
+ }
+ return result;
 }
 
 function buyEdict(id, edictId) {
