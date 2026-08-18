@@ -533,8 +533,10 @@ const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
 const LOCAL_MODE=false;
 const LOCAL_DB_KEY="osmoyun_exact_game_state_v1";
-let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
-let mapSvgCache="",mapConfigCache=null,eventAssetCache=null,mapSaveDirty=false,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
+let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, mapSaveTimer=null, mapSaveInFlight=false, mapSavePending=false, globalClockInterval=null;
+let mapSvgCache="",mapConfigCache=null,eventAssetCache=null,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
+const mapSyncChannel=typeof BroadcastChannel==='function'?new BroadcastChannel('osmoyun-map-v57'):null;
+mapSyncChannel?.addEventListener('message',event=>{const payload=event.data;if(!payload||payload.type!=='map-saved')return;db.mapProvinceOwners=payload.owners||{};db.mapProvinceDetails=payload.details||{};db.mapOwnershipInitialized=true;refreshMapFortressCounts();if(document.getElementById('gameMapCanvas'))applyMapOwnership();});
 
 // 45 ÖZGÜN ADAY LİSTESİ (ÖMür ve Yıldız Sistemli)
 const DEFAULT_45_ADVISORS = [
@@ -832,13 +834,13 @@ function getAdvisorEffects(s) {
     if(hired.length > 0 && db.advisors) {
         db.advisors.forEach(a => {
             if(hired.includes(a.id)) {
-                eff.taxBonus += Math.max(0,Number(a.taxBonus || 0));
-                eff.milUpkeepDiscount += Math.max(0,Number(a.milUpkeepDiscount || 0));
-                eff.navyUpkeepDiscount += Math.max(0,Number(a.navyUpkeepDiscount || 0));
-                eff.artUpkeepDiscount += Math.max(0,Number(a.artUpkeepDiscount || 0));
-                eff.recruitDiscount += Math.max(0,Number(a.recruitDiscount || 0));
-                eff.infraDiscount += Math.max(0,Number(a.infraDiscount || 0));
-                eff.happinessBonus += Math.max(0,Number(a.happinessBonus || 0));
+                eff.taxBonus += Number(a.taxBonus || 0);
+                eff.milUpkeepDiscount += Number(a.milUpkeepDiscount || 0);
+                eff.navyUpkeepDiscount += Number(a.navyUpkeepDiscount || 0);
+                eff.artUpkeepDiscount += Number(a.artUpkeepDiscount || 0);
+                eff.recruitDiscount += Number(a.recruitDiscount || 0);
+                eff.infraDiscount += Number(a.infraDiscount || 0);
+                eff.happinessBonus += Number(a.happinessBonus || 0);
                 if(a.stopAnarchy) eff.stopAnarchy = true;
                 if(a.spyAccuracyBonus) eff.spyAccuracyBonus = true;
             }
@@ -859,6 +861,25 @@ function advisorBuffText(a){
  if(a.stopAnarchy)parts.push('Anarşiyi durdurur');
  if(a.spyAccuracyBonus)parts.push('İstihbaratı kesinleştirir');
  return parts.join(' • ')||'Sayısal bonusu bulunmuyor';
+}
+function advisorDebuffText(a){
+ const parts=[];
+ const add=(value,text)=>{const n=Number(value)||0;if(n<0)parts.push(text(Math.abs(n)));};
+ add(a.taxBonus,n=>`Vergi geliri -%${n}`);
+ add(a.milUpkeepDiscount,n=>`Ordu bakımı +%${n}`);
+ add(a.navyUpkeepDiscount,n=>`Donanma bakımı +%${n}`);
+ add(a.artUpkeepDiscount,n=>`Topçu bakımı +%${n}`);
+ add(a.recruitDiscount,n=>`Asker alımı +%${n}`);
+ add(a.infraDiscount,n=>`Bina maliyeti +%${n}`);
+ add(a.happinessBonus,n=>`Mutluluk -${n}`);
+ return parts.join(' • ')||'Sayısal debuffı bulunmuyor';
+}
+function restoreOriginalAdvisorEffects(){
+ if(db.advisorEffectVersion===2)return;
+ const effectKeys=['taxBonus','milUpkeepDiscount','navyUpkeepDiscount','artUpkeepDiscount','recruitDiscount','infraDiscount','happinessBonus','stopAnarchy','spyAccuracyBonus','buff','debuff'];
+ (db.advisors||[]).forEach(a=>{const original=DEFAULT_45_ADVISORS.find(x=>x.id===a.id);if(original)effectKeys.forEach(key=>a[key]=structuredClone(original[key]));});
+ db.advisorEffectVersion=2;
+ delete db.advisorStarBalanceVersion;
 }
 
 async function init(){
@@ -1044,6 +1065,7 @@ async function loadDB(){
     if(!db.advisors || db.advisors.length !== 45) {
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
     }
+    restoreOriginalAdvisorEffects();
     
     db.states.forEach(s => { 
         s.customLedger = s.customLedger || []; 
@@ -1072,21 +1094,40 @@ async function loadDB(){
 
 async function saveDB(){
  if(!sb) return false;
- if(!mapSaveDirty){
-  const latest=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
-  if(latest.data?.data){
-   db.mapProvinceOwners=latest.data.data.mapProvinceOwners||db.mapProvinceOwners||{};
-   db.mapProvinceDetails=latest.data.data.mapProvinceDetails||db.mapProvinceDetails||{};
-   db.mapOwnershipInitialized=latest.data.data.mapOwnershipInitialized??db.mapOwnershipInitialized;
-  }
+ const latest=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+ if(latest.data?.data){
+  db.mapProvinceOwners=latest.data.data.mapProvinceOwners||db.mapProvinceOwners||{};
+  db.mapProvinceDetails=latest.data.data.mapProvinceDetails||db.mapProvinceDetails||{};
+  db.mapOwnershipInitialized=latest.data.data.mapOwnershipInitialized??db.mapOwnershipInitialized;
  }
- const savingMap=mapSaveDirty;
- mapSaveDirty=false;
  const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
- if(error){if(savingMap)mapSaveDirty=true;toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
+ if(error){toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
-function queueMapSave(){mapSaveDirty=true;queueSave()}
+async function saveMapDB(){
+ if(!sb)return false;
+ if(mapSaveInFlight){mapSavePending=true;return false;}
+ mapSaveInFlight=true;
+ const owners=structuredClone(db.mapProvinceOwners||{}),details=structuredClone(db.mapProvinceDetails||{});
+ try{
+  const latest=await sb.from('game_state').select('data').eq('id',1).maybeSingle();
+  if(latest.error)throw latest.error;
+  const merged={...(latest.data?.data||db),mapProvinceOwners:owners,mapProvinceDetails:details,mapOwnershipInitialized:true};
+  const write=await sb.from('game_state').upsert({id:1,data:merged,updated_at:new Date().toISOString()});
+  if(write.error)throw write.error;
+  const verify=await sb.from('game_state').select('data').eq('id',1).maybeSingle();
+  if(verify.error)throw verify.error;
+  const savedOwners=verify.data?.data?.mapProvinceOwners||{};
+  const savedDetails=verify.data?.data?.mapProvinceDetails||{};
+  if(JSON.stringify(savedOwners)!==JSON.stringify(owners)||JSON.stringify(savedDetails)!==JSON.stringify(details))throw new Error('Harita doğrulaması başarısız; başka bir kayıt haritayı değiştirdi.');
+  mapSyncChannel?.postMessage({type:'map-saved',owners,details});
+  toast('Harita Supabase’e kaydedildi ve doğrulandı',true);
+  queueSave();
+  return true;
+ }catch(error){toast('Harita kayıt hatası: '+(error.message||error));return false}
+ finally{mapSaveInFlight=false;if(mapSavePending){mapSavePending=false;queueMapSave();}}
+}
+function queueMapSave(){mapSavePending=true;clearTimeout(mapSaveTimer);mapSaveTimer=setTimeout(()=>{mapSavePending=false;saveMapDB();},250)}
 
 function normalizeMapName(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('tr-TR').replace(/[^a-z0-9]+/g,'')}
 function normalizeMapColor(value,fallback='#c5a059'){const v=String(value||'').trim();if(/^#[0-9a-f]{6}$/i.test(v))return v;if(/^#[0-9a-f]{3}$/i.test(v))return '#'+v.slice(1).split('').map(x=>x+x).join('');const m=v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);if(m)return '#'+[m[1],m[2],m[3]].map(x=>Math.max(0,Math.min(255,Number(x))).toString(16).padStart(2,'0')).join('');return fallback;}
@@ -1669,7 +1710,8 @@ function openDetail(id){
                     <span style="color:var(--gold); font-weight:bold;">${money(a.salary)}/yıl</span>
                 </div>
                 <div style="font-size:10px; color:var(--muted); margin:2px 0;">Hizmet Süresi: <b>${hiredYears} Yıl</b> | Kalan Ömür: ${Math.max(0, (a.maxAge||20) - (a.ageYears||5))} Yıl</div>
-                <div class="adv-buff"><b>Güncel bonus:</b> ${esc(advisorBuffText(a))}</div>
+                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
+                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;">
                     ${locked ? '<span style="color:var(--gold); font-size:11px; font-weight:bold; margin-right:8px;">🔒 1 Yıl Sözleşme Sürüyor</span>' : ''}
                     <button class="btn red small" onclick="fireAdvisor('${s.id}','${a.id}')" ${locked ? 'disabled title="Aynı yıl içinde iade edilemez!" style="opacity:0.5;"' : ''}>AZLET (İADE ET)</button>
@@ -1694,7 +1736,8 @@ function openDetail(id){
                     <span style="color:var(--gold); font-weight:bold;">Maaş: ${money(a.salary)}/yıl</span>
                 </div>
                 <div style="font-size:10px; color:var(--muted); margin:2px 0;">Yaş: ${a.ageYears||5} | Ömür Beklentisi: ${a.maxAge||20} Yıl</div>
-                <div class="adv-buff"><b>Güncel bonus:</b> ${esc(advisorBuffText(a))}</div>
+                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
+                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;"><button class="btn green small" onclick="hireAdvisor('${s.id}','${a.id}')" ${activeAdvisors.length >= maxSlots ? 'disabled title="Kontenjan Dolu!" style="opacity:0.5;"' : ''}>DİVANA ATA (GÖREVE ÇAĞIR)</button></div>` : ''}
             </div>
         </div>
