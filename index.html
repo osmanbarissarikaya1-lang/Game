@@ -25,6 +25,8 @@ button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
 .container{max-width:1350px;margin:auto;padding:12px;}
 
 .hidden{display:none !important;}
+.event-option{background:var(--panel-light);border:1px solid var(--line);padding:12px;border-radius:4px;margin-top:8px;cursor:pointer;text-align:left;width:100%;color:var(--text);transition:.15s}.event-option:hover{border-color:var(--border-gold);background:rgba(197,160,89,.12)}.event-result{background:rgba(10,12,14,.7);border:1px solid var(--border-gold);padding:10px;border-radius:4px;margin-top:10px}.event-card{background:rgba(17,20,24,.75);border:1px solid var(--line);border-left:3px solid var(--border-gold);padding:10px;border-radius:3px;margin-bottom:8px}.event-choice-a{color:#3498db;font-weight:bold}.event-choice-b{color:#e67e22;font-weight:bold}
+
 
 /* ÜST BAR */
 .top{display:flex;gap:10px;align-items:center;justify-content:space-between;background:rgba(21, 24, 29, 0.85);backdrop-filter:blur(8px);border:1px solid var(--border-steel);border-bottom:2px solid var(--border-gold);padding:10px 16px;border-radius:4px;position:sticky;top:5px;z-index:50;box-shadow: 0 4px 15px rgba(0,0,0,0.6);}
@@ -396,7 +398,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
     <h3 style="margin:0; font-family:'Oswald'; color:var(--border-gold);">DEVLETLER</h3>
  </div>
- <div id="stateGrid" class="cards"></div>
+ <div id="pendingEventsHome"></div><div id="stateGrid" class="cards"></div>
 </div>
 <div id="detail" class="screen hidden"></div>
 </div></div>
@@ -413,7 +415,7 @@ let isAdmin = false;
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
-let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
+let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
 
 // 45 ÖZGÜN ADAY LİSTESİ (ÖMür ve Yıldız Sistemli)
 const DEFAULT_45_ADVISORS = [
@@ -468,6 +470,112 @@ const DEFAULT_45_ADVISORS = [
   { id:"adv_gn_14", name:"Cihangir Han Mareşal", role:"Yenilmez Mareşal", stars:5, salary:140000, targetName:"Güneş Devleti", buff:"-%8 Ordu Bakımı & -%6 Asker Alımı", debuff:"Sefer ikramiyesi ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:6, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
   { id:"adv_gn_15", name:"Karun Mirza", role:"Altın Simyacısı", stars:5, salary:130000, targetName:"Güneş Devleti", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -3 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:false, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 }
 ];
+
+
+// ---------------- RASTGELE OLAY SİSTEMİ ----------------
+const EVENT_CATEGORIES = [
+ {name:"Kuraklık", title:["Büyük Kuraklık","Uzayan Kuraklık","Ambarları Zorlayan Kuraklık","Tarlalarda Su Sıkıntısı","Kuruyan Nehirler"]},
+ {name:"Ticaret", title:["Ticaret Kervanları","Liman Ticareti","Yeni Pazarlar","Tüccarların Şikâyeti","Ticaret Fırsatı"]},
+ {name:"Halk", title:["Halk Şenliği","Vergi İsyanı","Esnaf Grevi","Şehir Kalabalığı","Halkın Talebi"]},
+ {name:"Askeri", title:["Sınır Çatışması","Askeri Depo Sorunu","Hudut Garnizonu","Silah Ustalarının Talebi","Orduda Disiplin Sorunu"]},
+ {name:"Doğa", title:["Büyük Sel","Şiddetli Fırtına","Erken Kış","Deprem Sarsıntısı","Orman Yangını"]},
+ {name:"Diplomasi", title:["Yabancı Elçiler","Komşu Devletin Teklifi","Sınır Anlaşmazlığı","Tüccar Elçileri","Diplomatik Kriz"]},
+ {name:"Üretim", title:["Maden Damarlari","Zanaatkârların Talebi","Yeni Atölyeler","Tahıl Fazlası","Üretim Darboğazı"]},
+ {name:"Saray", title:["Saray Masrafları","Soylu Ailelerin Talebi","Taç Töreni","Saray Ziyafeti","Divan Tartışması"]},
+ {name:"Sağlık", title:["Şehirde Hastalık","Hekimlerin Uyarısı","Şifa Evleri","Temizlik Kampanyası","Karantina Tartışması"]},
+ {name:"Altyapı", title:["Köprü Hasarı","Yol Bakımı","Liman Onarımı","Su Kemerleri","Pazar Meydanı"]},
+ {name:"Eğitim", title:["Müderrislerin Talebi","Yeni Mektep","Kütüphane Fırsatı","Bilginlerin Gelişi","Âlimlerin İsteği"]},
+ {name:"Güvenlik", title:["Eşkiya Baskını","Şehir Güvenliği","Gece Devriyeleri","Kaçakçılık","Sınırda Haydutlar"]},
+ {name:"Tarım", title:["Bereketli Hasat","Çiftçi Borçları","Tohum Sıkıntısı","Hayvan Salgını","Yeni Tarım Usulü"]},
+ {name:"Maliye", title:["Hazine Açığı","Vergi Tahsildarları","Sikke Sorunu","Borç Talebi","Beklenmedik Gelir"]},
+ {name:"Denizcilik", title:["Fırtınalı Sefer","Tersane İhtiyacı","Deniz Tüccarları","Gemi Kazası","Yeni Deniz Rotası"]},
+ {name:"Kültür", title:["Büyük Şenlik","Sanatkârların Gelişi","Saray Sanatçıları","Anıt Talebi","Halk Oyunları"]},
+ {name:"Din", title:["Manevi Yardım","İbadethane Talebi","Din Âlimleri","Vakıf İsteği","Bayram Hazırlıkları"]},
+ {name:"Nüfus", title:["Göçmenler Geldi","Şehirden Göç","Yeni Mahalle","Nüfus Baskısı","Yerleşim Fırsatı"]},
+ {name:"Casusluk", title:["Şüpheli Haberler","Yabancı Casuslar","Gizli Belgeler","İstihbarat Fırsatı","Saraydaki Fısıltılar"]},
+ {name:"İsyan", title:["Taşrada Huzursuzluk","Yerel İsyan","Soylu Muhalefeti","Köylülerin Protestosu","Şehir Ayaklanması"]}
+];
+const EVENT_A_TEXTS=["Kaynak ayır ve halkı destekle","Hemen müdahale et","Devlet hazinesinden ödeme yap","Uzlaşma yolunu seç","Devlet desteğini artır"];
+const EVENT_B_TEXTS=["Masrafı reddet ve bekle","Sert tedbirler uygula","Harcamayı sınırlı tut","Talebi geri çevir","Yerel yöneticilere bırak"];
+const EVENT_C_TEXTS=["Üçüncü bir yol dene","Komisyon kur ve incele","Tüccarlarla pazarlık yap","Askeri ve sivil desteği birleştir","Kararı ertele"];
+function buildDefaultEvents(){
+ let arr=[];
+ for(let i=0;i<100;i++){
+   const cat=EVENT_CATEGORIES[i%EVENT_CATEGORIES.length];
+   const variant=Math.floor(i/EVENT_CATEGORIES.length);
+   const title=cat.title[variant%cat.title.length];
+   const aLoss=50000 + ((i*73123)%701)*1000;
+   const bGain=(i*17321)%250001;
+   const aHappy=[-4,-3,-2,1,2,3,4][i%7];
+   const bHappy=[4,3,2,1,0,-1,-2,-3,-4][i%9];
+   const aAmount=-Math.min(750000,aLoss);
+   const bAmount=Math.min(250000,bGain);
+   arr.push({id:"evt_"+String(i+1).padStart(3,"0"),category:cat.name,title:title+" #"+(variant+1),description:(cat.name+" alanında beklenmedik bir gelişme yaşandı. Hükümdarın vereceği kararın mali ve toplumsal sonuçları olacaktır."),options:[{id:"A",text:EVENT_A_TEXTS[i%EVENT_A_TEXTS.length],gold:aAmount,happiness:aHappy},{id:"B",text:EVENT_B_TEXTS[i%EVENT_B_TEXTS.length],gold:bAmount,happiness:bHappy}]});
+ }
+ return arr;
+}
+const DEFAULT_RANDOM_EVENTS=buildDefaultEvents();
+function getEventPool(){
+ db.settings.randomEvents = Array.isArray(db.settings.randomEvents)&&db.settings.randomEvents.length ? db.settings.randomEvents : structuredClone(DEFAULT_RANDOM_EVENTS);
+ return db.settings.randomEvents;
+}
+function randomEventCount(){
+ const r=Math.random();
+ if(r<0.30)return 0; if(r<0.75)return 1; if(r<0.95)return 2; return 3;
+}
+function eventAlreadyRecent(stateId,eventId){
+ const hist=(db.eventHistory||[]).filter(x=>x.stateId===stateId); return hist.slice(0,10).some(x=>x.eventId===eventId);
+}
+function createYearEventsForState(s){
+ const count=randomEventCount(); if(!count)return [];
+ const pool=getEventPool().filter(e=>!eventAlreadyRecent(s.id,e.id));
+ const picked=[]; const copy=[...pool];
+ for(let i=0;i<count&&copy.length;i++){const idx=Math.floor(Math.random()*copy.length);picked.push(copy.splice(idx,1)[0]);}
+ return picked.map(e=>({uid:crypto.randomUUID(),stateId:s.id,stateName:s.name,eventId:e.id,year:db.gameYear,event:e,createdAt:new Date().toISOString()}));
+}
+function applyEventChoice(pending,optionId){
+ const s=getState(pending.stateId); if(!s)return;
+ const event=pending.event; const opt=event.options.find(o=>o.id===optionId); if(!opt)return;
+ const oldT=Number(s.treasury||0); const oldH=Number(s.happiness||0);
+ const requestedGold=Number(opt.gold||0); let actualGold=requestedGold;
+ if(requestedGold<0) actualGold=-Math.min(oldT,Math.abs(requestedGold));
+ s.treasury=Math.max(0,oldT+actualGold);
+ s.happiness=Math.max(0,Math.min(100,oldH+Number(opt.happiness||0)));
+ db.eventHistory.unshift({uid:pending.uid,stateId:s.id,stateName:s.name,eventId:event.id,eventTitle:event.title,year:pending.year,choice:optionId,choiceText:opt.text,gold:actualGold,happiness:Number(opt.happiness||0),date:new Date().toLocaleString("tr-TR"),user:currentUserEmail});
+ if(db.eventHistory.length>500)db.eventHistory.pop();
+ addLog({stateId:s.id,stateName:s.name,action:`🎲 Olay: ${event.title} — ${optionId} seçildi`,cost:Math.abs(actualGold),qty:1,oldTreasury:oldT,newTreasury:s.treasury});
+ db.pendingEvents=(db.pendingEvents||[]).filter(x=>x.uid!==pending.uid);
+ queueSave();
+ closeModal();
+ alert(`${event.title}\n\nSeçenek ${optionId}: ${opt.text}\n\nHazine: ${actualGold>=0?'+':''}${money(actualGold)}\nMutluluk: ${Number(opt.happiness||0)>=0?'+':''}${Number(opt.happiness||0)}%`);
+ openDetail(s.id);
+}
+function openRandomEvent(uid){
+ const pending=(db.pendingEvents||[]).find(x=>x.uid===uid); if(!pending)return;
+ const s=getState(pending.stateId); if(!s)return;
+ const e=pending.event;
+ const opts=e.options.map(o=>`<button class="event-option" onclick="applyEventChoice('${pending.uid}','${o.id}')"><div style="font-size:15px;font-weight:bold;">${o.id}) ${esc(o.text)}</div><div class="sub" style="margin-top:5px;">💰 ${o.gold>=0?'+':''}${money(o.gold)} &nbsp; | &nbsp; 😊 ${o.happiness>=0?'+':''}${o.happiness}%</div></button>`).join('');
+ modal(`<h2>🎲 ${esc(e.title)}</h2><div class="badge">${esc(e.category)} • ${pending.year}</div><p style="font-size:14px;line-height:1.5;margin-top:12px;">${esc(e.description)}</p><p class="sub">Devlet: <b>${esc(s.name)}</b></p>${opts}<p class="sub" style="margin-top:10px;">⚠️ Seçim yapıldığında geri alınamaz.</p>`);
+}
+function renderPendingEvents(){
+ const mine=isAdmin?(db.pendingEvents||[]):(db.pendingEvents||[]).filter(e=>e.stateId && getState(e.stateId)?.ownerEmail===currentUserEmail);
+ if(!mine.length)return "";
+ return `<div style="margin-bottom:12px;"><h4 style="color:var(--border-gold);font-family:'Oswald';margin:0 0 7px;">🎲 BEKLEYEN RASTGELE OLAYLAR</h4>${mine.map(e=>`<div class="event-card"><div style="display:flex;justify-content:space-between;gap:8px;"><b>${esc(e.event.title)}</b><span class="badge">${e.year}</span></div><div class="sub">${esc(e.stateName)} • ${esc(e.event.category)}</div><button class="btn gold small" style="margin-top:7px;" onclick="openRandomEvent('${e.uid}')">OLAYI AÇ →</button></div>`).join('')}</div>`;
+}
+function openEventHistoryAdmin(){
+ if(!isAdmin)return;
+ const hist=db.eventHistory||[];
+ const pending=db.pendingEvents||[];
+ const rows=hist.map(h=>`<div class="event-card"><b>${esc(h.stateName)}</b> — ${esc(h.eventTitle)} <span class="badge">${h.year}</span><div class="sub">Seçim: <b>${h.choice}</b> — ${esc(h.choiceText)} | 💰 ${h.gold>=0?'+':''}${money(h.gold)} | 😊 ${h.happiness>=0?'+':''}${h.happiness}%<br>${esc(h.date||'')}</div></div>`).join('');
+ const pendingRows=pending.map(e=>`<div class="event-card"><b>${esc(e.stateName)}</b> — ${esc(e.event.title)} <span class="badge">${e.year}</span><div class="sub">Henüz seçim yapılmadı.</div></div>`).join('');
+ modal(`<h2>🎲 RASTGELE OLAYLAR</h2><div class="event-result"><b>Mevcut yıl:</b> ${db.gameYear} &nbsp; | &nbsp; <b>Bekleyen:</b> ${pending.length}</div><h4 style="color:var(--gold);font-family:'Oswald';">BEKLEYEN OLAYLAR</h4>${pendingRows||'<p class="sub">Bekleyen olay yok.</p>'}<h4 style="color:var(--gold);font-family:'Oswald';">SEÇİM GEÇMİŞİ</h4><div style="max-height:50vh;overflow:auto;">${rows||'<p class="sub">Henüz olay seçimi yapılmadı.</p>'}</div><div class="actions" style="margin-top:10px;"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
+}
+function openEventPoolAdmin(){
+ if(!isAdmin)return;
+ const pool=getEventPool();
+ const rows=pool.map((e,i)=>`<div class="event-card"><div style="display:flex;justify-content:space-between;gap:8px;"><b>${i+1}. ${esc(e.title)}</b><span class="badge">${esc(e.category)}</span></div><div class="sub">${esc(e.description)}</div><div style="margin-top:5px;font-size:11px;">A: ${esc(e.options[0].text)} → ${e.options[0].gold>=0?'+':''}${money(e.options[0].gold)}, ${e.options[0].happiness>=0?'+':''}${e.options[0].happiness}%<br>B: ${esc(e.options[1].text)} → ${e.options[1].gold>=0?'+':''}${money(e.options[1].gold)}, ${e.options[1].happiness>=0?'+':''}${e.options[1].happiness}%</div></div>`).join('');
+ modal(`<h2>🗂️ OLAY HAVUZU (${pool.length})</h2><p class="sub">100 hazır olay. Ekonomik ve mutluluk sonuçları sınırlar içinde tutulur.</p><div style="max-height:70vh;overflow:auto;">${rows}</div><div class="actions" style="margin-top:10px;"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
+}
 
 function initSupabase(){
  if(!window.supabase || typeof window.supabase.createClient!=="function") throw new Error("Supabase kütüphanesi yüklenemedi.");
@@ -642,6 +750,7 @@ function renderTopActions() {
     <button class="btn gold" onclick="passOneYear()">⏳ 1 YIL GEÇİR</button>
     <button class="btn gold" onclick="openAdminGrantModal()">💸 PARA GÖNDER</button>
     <button class="btn" onclick="openPurchaseLogs()">📜 LOGLAR</button>
+    <button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAYLAR</button>
     <button class="btn green" onclick="openStateForm()">＋ DEVLET EKLE</button>
     <button class="btn blue" onclick="openAdmin()">⚙ ADMİN</button>
     <button class="btn red" onclick="logout()">ÇIKIŞ</button>`;
@@ -702,6 +811,9 @@ async function loadDB(){
     db.letters = db.letters || [];
     db.timerSeconds = db.timerSeconds || 0;
     db.timerRunning = db.timerRunning || false;
+     db.gameYear = Number.isFinite(Number(db.gameYear)) ? Number(db.gameYear) : 1453;
+     db.pendingEvents = db.pendingEvents || [];
+     db.eventHistory = db.eventHistory || [];
     
     if(!db.advisors || db.advisors.length !== 45) {
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
@@ -719,7 +831,7 @@ async function loadDB(){
     });
  }
  else {
-    db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS), timerSeconds:0, timerRunning:false};
+    db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS), timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]};
     await saveDB();
  }
  toast("Sistem Aktif",true);
@@ -738,7 +850,8 @@ function renderHome(){
  document.getElementById("home").classList.remove("hidden");
  document.body.style.background = "var(--bg)";
  
- const box=document.getElementById("stateGrid");
+ const pendingBox=document.getElementById("pendingEventsHome"); if(pendingBox) pendingBox.innerHTML=renderPendingEvents();
+  const box=document.getElementById("stateGrid");
  const visibleStates = isAdmin ? db.states : db.states.filter(s => s.ownerEmail === currentUserEmail);
  
  if(!visibleStates.length){
@@ -862,7 +975,8 @@ function openDetail(id){
  const unreadCount = myLetters.filter(l => l.toStateId === s.id && !l.read).length;
 
  // 1. ASKERİYE SEKMESİ
- let askeriyeHtml = `<div class="unit-grid">`;
+ let pendingEventHtml = renderPendingEvents();
+  let askeriyeHtml = pendingEventHtml + `<div class="unit-grid">`;
  askeriyeHtml += buildUnitCard(s, 'piyade', 'Piyade', imgs.piyade, db.settings.prices.piyade, db.settings.upkeep.piyade, '', canManage, false);
  askeriyeHtml += buildUnitCard(s, 'suvari', 'Süvari', imgs.suvari, db.settings.prices.suvari, db.settings.upkeep.suvari, '', canManage, false);
  askeriyeHtml += buildUnitCard(s, 'nisanci', 'Nişancı', imgs.nisanci, db.settings.prices.nisanci, db.settings.upkeep.nisanci, '', canManage, false);
@@ -1994,8 +2108,16 @@ function passOneYear(){
     // Sayaç sıfırlanır
     db.timerSeconds = 0;
     db.timerRunning = false;
+    db.gameYear = (Number(db.gameYear) || 1453) + 1;
 
-    let summaryHtml = "<h2>⏳ YIL SONU RAPORU & PAŞA GELİŞİMLERİ</h2><div style='max-height:60vh; overflow:auto;'><div class='cards' style='grid-template-columns:1fr;'>";
+    let yearEventReport = [];
+    db.states.forEach(s => {
+        const generated = createYearEventsForState(s);
+        db.pendingEvents.push(...generated);
+        if(generated.length) yearEventReport.push(`${esc(s.name)}: ${generated.length} olay`);
+    });
+
+    let summaryHtml = "<h2>⏳ YIL SONU RAPORU & PAŞA GELİŞİMLERİ</h2>" + `<div class="event-result"><b>Yeni yıl: ${db.gameYear}</b><br>${yearEventReport.length ? "🎲 Yeni olaylar: " + yearEventReport.join(" • ") : "🎲 Bu yıl rastgele olay oluşmadı."}</div>` + "<div style='max-height:60vh; overflow:auto;'><div class='cards' style='grid-template-columns:1fr;'>";
     
     db.states.forEach(s => {
         let inc = calcIncome(s);
@@ -2117,6 +2239,7 @@ function openAdmin(){
  }).join("");
 
  modal(`<h2>⚙ KÜRESEL AYARLAR</h2>
+ <div class="actions" style="margin:8px 0;"><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button></div>
 
  <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN PAŞALARI YÖNETİMİ (${(db.advisors||[]).length} Paşa)</h4>
  <p class="sub" style="margin-bottom:8px;">Paşaların ömürlerini, yıldızlarını, maaşlarını ve çarpanlarını düzenleyin.</p>
