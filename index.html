@@ -199,6 +199,12 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .admin-hoi-tab { flex:1 0 auto; padding:9px 12px; border-right:1px solid var(--line); color:var(--muted); cursor:pointer; font-family:'Oswald'; font-size:11px; text-align:center; white-space:nowrap; }
 .admin-hoi-tab:hover { background:var(--panel-light); color:#fff; }
 .admin-hoi-tab.active { background:var(--panel-light); color:var(--gold); border-bottom:2px solid var(--gold); }
+.game-map-viewport{height:72vh;overflow:auto;background:#07121b;border:1px solid var(--border-gold);border-radius:4px;touch-action:pan-x pan-y;}
+.game-map-canvas{transform-origin:0 0;min-width:100%;transition:transform .15s ease;}
+.game-map-canvas svg{display:block;width:100%;height:auto;}
+.game-map-canvas path[id]{cursor:pointer;transition:filter .12s,stroke-width .12s;}
+.game-map-canvas path[id]:hover{filter:brightness(1.3);stroke:#fff!important;stroke-width:1.2!important;}
+.map-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
 
 /* ASKER & ALTYAPI KARTLARI */
 .unit-grid {
@@ -363,17 +369,32 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .authbox{width:min(380px,100%);background:rgba(21, 24, 29, 0.85);backdrop-filter:blur(8px);padding:24px;border-radius:4px;border:1px solid var(--border-gold); box-shadow:0 8px 24px rgba(0,0,0,0.8); text-align:center;}
 .error{color:var(--red);font-size:12px;margin-top:8px}.success{color:var(--green);font-size:12px;margin-top:8px}
 
-@media(max-width:850px){
-    .container { padding: 6px; }
+@media(max-width:1100px), (hover:none) and (pointer:coarse){
+    html,body { width:100%; max-width:100%; overflow-x:hidden; }
+    .container { width:100%; max-width:100%; padding: 5px; overflow-x:hidden; }
     .top { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; }
-    .top .actions { justify-content: space-between; }
-    .top .actions .btn { flex: 1; text-align: center; padding: 8px 4px; font-size: 12px; }
-    .detail-layout { grid-template-columns: 1fr; }
+    .top .actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; width:100%; }
+    .top .actions .btn { width:100%; min-width:0; text-align:center; padding:9px 4px; font-size:11px; }
+    .admin-timer-box { grid-column:1/-1; width:100%; flex-wrap:wrap; }
+    .detail-layout { display:block; width:100%; min-width:0; }
+    .political-panel,.content-panel { width:100%; min-width:0; max-width:100%; overflow:hidden; }
+    .political-panel { margin-bottom:8px; }
+    .ruler-portrait-container { width:100%; max-width:100%; padding:8px; overflow:hidden; }
+    .ruler-name-plate { width:100%; max-width:100%; margin-top:-8px; overflow:hidden; overflow-wrap:anywhere; }
+    .hoi-tabs { width:100%; overflow-x:auto; justify-content:flex-start; }
+    .hoi-tab { flex:0 0 auto; min-width:105px; padding:10px 7px; font-size:11px; }
+    .tab-content { padding:8px; width:100%; overflow-x:hidden; }
     .unit-grid { grid-template-columns: 1fr; }
     .cards { grid-template-columns: 1fr; }
     .formgrid { grid-template-columns: 1fr; }
     .political-header h1 { font-size: 18px; }
-    .big-portrait { max-height: 180px; }
+    .big-portrait { width:100%; max-height:160px; }
+    .modal { padding:0; align-items:stretch; }
+    .modalbox { width:100%; max-width:100%; height:100dvh; max-height:100dvh; border-radius:0; padding:12px; }
+    .game-map-viewport { height:calc(100dvh - 175px); min-height:340px; }
+    .map-toolbar .sub { flex-basis:100%; }
+    .list-item,.unit-card { max-width:100%; min-width:0; }
+    input,select,textarea { min-width:0; max-width:100%; }
 }
 </style>
 </head>
@@ -402,10 +423,12 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 <div id="home" class="screen">
  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
     <h3 style="margin:0; font-family:'Oswald'; color:var(--border-gold);">DEVLETLER</h3>
+    <button class="btn gold" onclick="openGameMap()">🗺️ HARİTA</button>
  </div>
  <div id="pendingEventsHome"></div><div id="stateGrid" class="cards"></div>
 </div>
 <div id="detail" class="screen hidden"></div>
+<div id="mapScreen" class="screen hidden"></div>
 </div></div>
 
 <div id="modal" class="modal"><div class="modalbox"><div id="modalContent"></div></div></div>
@@ -413,7 +436,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
-const SUPER_ADMINS = ["osman.baris.sarikaya1@gmail.com"]; 
+const SUPER_ADMINS = ["barisozasik1@gmail.com"]; 
 let currentUserEmail = null;
 let isAdmin = false;
 
@@ -423,6 +446,7 @@ let sb=null;
 const LOCAL_MODE=false;
 const LOCAL_DB_KEY="osmoyun_exact_game_state_v1";
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
+let mapSvgCache="",mapConfigCache=null,mapZoom=1,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set();
 
 // 45 ÖZGÜN ADAY LİSTESİ (ÖMür ve Yıldız Sistemli)
 const DEFAULT_45_ADVISORS = [
@@ -504,7 +528,6 @@ const EVENT_CATEGORIES = [
 ];
 const EVENT_A_TEXTS=["Kaynak ayır ve halkı destekle","Hemen müdahale et","Devlet hazinesinden ödeme yap","Uzlaşma yolunu seç","Devlet desteğini artır"];
 const EVENT_B_TEXTS=["Masrafı reddet ve bekle","Sert tedbirler uygula","Harcamayı sınırlı tut","Talebi geri çevir","Yerel yöneticilere bırak"];
-const EVENT_C_TEXTS=["Üçüncü bir yol dene","Komisyon kur ve incele","Tüccarlarla pazarlık yap","Askeri ve sivil desteği birleştir","Kararı ertele"];
 function buildDefaultEvents(){
  let arr=[];
  for(let i=0;i<100;i++){
@@ -650,12 +673,13 @@ const defaultSettings={
  prices:{piyade:21,suvari:40,nisanci:30,kucuk_top:10000,orta_top:25000,buyuk_top:45000,kucuk_gemi:65000,orta_gemi:95000,buyuk_gemi:130000,kucuk_liman:100000,orta_liman:180000,buyuk_liman:300000,kucuk_ocak:80000,orta_ocak:150000,buyuk_ocak:250000,okul:120000,istihbarat_binasi:200000},
  capacity:{kucuk_liman:5,orta_liman:7,buyuk_liman:10,kucuk_ocak:10,orta_ocak:20,buyuk_ocak:35},
  upkeep:{piyade:35,suvari:55,nisanci:45,kucuk_top:7500,orta_top:15000,buyuk_top:25000,kucuk_gemi:20000,orta_gemi:35000,buyuk_gemi:50000},
- garrisonUpkeep:{city:5,fortress:8},
+ garrisonUpkeep:{fortress:8},
  populationBuildingGrowth:{hastane:0.5,asevi:0.4,su_degirmeni:0.6,kervansaray:0.3,pazar:0.4},
  populationBuildingCostPerPerson:{hastane:0.10,asevi:0.05,su_degirmeni:0.08,kervansaray:0.12,pazar:0.10},
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
+ mapIntelReportCost:100000,
  images:{piyade:"",suvari:"",nisanci:"",kucuk_top:"",orta_top:"",buyuk_top:"",kucuk_gemi:"",orta_gemi:"",buyuk_gemi:"",kucuk_liman:"",orta_liman:"",buyuk_liman:"",kucuk_ocak:"",orta_ocak:"",buyuk_ocak:"",okul:"",istihbarat_binasi:"",fortress:"",fortress_garrison:"",hastane:"",asevi:"",su_degirmeni:"",kervansaray:"",pazar:""},
  customItems: [] 
 };
@@ -877,6 +901,7 @@ async function loadDB(){
     db.settings.capacity={...defaultSettings.capacity,...(db.settings?.capacity||{})};
     db.settings.upkeep={...defaultSettings.upkeep,...(db.settings?.upkeep||{})};
     db.settings.garrisonUpkeep={...defaultSettings.garrisonUpkeep,...(db.settings?.garrisonUpkeep||{})};
+    delete db.settings.garrisonUpkeep.city;
     db.settings.populationBuildingGrowth={...defaultSettings.populationBuildingGrowth,...(db.settings?.populationBuildingGrowth||{})};
     db.settings.populationBuildingCostPerPerson={...defaultSettings.populationBuildingCostPerPerson,...(db.settings?.populationBuildingCostPerPerson||{})};
     db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
@@ -889,7 +914,9 @@ async function loadDB(){
     db.timerRunning = db.timerRunning || false;
      db.gameYear = Number.isFinite(Number(db.gameYear)) ? Number(db.gameYear) : 1453;
      db.pendingEvents = db.pendingEvents || [];
-     db.eventHistory = db.eventHistory || [];
+    db.eventHistory = db.eventHistory || [];
+    db.mapProvinceOwners = db.mapProvinceOwners || {};
+    db.mapProvinceDetails = db.mapProvinceDetails || {};
     
     if(!db.advisors || db.advisors.length !== 45) {
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
@@ -904,9 +931,9 @@ async function loadDB(){
         s.hiredAdvisors = s.hiredAdvisors || [];
         s.advisorHiredYears = s.advisorHiredYears || {}; // Hangi paşanın kaç yıldır çalıştırıldığı
         s.advisorSlots = s.advisorSlots || 3;
-        s.cityCount = Math.max(0, Math.floor(Number(s.cityCount)||0));
+        delete s.cityCount;
         s.fortressCount = Math.max(0, Math.floor(Number(s.fortressCount)||0));
-        s.cityGarrison = Math.max(0, Math.floor(Number(s.cityGarrison)||0));
+        delete s.cityGarrison;
         s.fortressGarrison = Math.max(0, Math.floor(Number(s.fortressGarrison)||0));
         s.garrisonWarDeaths = Math.max(0, Math.floor(Number(s.garrisonWarDeaths)||0));
         ["hastane","asevi","su_degirmeni","kervansaray","pazar"].forEach(key=>s[key]=Math.max(0,Math.floor(Number(s[key])||0)));
@@ -926,9 +953,238 @@ async function saveDB(){
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
 
+function normalizeMapName(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('tr-TR').replace(/[^a-z0-9]+/g,'')}
+function normalizeMapColor(value,fallback='#c5a059'){const v=String(value||'').trim();if(/^#[0-9a-f]{6}$/i.test(v))return v;if(/^#[0-9a-f]{3}$/i.test(v))return '#'+v.slice(1).split('').map(x=>x+x).join('');const m=v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);if(m)return '#'+[m[1],m[2],m[3]].map(x=>Math.max(0,Math.min(255,Number(x))).toString(16).padStart(2,'0')).join('');return fallback;}
+function getProvinceDisplayColor(provinceId,detail={},owner=null){const path=document.getElementById(provinceId);return normalizeMapColor(path?.style.fill||path?.getAttribute('fill')||detail.color||owner?.color,normalizeMapColor(detail.color||owner?.color));}
+function getOwnedMapProvinceIds(stateId){return Object.entries(db.mapProvinceOwners||{}).filter(([,ownerId])=>ownerId===stateId).map(([provinceId])=>provinceId);}
+function refreshMapFortressCounts(){db.states.forEach(s=>{s.fortressCount=getOwnedMapProvinceIds(s.id).length;});}
+function redistributeMapGarrisonsForStateIds(stateIds){for(const stateId of new Set(stateIds)){const s=getState(stateId);if(s&&getOwnedMapProvinceIds(s.id).length)distributeFortressGarrisonToMap(s,s.fortressGarrison||0);}}
+function distributeFortressGarrisonToMap(s,total){const ids=getOwnedMapProvinceIds(s.id),safeTotal=Math.max(0,Math.floor(Number(total)||0));s.fortressCount=ids.length;s.fortressGarrison=safeTotal;db.mapProvinceDetails=db.mapProvinceDetails||{};const base=ids.length?Math.floor(safeTotal/ids.length):0,remainder=ids.length?safeTotal%ids.length:0;ids.forEach((id,index)=>{const old=db.mapProvinceDetails[id]||{};db.mapProvinceDetails[id]={...old,countryName:old.countryName||s.name,garrison:base+(index<remainder?1:0),color:old.color||s.color||'#c5a059'};});return {count:ids.length,base,remainder};}
+
+async function loadMapAssets(){
+ if(mapSvgCache&&mapConfigCache)return;
+ const [svgResponse,configResponse]=await Promise.all([
+   fetch('MapChart_Map.svg?v=1',{cache:'no-store'}),
+   fetch('map-config.json?v=1',{cache:'no-store'})
+ ]);
+ if(!svgResponse.ok)throw new Error('MapChart_Map.svg yüklenemedi: HTTP '+svgResponse.status);
+ if(!configResponse.ok)throw new Error('map-config.json yüklenemedi: HTTP '+configResponse.status);
+ mapSvgCache=await svgResponse.text();
+ mapConfigCache=await configResponse.json();
+}
+
+function initializeMapOwnersFromConfig(){
+ db.mapProvinceOwners=db.mapProvinceOwners||{};
+ if(db.mapOwnershipInitialized||!isAdmin||!mapConfigCache)return;
+ const stateByName=new Map(db.states.map(s=>[normalizeMapName(s.name),s.id]));
+ Object.values(mapConfigCache.groups||{}).forEach(group=>{
+   const stateId=stateByName.get(normalizeMapName(group.label));
+   if(stateId)(group.paths||[]).forEach(provinceId=>{if(!db.mapProvinceOwners[provinceId])db.mapProvinceOwners[provinceId]=stateId;});
+ });
+ db.mapOwnershipInitialized=true;
+ refreshMapFortressCounts();
+ queueSave();
+}
+
+function applyMapOwnership(){
+ const canvas=document.getElementById('gameMapCanvas');if(!canvas)return;
+ canvas.querySelectorAll('path[id][d]').forEach(path=>{
+   if(!path.dataset.originalFill)path.dataset.originalFill=path.getAttribute('fill')||path.style.fill||'';
+   const ownerId=db.mapProvinceOwners?.[path.id];
+   const owner=getState(ownerId);
+   const detail=db.mapProvinceDetails?.[path.id];
+   const displayOwner=detail?.countryName||owner?.name||'Sahipsiz / atanmadı';
+   path.style.fill=detail?.color||(owner?(owner.color||'#c5a059'):path.dataset.originalFill);
+   path.onclick=()=>handleProvinceClick(path.id);
+   let title=path.querySelector('title');
+   if(!title){title=document.createElementNS('http://www.w3.org/2000/svg','title');path.appendChild(title);}
+   title.textContent=`${path.id.replaceAll('_',' ')} — ${displayOwner}`;
+ });
+}
+
+async function openGameMap(){
+ mapBrush=null;mapPickerMode=false;mapBatch=null;mapBatchSelection.clear();
+ document.getElementById('home').classList.add('hidden');
+ document.getElementById('detail').classList.add('hidden');
+ const screen=document.getElementById('mapScreen');screen.classList.remove('hidden');
+ screen.innerHTML=`<div class="map-toolbar"><button class="btn" onclick="renderHome()">← DEVLETLERE DÖN</button><button class="btn" onclick="changeMapZoom(-0.25)">−</button><button class="btn" onclick="changeMapZoom(0.25)">+</button><button class="btn blue" onclick="resetMapZoom()">%100</button><span class="sub">${isAdmin?'Bir toprağa tıklayarak sahibini değiştirebilirsin.':'Toprağa tıklayarak sahibini görebilirsin.'}</span></div><div id="gameMapStatus" class="sub">Harita yükleniyor…</div>`;
+ try{
+   await loadMapAssets();
+   initializeMapOwnersFromConfig();
+   screen.innerHTML=`<div class="map-toolbar"><button class="btn" onclick="renderHome()">← DEVLETLERE DÖN</button><button class="btn" onclick="changeMapZoom(-0.25)">−</button><button class="btn" onclick="changeMapZoom(0.25)">+</button><button class="btn blue" onclick="resetMapZoom()">%100</button>${isAdmin?'<button id="mapPickerBtn" class="btn blue" onclick="toggleMapPicker()">💧 RENK/ÜLKE SEÇ</button><button id="mapBrushBtn" class="btn gold" onclick="openMapBrushSetup()">🖌️ FIRÇA</button><button id="mapBatchBtn" class="btn green" onclick="openMapBatchSetup()">☑ ÇOKLU ATAMA</button>':''}<span id="mapZoomLabel" class="badge">%100</span><span id="mapBrushStatus" class="sub">${isAdmin?'Toprağa dokun: düzenle, damlalıkla seç veya fırça kullan.':'Toprağa dokun: sahibini gör.'}</span></div><div id="gameMapViewport" class="game-map-viewport"><div id="gameMapCanvas" class="game-map-canvas">${mapSvgCache}</div></div><div class="sub" style="margin-top:6px;text-align:right;">Harita: MapChart.net — CC BY-SA 4.0</div>`;
+   mapZoom=1;applyMapOwnership();
+ }catch(error){screen.innerHTML=`<button class="btn" onclick="renderHome()">← DEVLETLERE DÖN</button><p class="error">❌ ${esc(error.message||error)}</p>`;}
+}
+
+function changeMapZoom(delta){
+ mapZoom=Math.max(.5,Math.min(4,mapZoom+delta));
+ const canvas=document.getElementById('gameMapCanvas');if(canvas)canvas.style.width=(mapZoom*100)+'%';
+ const label=document.getElementById('mapZoomLabel');if(label)label.textContent='%'+Math.round(mapZoom*100);
+}
+function resetMapZoom(){mapZoom=1;const canvas=document.getElementById('gameMapCanvas');if(canvas)canvas.style.width='100%';const label=document.getElementById('mapZoomLabel');if(label)label.textContent='%100';}
+
+function openMapBatchSetup(){
+ if(!isAdmin)return;
+ if(mapBatch){finishMapBatch();return;}
+ const options=db.states.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ modal(`<h2>☑ ÇOKLU TOPRAK ATAMASI</h2><p class="sub">Devleti seçtikten sonra haritada istediğin topraklara dokun. Seçilenlerin tamamı tek seferde bu devlete atanır ve garnizonları 0 olur.</p><div class="formgrid"><div class="full"><label>Atanacak Devlet</label><select id="batch_owner" onchange="syncMapBatchOwner(this.value)">${options}</select></div>${field('batch_country','Ülke Adı',db.states[0]?.name||'','text')}${field('batch_color','Toprak Rengi',db.states[0]?.color||'#c5a059','color')}</div><div class="actions" style="margin-top:12px;"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn green" onclick="activateMapBatch()">SEÇİME BAŞLA</button></div>`);
+}
+function syncMapBatchOwner(ownerId){const owner=getState(ownerId);if(!owner)return;const n=document.getElementById('f_batch_country'),c=document.getElementById('f_batch_color');if(n)n.value=owner.name||'';if(c)c.value=owner.color||'#c5a059';}
+function activateMapBatch(){
+ const ownerId=document.getElementById('batch_owner')?.value||'',owner=getState(ownerId);
+ if(!owner){alert('Önce bir devlet seçmelisin.');return;}
+ mapBatch={ownerId,countryName:document.getElementById('f_batch_country')?.value.trim()||owner.name,garrison:0,color:document.getElementById('f_batch_color')?.value||owner.color||'#c5a059'};
+ mapBrush=null;mapPickerMode=false;mapBatchSelection.clear();closeModal();updateMapBatchUi();
+}
+function updateMapBatchUi(){const btn=document.getElementById('mapBatchBtn'),status=document.getElementById('mapBrushStatus');if(btn){btn.textContent=mapBatch?`✓ ATAMAYI BİTİR (${mapBatchSelection.size})`:'☑ ÇOKLU ATAMA';btn.className=mapBatch?'btn gold':'btn green';}if(status&&mapBatch)status.textContent=`Çoklu seçim: ${mapBatch.countryName} • ${mapBatchSelection.size} toprak seçildi. Yeniden dokunursan seçim kalkar.`;}
+function removeBatchProvinceLabel(provinceId){document.getElementById('batch_label_'+provinceId)?.remove();}
+function addBatchProvinceLabel(provinceId){const path=document.getElementById(provinceId);if(!path||!mapBatch)return;removeBatchProvinceLabel(provinceId);try{const b=path.getBBox(),t=document.createElementNS('http://www.w3.org/2000/svg','text');t.id='batch_label_'+provinceId;t.setAttribute('x',b.x+b.width/2);t.setAttribute('y',b.y+b.height/2);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-size',Math.max(3,Math.min(7,b.width/3)));t.setAttribute('font-weight','800');t.setAttribute('fill','#fff');t.setAttribute('stroke','#111');t.setAttribute('stroke-width','1.5');t.setAttribute('paint-order','stroke');t.setAttribute('pointer-events','none');t.textContent=mapBatch.countryName;path.ownerSVGElement.appendChild(t);}catch(_){}}
+function highlightBatchSelection(){for(const id of mapBatchSelection){const p=document.getElementById(id);if(p){p.style.fill=mapBatch.color;p.setAttribute('fill',mapBatch.color);addBatchProvinceLabel(id);}}}
+function toggleBatchProvince(provinceId){const path=document.getElementById(provinceId);if(!path)return;if(mapBatchSelection.has(provinceId)){mapBatchSelection.delete(provinceId);removeBatchProvinceLabel(provinceId);applyMapOwnership();highlightBatchSelection();}else{mapBatchSelection.add(provinceId);path.style.fill=mapBatch.color;path.setAttribute('fill',mapBatch.color);addBatchProvinceLabel(provinceId);}updateMapBatchUi();}
+function finishMapBatch(){
+ if(!mapBatch)return;
+ if(!mapBatchSelection.size){mapBatch=null;updateMapBatchUi();const s=document.getElementById('mapBrushStatus');if(s)s.textContent='Çoklu atama iptal edildi.';return;}
+ db.mapProvinceOwners=db.mapProvinceOwners||{};db.mapProvinceDetails=db.mapProvinceDetails||{};
+ const affectedStateIds=[mapBatch.ownerId];
+ for(const id of mapBatchSelection){const previousOwnerId=db.mapProvinceOwners[id];if(previousOwnerId)affectedStateIds.push(previousOwnerId);db.mapProvinceOwners[id]=mapBatch.ownerId;db.mapProvinceDetails[id]={countryName:mapBatch.countryName,garrison:0,color:mapBatch.color};}
+ refreshMapFortressCounts();redistributeMapGarrisonsForStateIds(affectedStateIds);const count=mapBatchSelection.size,name=mapBatch.countryName,ownerId=mapBatch.ownerId;
+ addLog({stateId:ownerId,stateName:name,action:`Harita çoklu atama: ${count} toprak → ${name}`,qty:count,cost:0});
+ for(const id of mapBatchSelection)removeBatchProvinceLabel(id);mapBatch=null;mapBatchSelection.clear();queueSave();applyMapOwnership();updateMapBatchUi();
+ const s=document.getElementById('mapBrushStatus');if(s)s.textContent=`${count} toprak ${name} devletine atandı.`;toast(`${count} toprak → ${name}`,true);
+}
+
+function openMapBrushSetup(){
+ if(!isAdmin)return;
+ if(mapBrush){stopMapBrush();return;}
+ const options=`<option value="">Devlet kartına bağlama</option>`+db.states.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ modal(`<h2>🖌️ HARİTA FIRÇASI</h2><p class="sub">Ayarları bir kez seç; ardından haritada dokunduğun her toprak aynı ülke, renk ve garnizonla kaydedilir.</p><div class="formgrid"><div class="full"><label>Devlet Kartı (İsteğe Bağlı)</label><select id="brush_owner" onchange="syncMapBrushOwner(this.value)">${options}</select></div>${field('brush_country','Ülke Adı','','text')}${field('brush_garrison','Toprak Garnizonu',0,'number')}${field('brush_color','Toprak Rengi','#c5a059','color')}</div><div class="actions" style="margin-top:12px;"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn gold" onclick="activateMapBrush()">FIRÇAYI BAŞLAT</button></div>`);
+}
+function syncMapBrushOwner(ownerId){const owner=getState(ownerId);if(!owner)return;const nameEl=document.getElementById('f_brush_country'),garrisonEl=document.getElementById('f_brush_garrison'),colorEl=document.getElementById('f_brush_color');if(nameEl)nameEl.value=owner.name||'';if(garrisonEl)garrisonEl.value=owner.fortressGarrison||0;if(colorEl)colorEl.value=owner.color||'#c5a059';}
+function activateMapBrush(){
+ const ownerId=document.getElementById('brush_owner')?.value||'';
+ const countryName=document.getElementById('f_brush_country')?.value.trim()||'';
+ const garrison=Math.max(0,Math.floor(Number(document.getElementById('f_brush_garrison')?.value)||0));
+ const color=document.getElementById('f_brush_color')?.value||'#c5a059';
+ if(!countryName){alert('Fırça için ülke adı yazmalısın.');return;}
+ mapBrush={ownerId,countryName,garrison,color};closeModal();
+ const btn=document.getElementById('mapBrushBtn');if(btn){btn.textContent='✕ FIRÇAYI DURDUR';btn.className='btn red';}
+ const status=document.getElementById('mapBrushStatus');if(status)status.textContent=`Fırça aktif: ${countryName} • ${color} • ${num(garrison)} garnizon`;
+}
+function stopMapBrush(){mapBrush=null;const btn=document.getElementById('mapBrushBtn');if(btn){btn.textContent='🖌️ FIRÇA';btn.className='btn gold';}const status=document.getElementById('mapBrushStatus');if(status)status.textContent='Toprağa dokun: düzenle veya fırça kullan.';}
+function toggleMapPicker(){
+ mapPickerMode=!mapPickerMode;
+ if(mapPickerMode)mapBrush=null;
+ const pickerBtn=document.getElementById('mapPickerBtn');if(pickerBtn){pickerBtn.textContent=mapPickerMode?'✕ SEÇİMİ İPTAL':'💧 RENK/ÜLKE SEÇ';pickerBtn.className=mapPickerMode?'btn red':'btn blue';}
+ const brushBtn=document.getElementById('mapBrushBtn');if(brushBtn){brushBtn.textContent='🖌️ FIRÇA';brushBtn.className='btn gold';}
+ const status=document.getElementById('mapBrushStatus');if(status)status.textContent=mapPickerMode?'Damlalık aktif: özelliklerini kopyalamak istediğin toprağa dokun.':'Toprağa dokun: düzenle, damlalıkla seç veya fırça kullan.';
+}
+function pickProvinceAsBrush(provinceId){
+ const owner=getState(db.mapProvinceOwners?.[provinceId]),detail=db.mapProvinceDetails?.[provinceId]||{};
+ const path=document.getElementById(provinceId);
+ const countryName=detail.countryName||owner?.name||'';
+ if(!countryName){alert('Bu toprakta kopyalanabilecek bir ülke bilgisi yok.');return;}
+ const color=getProvinceDisplayColor(provinceId,detail,owner);
+ mapBatch={ownerId:owner?.id||'',countryName,garrison:0,color};mapBatchSelection.clear();mapBrush=null;mapPickerMode=false;
+ const pickerBtn=document.getElementById('mapPickerBtn');if(pickerBtn){pickerBtn.textContent='💧 RENK/ÜLKE SEÇ';pickerBtn.className='btn blue';}
+ const brushBtn=document.getElementById('mapBrushBtn');if(brushBtn){brushBtn.textContent='🖌️ FIRÇA';brushBtn.className='btn gold';}
+ updateMapBatchUi();
+ const status=document.getElementById('mapBrushStatus');if(status)status.textContent=`${countryName} seçildi. Şimdi atanacak bütün topraklara dokun, ardından ATAMAYI BİTİR'e bas.`;
+ toast(`${countryName} kopyalandı; çoklu seçim başladı.`,true);
+}
+function paintProvinceWithBrush(provinceId){
+ if(!isAdmin||!mapBrush)return;
+ db.mapProvinceOwners=db.mapProvinceOwners||{};db.mapProvinceDetails=db.mapProvinceDetails||{};
+ const previousOwnerId=db.mapProvinceOwners[provinceId]||'';
+ if(mapBrush.ownerId)db.mapProvinceOwners[provinceId]=mapBrush.ownerId;else delete db.mapProvinceOwners[provinceId];
+ db.mapProvinceDetails[provinceId]={countryName:mapBrush.countryName,garrison:mapBrush.garrison,color:mapBrush.color};
+ addLog({stateId:mapBrush.ownerId,stateName:mapBrush.countryName,action:`Harita fırçası: ${provinceId.replaceAll('_',' ')} boyandı`,qty:1,cost:0});
+ refreshMapFortressCounts();redistributeMapGarrisonsForStateIds([previousOwnerId,mapBrush.ownerId]);queueSave();applyMapOwnership();toast(`${provinceId.replaceAll('_',' ')} → ${mapBrush.countryName}`,true);
+}
+
+function getCurrentPlayerState(){return db.states.find(s=>String(s.ownerEmail||'').toLocaleLowerCase('tr-TR')===String(currentUserEmail||'').toLocaleLowerCase('tr-TR'))||null}
+function getGarrisonIntelReport(viewerState,realGarrison){
+ const realValue=Math.max(0,Number(realGarrison)||0);
+ const exact=viewerState?getAdvisorEffects(viewerState).spyAccuracyBonus:false;
+ if(exact)return {value:realValue,exact:true,note:'Kesinleştirme sağlayan Divan paşası sayesinde gerçek değer görüldü.'};
+ const deviationPercent=0.01+(Math.random()*0.19);
+ const direction=Math.random()<.5?-1:1;
+ return {value:Math.max(0,Math.round(realValue*(1+(direction*deviationPercent)))),exact:false,note:'Rapor %1–20 arasında yanıltma payı içerir.'};
+}
+
+function handleProvinceClick(provinceId){
+ const owner=getState(db.mapProvinceOwners?.[provinceId]);
+ const detail=db.mapProvinceDetails?.[provinceId]||{};
+ if(!isAdmin){openPlayerProvinceIntel(provinceId,owner);return;}
+ if(mapBatch){toggleBatchProvince(provinceId);return;}
+ if(mapPickerMode){pickProvinceAsBrush(provinceId);return;}
+ if(mapBrush){paintProvinceWithBrush(provinceId);return;}
+ const currentColor=getProvinceDisplayColor(provinceId,detail,owner);
+ const options=`<option value="">Sahipsiz / atanmamış</option>`+db.states.map(s=>`<option value="${s.id}" ${owner?.id===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
+ modal(`<h2>🗺️ TOPRAK YÖNETİMİ</h2><div class="event-result"><b>Toprak:</b> ${esc(provinceId.replaceAll('_',' '))}<br><b>Gösterilen ülke:</b> ${esc(detail.countryName||owner?.name||'Sahipsiz / atanmadı')}<br><b>Bu topraktaki garnizon:</b> ${num(detail.garrison??owner?.fortressGarrison??0)} asker</div><div class="formgrid" style="margin-top:10px;"><div class="full"><label>Devlet Kartına Bağla (İsteğe Bağlı)</label><select id="province_owner" onchange="syncProvinceOwnerFields(this.value)">${options}</select></div>${field('province_country_name','Ülke Adı (Kart olmadan yazılabilir)',detail.countryName||owner?.name||'','text')}${field('province_garrison','Bu Topraktaki Garnizon Sayısı',detail.garrison??owner?.fortressGarrison??0,'number')}${field('province_color','Toprak Rengi',currentColor,'color')}<div><label style="display:flex;align-items:center;gap:7px;margin-top:20px;"><input id="province_apply_all" type="checkbox" style="width:auto;"> Aynı ülke adlı bütün topraklara rengi uygula</label></div></div><div class="actions" style="margin-top:12px;"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn green" onclick="saveProvinceOwner('${esc(provinceId)}')">KAYDET</button></div>`);
+}
+
+function syncProvinceOwnerFields(ownerId){const owner=getState(ownerId);if(!owner)return;const nameEl=document.getElementById('f_province_country_name'),garrisonEl=document.getElementById('f_province_garrison'),colorEl=document.getElementById('f_province_color');if(nameEl)nameEl.value=owner.name||'';if(garrisonEl)garrisonEl.value=owner.fortressGarrison||0;if(colorEl)colorEl.value=owner.color||'#c5a059';}
+
+function openPlayerProvinceIntel(provinceId,owner){
+ const viewer=getCurrentPlayerState();
+ const provinceName=provinceId.replaceAll('_',' ');
+ const detail=db.mapProvinceDetails?.[provinceId]||{};
+ const countryName=detail.countryName||owner?.name||'';
+ const realGarrison=detail.garrison??owner?.fortressGarrison??0;
+ if(!countryName){modal(`<h2>🗺️ TOPRAK BİLGİSİ</h2><div class="event-result"><b>Toprak:</b> ${esc(provinceName)}<br><b>Sahibi:</b> Sahipsiz / atanmadı</div><div class="actions"><button class="btn" onclick="closeModal()">KAPAT</button></div>`);return;}
+ if(!viewer){modal(`<h2>🗺️ TOPRAK BİLGİSİ</h2><p class="error">Bu rapor için bir devlete bağlı oyuncu hesabı gerekir.</p><div class="actions"><button class="btn" onclick="closeModal()">KAPAT</button></div>`);return;}
+ if((viewer.istihbarat_binasi||0)>0){
+   const report=getGarrisonIntelReport(viewer,realGarrison);
+   modal(`<h2>🗺️ TOPRAK İSTİHBARATI</h2><div class="event-result"><b>Toprak:</b> ${esc(provinceName)}<br><b>Sahibi:</b> ${esc(countryName)}<br><b>${report.exact?'Kesin':'Tahmini'} toprak garnizonu:</b> ${report.exact?'':'~'}${num(report.value)} asker</div><p class="sub">${esc(report.note)}</p><div class="actions"><button class="btn" onclick="closeModal()">KAPAT</button></div>`);
+   return;
+ }
+ const cost=Math.max(0,Number(db.settings.mapIntelReportCost)||0);
+ modal(`<h2>🗺️ TOPRAK BİLGİSİ</h2><div class="event-result"><b>Toprak:</b> ${esc(provinceName)}<br><b>Sahibi:</b> ${esc(countryName)}</div><p class="sub">İstihbarat Dairen yok. Yerel muhbirlerden %1–20 sapmalı garnizon raporu satın alabilirsin.</p><div class="event-result"><b>Rapor ücreti:</b> ${money(cost)}<br><b>Hazinen:</b> ${money(viewer.treasury||0)}</div><div class="actions"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn gold" onclick="buyProvinceIntelReport('${esc(provinceId)}','${esc(viewer.id)}')">RAPORU SATIN AL</button></div>`);
+}
+
+function buyProvinceIntelReport(provinceId,viewerId){
+ const owner=getState(db.mapProvinceOwners?.[provinceId]),detail=db.mapProvinceDetails?.[provinceId]||{},viewer=getState(viewerId),currentViewer=getCurrentPlayerState();if(!viewer||!currentViewer||currentViewer.id!==viewer.id)return;
+ const countryName=detail.countryName||owner?.name||'Bilinmeyen';
+ const realGarrison=detail.garrison??owner?.fortressGarrison??0;
+ const cost=Math.max(0,Number(db.settings.mapIntelReportCost)||0);
+ if((viewer.treasury||0)<cost){alert(`Hazine yetersiz! Gerekli: ${money(cost)}`);return;}
+ const oldTreasury=viewer.treasury||0;viewer.treasury=oldTreasury-cost;
+ const report=getGarrisonIntelReport(viewer,realGarrison);
+ addLog({stateId:viewer.id,stateName:viewer.name,action:`Toprak istihbaratı satın alındı: ${provinceId.replaceAll('_',' ')}`,qty:1,cost,oldTreasury,newTreasury:viewer.treasury});
+ queueSave();
+ modal(`<h2>🕵️ MUHBİR RAPORU</h2><div class="event-result"><b>Toprak:</b> ${esc(provinceId.replaceAll('_',' '))}<br><b>Sahibi:</b> ${esc(countryName)}<br><b>${report.exact?'Kesin':'Tahmini'} toprak garnizonu:</b> ${report.exact?'':'~'}${num(report.value)} asker</div><p class="sub">${esc(report.note)} Hazineden ${money(cost)} ödendi.</p><div class="actions"><button class="btn" onclick="closeModal()">KAPAT</button></div>`);
+}
+
+function saveProvinceOwner(provinceId){
+ if(!isAdmin)return;
+ const newOwnerId=document.getElementById('province_owner')?.value||'';
+ const countryName=document.getElementById('f_province_country_name')?.value.trim()||'';
+ const garrison=Math.max(0,Math.floor(Number(document.getElementById('f_province_garrison')?.value)||0));
+ const color=document.getElementById('f_province_color')?.value||'';
+ const applyAll=!!document.getElementById('province_apply_all')?.checked;
+ const oldOwner=getState(db.mapProvinceOwners?.[provinceId]);
+ db.mapProvinceOwners=db.mapProvinceOwners||{};
+ db.mapProvinceDetails=db.mapProvinceDetails||{};
+ if(newOwnerId)db.mapProvinceOwners[provinceId]=newOwnerId;else delete db.mapProvinceOwners[provinceId];
+ if(countryName||garrison||color)db.mapProvinceDetails[provinceId]={countryName,garrison,color};else delete db.mapProvinceDetails[provinceId];
+ const newOwner=getState(newOwnerId);
+ if(applyAll&&countryName){
+   document.querySelectorAll('#gameMapCanvas path[id][d]').forEach(path=>{
+     const linkedOwner=getState(db.mapProvinceOwners?.[path.id]);
+     const existing=db.mapProvinceDetails[path.id]||{};
+     const effectiveName=existing.countryName||linkedOwner?.name||'';
+     if(normalizeMapName(effectiveName)===normalizeMapName(countryName))db.mapProvinceDetails[path.id]={...existing,countryName:existing.countryName||countryName,color};
+   });
+ }
+ const displayName=countryName||newOwner?.name||'Sahipsiz';
+ addLog({stateId:newOwnerId||oldOwner?.id||'',stateName:newOwner?.name||oldOwner?.name||displayName,action:`Toprak bilgisi: ${provinceId.replaceAll('_',' ')} → ${displayName}, garnizon ${num(garrison)}, renk ${color}${applyAll?' (tüm ülkeye uygulandı)':''}`,qty:1,cost:0});
+ refreshMapFortressCounts();redistributeMapGarrisonsForStateIds([oldOwner?.id,newOwnerId]);queueSave();closeModal();applyMapOwnership();toast(`${provinceId.replaceAll('_',' ')}: ${displayName}, ${num(db.mapProvinceDetails[provinceId]?.garrison||0)} garnizon.`,true);
+}
+
 function renderHome(){
  currentId=null;
  document.getElementById("detail").classList.add("hidden");
+ document.getElementById("mapScreen")?.classList.add("hidden");
  document.getElementById("home").classList.remove("hidden");
  document.body.style.background = "var(--bg)";
  
@@ -1041,6 +1297,7 @@ function openDetail(id){
  
  currentId=id;
  document.getElementById("home").classList.add("hidden");
+ document.getElementById("mapScreen")?.classList.add("hidden");
  document.getElementById("detail").classList.remove("hidden");
  
  const bgImgClean = cleanUrl(s.bgImage);
@@ -1058,7 +1315,6 @@ function openDetail(id){
  const navUpkeep = calcNavyUpkeep(s);
  const cusUpkeep = calcCustomUpkeep(s);
  const advSalary = calcAdvisorExpenses(s);
- const cityGarrisonExpense = calcCityGarrisonExpense(s);
  const fortressGarrisonExpense = calcFortressGarrisonExpense(s);
  const totalExpenses = calcExpenses(s);
  
@@ -1155,7 +1411,6 @@ function openDetail(id){
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Donanma / Gemi Bakımı</span><b style="color:var(--red)">-${money(navUpkeep)} ${adv.navyUpkeepDiscount > 0 ? `<small style="color:var(--green)">(-%${adv.navyUpkeepDiscount})</small>` : ''}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Özel Birim Giderleri</span><b style="color:var(--red)">-${money(cusUpkeep)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Danışman / Vezir Maaşları</span><b style="color:var(--red)">-${money(advSalary)}</b></div>
-        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Şehir Garnizonu (${num(s.cityGarrison||0)} asker)</span><b style="color:var(--red)">-${money(cityGarrisonExpense)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Kale Garnizonu (${num(s.fortressGarrison||0)} asker)</span><b style="color:var(--red)">-${money(fortressGarrisonExpense)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sivil Saray / Kamu Gideri</span><b style="color:var(--red)">-${money(s.civilExpense)}</b></div>
         <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; border-top:1px dashed var(--line); padding-top:4px;">
@@ -1323,7 +1578,7 @@ function openDetail(id){
     const targetOpts = db.states.filter(x => x.id !== s.id).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('');
     istihbaratHtml = `<div>
         <h4 style="color:var(--border-gold); margin:0 0 6px; font-family:'Oswald';">🕵️ DEVLET İSTİHBARAT DAİRESİ</h4>
-        <p class="sub" style="margin-bottom:12px;">Hedef devlete casus göndererek bilgi toplayın. Sahadaki sis perdesi sebebiyle istihbarat raporlarında %0-%20 arası sapma olabilir.</p>
+        <p class="sub" style="margin-bottom:12px;">Hedef devlete casus göndererek bilgi toplayın. Sahadaki sis perdesi sebebiyle istihbarat raporlarında %1-%20 arası sapma olabilir.</p>
         <div style="background:rgba(10, 12, 14, 0.6); padding:12px; border:1px solid var(--border-steel); border-radius:4px; margin-bottom:15px;">
             <div class="formgrid">
                 <div><label>Hedef Ülke</label><select id="intel_target">${targetOpts}</select></div>
@@ -1336,6 +1591,7 @@ function openDetail(id){
                         <option value="guns">Topçu Sayısı (Tüm Toplar)</option>
                         <option value="ships">Donanma Gücü (Tüm Gemiler)</option>
                         <option value="population">Toplam Nüfus</option>
+                        <option value="fortress_garrison">Kale Garnizonu Asker Sayısı</option>
                     </select>
                 </div>
                 <div class="full" style="margin-top:5px;"><button class="btn gold" style="width:100%; padding:10px;" onclick="runSpyIntel('${s.id}')">CASUSLARI GÖNDER (İSTİHBARAT AL)</button></div>
@@ -1377,15 +1633,19 @@ function openDetail(id){
    ["hastane","Hastane"],["asevi","Aşevi"],["su_degirmeni","Su Değirmeni"],["kervansaray","Kervansaray"],["pazar","Pazar"]
  ];
  const populationBuildingsHtml=populationBuildings.map(([key,name])=>buildPopulationBuildingCard(s,key,name,imgs[key],canManage)).join('');
+ const mapFortressCount=getOwnedMapProvinceIds(s.id).length;
+ const garrisonPerFortress=mapFortressCount?Math.floor((s.fortressGarrison||0)/mapFortressCount):0;
+ const garrisonRemainder=mapFortressCount?(s.fortressGarrison||0)%mapFortressCount:0;
  let countryManagementHtml=`<div>
    <h4 style="color:var(--border-gold);margin:0 0 8px;font-family:'Oswald';">🏰 KALE VE GARNİZON YÖNETİMİ</h4>
    <p class="sub">Garnizona eklenen yeni askerler elverişli nüfustan düşer. Kale garnizon giderleri yıl sonunda hazineden kesilir.</p>
    <div class="event-result" style="margin-bottom:10px;">
-     <b>Mevcut kale garnizonu:</b> ${num(s.fortressGarrison||0)} asker &nbsp; | &nbsp; <b>Boştaki elverişli asker:</b> ${num(p.elig)}
+     <b>Haritadaki kale/toprak:</b> ${num(mapFortressCount)} &nbsp; | &nbsp; <b>Toplam kale garnizonu:</b> ${num(s.fortressGarrison||0)} asker<br>
+     <b>Kale başına dağılım:</b> ${num(garrisonPerFortress)} asker${garrisonRemainder?` (+${num(garrisonRemainder)} kaleye birer asker fazla)`:''} &nbsp; | &nbsp; <b>Boştaki elverişli asker:</b> ${num(p.elig)}
    </div>
    <div class="unit-grid">
-     <div class="unit-card">${fortressImg?`<div class="unit-img-box"><img src="${esc(fortressImg)}"></div>`:''}<div class="unit-details"><div class="unit-title">Kale</div>${field("country_fortressCount","Kale Sayısı",s.fortressCount||0,"number")}</div></div>
-     <div class="unit-card">${fortressGarrisonImg?`<div class="unit-img-box"><img src="${esc(fortressGarrisonImg)}"></div>`:''}<div class="unit-details"><div class="unit-title">Kale Garnizonu</div>${field("country_fortressGarrison","Asker Sayısı",s.fortressGarrison||0,"number")}</div></div>
+     <div class="unit-card">${fortressImg?`<div class="unit-img-box"><img src="${esc(fortressImg)}"></div>`:''}<div class="unit-details"><div class="unit-title">Kale</div><div class="event-result"><b>${num(mapFortressCount)}</b> adet<br><span class="sub">Haritadaki ülkeye ait topraklardan hesaplanır.</span></div></div></div>
+     <div class="unit-card">${fortressGarrisonImg?`<div class="unit-img-box"><img src="${esc(fortressGarrisonImg)}"></div>`:''}<div class="unit-details"><div class="unit-title">Kale Garnizonu</div>${field("country_fortressGarrison","Toplam Satın Alınacak/Mevcut Asker",s.fortressGarrison||0,"number")}</div></div>
    </div>
    <div class="event-result" style="margin-top:10px;">
      Kale garnizonu asker başı yıllık gider: <b>${money(db.settings.garrisonUpkeep.fortress)}</b><br>
@@ -1483,16 +1743,16 @@ function openDetail(id){
 function saveCountryManagement(stateId){
  const s=getState(stateId); if(!s)return;
  if(!isAdmin && s.ownerEmail!==currentUserEmail)return;
- const fortressCount=Math.max(0,Math.floor(Number(document.getElementById("f_country_fortressCount").value)||0));
  const fortressGarrison=Math.max(0,Math.floor(Number(document.getElementById("f_country_fortressGarrison").value)||0));
  const oldTotal=s.fortressGarrison||0;
  const newTotal=fortressGarrison;
  const added=newTotal-oldTotal;
  const available=calcPop(s).elig;
  if(added>available){alert(`Elverişli nüfus yetersiz! En fazla ${num(available)} yeni garnizon askeri ekleyebilirsiniz.`);return;}
- s.fortressCount=fortressCount;
- s.fortressGarrison=fortressGarrison;
- addLog({stateId:s.id,stateName:s.name,action:"Ülke Yönetimi: Kale ve garnizon güncellendi",qty:1,cost:0,unitName:"Kale Garnizonu",oldUnit:oldTotal,newUnit:newTotal});
+ const ownedCount=getOwnedMapProvinceIds(s.id).length;
+ if(!ownedCount&&fortressGarrison>0){alert("Haritada bu devlete ait toprak bulunmadığı için garnizon askeri yerleştirilemez.");return;}
+ const distribution=distributeFortressGarrisonToMap(s,fortressGarrison);
+ addLog({stateId:s.id,stateName:s.name,action:`Ülke Yönetimi: ${distribution.count} harita kalesine garnizon dağıtıldı`,qty:distribution.count,cost:0,unitName:"Kale Garnizonu",oldUnit:oldTotal,newUnit:newTotal});
  queueSave();
  openDetail(stateId);
  switchTab('country');
@@ -1647,18 +1907,19 @@ function runSpyIntel(myStateId) {
     else if(type === 'guns') { realVal = (target.kucuk_top||0)+(target.orta_top||0)+(target.buyuk_top||0); label = "Toplam Topçu Bataryaları"; }
     else if(type === 'ships') { realVal = (target.kucuk_gemi||0)+(target.orta_gemi||0)+(target.buyuk_gemi||0); label = "Donanma Gemi Sayısı"; }
     else if(type === 'population') { realVal = target.population || 0; label = "Toplam Nüfus"; }
+    else if(type === 'fortress_garrison') { realVal = target.fortressGarrison || 0; label = "Kale Garnizonu Asker Sayısı"; }
 
     const myState = getState(myStateId);
     const adv = getAdvisorEffects(myState);
 
     let estimatedVal = realVal;
-    let reportNote = "* Sahadaki sis perdesi ve yanıltma taktikleri sebebiyle raporda %0-%20 arası sapma olabilir.";
+    let reportNote = "* Sahadaki sis perdesi ve yanıltma taktikleri sebebiyle raporda %1-%20 arası sapma olabilir.";
 
     if(adv.spyAccuracyBonus) {
         estimatedVal = realVal;
         reportNote = "👑 Divanınızdaki Casus Başı sayesinde bilgi sarayın en derin odalarından net olarak çekildi (Sapma Yok).";
     } else {
-        const deviationPercent = (Math.random() * 0.20);
+        const deviationPercent = 0.01 + (Math.random() * 0.19);
         const direction = Math.random() < 0.5 ? -1 : 1;
         estimatedVal = Math.max(0, Math.round(realVal * (1 + (direction * deviationPercent))));
     }
@@ -1831,7 +2092,7 @@ function calcPop(s){
   if(adv.stopAnarchy) anarRate = 0;
   
   let anarCount = Math.floor(pop * (anarRate/100));
-  let armySize = (s.piyade||0) + (s.suvari||0) + (s.nisanci||0) + (s.cityGarrison||0) + (s.fortressGarrison||0);
+  let armySize = (s.piyade||0) + (s.suvari||0) + (s.nisanci||0) + (s.fortressGarrison||0);
   if(db.settings.customItems) {
      db.settings.customItems.filter(x=>x.category==='asker' && (!x.faction || x.faction===s.id)).forEach(x => armySize += (s[x.id]||0));
   }
@@ -1890,14 +2151,11 @@ function calcAdvisorExpenses(s){
   }
   return total;
 }
-function calcCityGarrisonExpense(s){
-  return Math.max(0,Number(s.cityGarrison)||0)*Math.max(0,Number(db.settings.garrisonUpkeep?.city)||0);
-}
 function calcFortressGarrisonExpense(s){
   return Math.max(0,Number(s.fortressGarrison)||0)*Math.max(0,Number(db.settings.garrisonUpkeep?.fortress)||0);
 }
 function calcExpenses(s){
-  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcCityGarrisonExpense(s) + calcFortressGarrisonExpense(s) + Number(s.civilExpense||0);
+  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcFortressGarrisonExpense(s) + Number(s.civilExpense||0);
 }
 
 function addLog(data) {
@@ -2559,7 +2817,6 @@ function openAdmin(){
  <h4 style="margin-top:10px; color:var(--border-gold); font-family:'Oswald';">BAKIM GİDERLERİ</h4><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">GARNİZON YILLIK GİDERLERİ (Asker Başı)</h4>
  <div class="formgrid">
-   ${field("gu_city","Şehir Garnizonu Asker Başı / Yıl",gu.city,"number")}
    ${field("gu_fortress","Kale Garnizonu Asker Başı / Yıl",gu.fortress,"number")}
  </div>
  <h4 style="margin-top:10px; color:var(--green); font-family:'Oswald';">NÜFUS BİNALARI ARTIŞ ORANLARI (%)</h4>
@@ -2570,6 +2827,8 @@ function openAdmin(){
    ${field("pg_kervansaray","Kervansaray Nüfus Artışı (%)",pg.kervansaray,"number")}
    ${field("pg_pazar","Pazar Nüfus Artışı (%)",pg.pazar,"number")}
  </div>
+ <h4 style="margin-top:10px; color:var(--blue); font-family:'Oswald';">HARİTA İSTİHBARATI</h4>
+ <div class="formgrid">${field("map_intel_cost","İstihbaratsız Oyuncu Rapor Ücreti",db.settings.mapIntelReportCost||0,"number")}</div>
  <h4 style="margin-top:10px; color:var(--gold); font-family:'Oswald';">NÜFUSA GÖRE BİNA MALİYETİ (Kişi Başı TL)</h4>
  <p class="sub">Güncel bina fiyatı = devletin toplam nüfusu × kişi başı maliyet.</p>
  <div class="formgrid">
@@ -2606,12 +2865,10 @@ function renderWarGarrisonFields(){
  if(!s){box.innerHTML='<p class="sub">İşlem yapmak için önce bir devlet seçin.</p>';return;}
  box.innerHTML=`<div class="event-result" style="margin-top:10px;">
      <b>${esc(s.name)}</b><br>
-     Şehir garnizonu: <b>${num(s.cityGarrison||0)}</b> asker<br>
      Kale garnizonu: <b>${num(s.fortressGarrison||0)}</b> asker<br>
      Önceki savaşlarda ölen garnizon: <b style="color:var(--red)">${num(s.garrisonWarDeaths||0)}</b> asker
    </div>
    <div class="formgrid" style="margin-top:10px;">
-     ${field("war_city_deaths","Şehir Garnizonu Ölümü",0,"number")}
      ${field("war_fortress_deaths","Kale Garnizonu Ölümü",0,"number")}
    </div>
    <button class="btn red" style="width:100%;margin-top:10px;" onclick="applyWarGarrisonDeaths('${s.id}')">KAYIPLARI UYGULA</button>`;
@@ -2621,17 +2878,15 @@ function applyWarGarrisonDeaths(stateId){
  if(!isAdmin) return;
  const s=getState(stateId);
  if(!s) return;
- const cityDeaths=Math.max(0,Math.floor(Number(document.getElementById("f_war_city_deaths")?.value)||0));
  const fortressDeaths=Math.max(0,Math.floor(Number(document.getElementById("f_war_fortress_deaths")?.value)||0));
- if(cityDeaths===0&&fortressDeaths===0){alert("En az bir kayıp sayısı girin.");return;}
- if(cityDeaths>(s.cityGarrison||0)){alert("Şehir garnizonu kaybı mevcut şehir garnizonundan fazla olamaz.");return;}
+ if(fortressDeaths===0){alert("En az bir kayıp sayısı girin.");return;}
  if(fortressDeaths>(s.fortressGarrison||0)){alert("Kale garnizonu kaybı mevcut kale garnizonundan fazla olamaz.");return;}
- const oldTotal=(s.cityGarrison||0)+(s.fortressGarrison||0);
- const totalDeaths=cityDeaths+fortressDeaths;
- s.cityGarrison-=cityDeaths;
+ const oldTotal=s.fortressGarrison||0;
+ const totalDeaths=fortressDeaths;
  s.fortressGarrison-=fortressDeaths;
  s.garrisonWarDeaths=(s.garrisonWarDeaths||0)+totalDeaths;
- addLog({stateId:s.id,stateName:s.name,action:`Savaş kaybı: Şehir ${num(cityDeaths)}, Kale ${num(fortressDeaths)} garnizon askeri öldü`,qty:totalDeaths,cost:0,unitName:"Toplam Garnizon",oldUnit:oldTotal,newUnit:oldTotal-totalDeaths});
+ redistributeMapGarrisonsForStateIds([s.id]);
+ addLog({stateId:s.id,stateName:s.name,action:`Savaş kaybı: Kale garnizonunda ${num(fortressDeaths)} asker öldü`,qty:totalDeaths,cost:0,unitName:"Kale Garnizonu",oldUnit:oldTotal,newUnit:oldTotal-totalDeaths});
  queueSave();
  toast(`${s.name}: ${num(totalDeaths)} garnizon askeri savaşta öldü.`);
  openWarGarrisonModal();
@@ -2770,6 +3025,7 @@ function removeCustomItem(id){
    saveAdmin(false);
 }
 function saveAdmin(doClose = true){
+ const mapIntelCostEl=document.getElementById("f_map_intel_cost"); if(mapIntelCostEl)db.settings.mapIntelReportCost=Math.max(0,Number(mapIntelCostEl.value)||0);
  Object.keys(db.settings.prices).forEach(k=>{ const el=document.getElementById("f_p_"+k); if(el) db.settings.prices[k]=Number(el.value||0); });
  Object.keys(db.settings.capacity).forEach(k=>{ const el=document.getElementById("f_c_"+k); if(el) db.settings.capacity[k]=Number(el.value||0); });
  Object.keys(db.settings.upkeep).forEach(k=>{ const el=document.getElementById("f_u_"+k); if(el) db.settings.upkeep[k]=Number(el.value||0); });
