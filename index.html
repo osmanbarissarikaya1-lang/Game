@@ -194,6 +194,11 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 }
 .tab-content { padding: 12px; display: none; }
 .tab-content.active { display: block; }
+.admin-tab-content { padding:12px 4px; display:none; }
+.admin-tab-content.active { display:block; }
+.admin-hoi-tab { flex:1 0 auto; padding:9px 12px; border-right:1px solid var(--line); color:var(--muted); cursor:pointer; font-family:'Oswald'; font-size:11px; text-align:center; white-space:nowrap; }
+.admin-hoi-tab:hover { background:var(--panel-light); color:#fff; }
+.admin-hoi-tab.active { background:var(--panel-light); color:var(--gold); border-bottom:2px solid var(--gold); }
 
 /* ASKER & ALTYAPI KARTLARI */
 .unit-grid {
@@ -405,16 +410,16 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 
 <div id="modal" class="modal"><div class="modalbox"><div id="modalContent"></div></div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
 <script>
-const SUPER_ADMINS = ["osman.baris.sarikaya1@gmail.com"]; 
+const SUPER_ADMINS = ["barisozasik1@gmail.com"]; 
 let currentUserEmail = null;
 let isAdmin = false;
 
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
+const LOCAL_MODE=true;
+const LOCAL_DB_KEY="osmoyun_exact_game_state_v1";
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
 
 // 45 ÖZGÜN ADAY LİSTESİ (ÖMür ve Yıldız Sistemli)
@@ -533,29 +538,86 @@ function createYearEventsForState(s){
  for(let i=0;i<count&&copy.length;i++){const idx=Math.floor(Math.random()*copy.length);picked.push(copy.splice(idx,1)[0]);}
  return picked.map(e=>({uid:crypto.randomUUID(),stateId:s.id,stateName:s.name,eventId:e.id,year:db.gameYear,event:e,createdAt:new Date().toISOString()}));
 }
-function applyEventChoice(pending,optionId){
+function applySoldierEventEffect(s,change){
+ change=Math.trunc(Number(change)||0);
+ if(change>=0){s.piyade=(s.piyade||0)+change;return change;}
+ let remaining=Math.min(Math.abs(change),(s.piyade||0)+(s.nisanci||0)+(s.suvari||0));
+ const removed=remaining;
+ for(const key of ["piyade","nisanci","suvari"]){const take=Math.min(s[key]||0,remaining);s[key]=(s[key]||0)-take;remaining-=take;if(!remaining)break;}
+ return -removed;
+}
+function applyGunEventEffect(s,change){
+ change=Math.trunc(Number(change)||0);
+ if(change>=0){s.kucuk_top=(s.kucuk_top||0)+change;return change;}
+ let remaining=Math.min(Math.abs(change),(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0));
+ const removed=remaining;
+ for(const key of ["kucuk_top","orta_top","buyuk_top"]){const take=Math.min(s[key]||0,remaining);s[key]=(s[key]||0)-take;remaining-=take;if(!remaining)break;}
+ return -removed;
+}
+function eventEffectSummary(effect){
+ const parts=[];
+ const gold=Number(effect.gold||0), happiness=Number(effect.happiness||0), population=Number(effect.population||0);
+ const soldiers=Number(effect.soldiers||0), guns=Number(effect.guns||0), educated=Number(effect.educatedPopulation||0);
+ if(gold)parts.push(`💰 Hazine: ${gold>0?'+':''}${money(gold)}`);
+ if(happiness)parts.push(`😊 Mutluluk: ${happiness>0?'+':''}${happiness}%`);
+ if(population)parts.push(`👥 Nüfus: ${population>0?'+':''}${num(population)}`);
+ if(soldiers)parts.push(`⚔️ Asker: ${soldiers>0?'+':''}${num(soldiers)}`);
+ if(guns)parts.push(`💣 Top: ${guns>0?'+':''}${num(guns)}`);
+ if(educated)parts.push(`🎓 Eğitimli: ${educated>0?'+':''}${num(educated)}`);
+ return parts.length?parts.join(" | "):"Nötr sonuç";
+}
+function applyEventChoice(pendingOrUid,optionId){
+ const pending=typeof pendingOrUid==="string"?(db.pendingEvents||[]).find(x=>x.uid===pendingOrUid):pendingOrUid;
+ if(!pending)return;
  const s=getState(pending.stateId); if(!s)return;
  const event=pending.event; const opt=event.options.find(o=>o.id===optionId); if(!opt)return;
- const oldT=Number(s.treasury||0); const oldH=Number(s.happiness||0);
+ const oldT=Number(s.treasury||0); const oldH=Number(s.happiness||0); const oldP=Number(s.population||0); const oldEducated=calcPop(s).edu;
+ const oldArmy=(s.piyade||0)+(s.nisanci||0)+(s.suvari||0);
+ const oldGuns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0);
  const requestedGold=Number(opt.gold||0); let actualGold=requestedGold;
  if(requestedGold<0) actualGold=-Math.min(oldT,Math.abs(requestedGold));
+ const requestedPopulation=Number(opt.population||0);
+ const actualPopulation=requestedPopulation<0?-Math.min(oldP,Math.abs(requestedPopulation)):requestedPopulation;
  s.treasury=Math.max(0,oldT+actualGold);
  s.happiness=Math.max(0,Math.min(100,oldH+Number(opt.happiness||0)));
- db.eventHistory.unshift({uid:pending.uid,stateId:s.id,stateName:s.name,eventId:event.id,eventTitle:event.title,year:pending.year,choice:optionId,choiceText:opt.text,gold:actualGold,happiness:Number(opt.happiness||0),date:new Date().toLocaleString("tr-TR"),user:currentUserEmail});
+ s.population=Math.max(0,oldP+actualPopulation);
+ const actualSoldiers=applySoldierEventEffect(s,opt.soldiers||0);
+ const actualGuns=applyGunEventEffect(s,opt.guns||0);
+ const educatedRequest=Math.trunc(Number(opt.educatedPopulation)||0);
+ const remainingPopulation=calcPop(s).remaining;
+ const targetEducated=Math.max(0,Math.min(remainingPopulation,oldEducated+educatedRequest));
+ s.education=remainingPopulation>0?Math.max(0,Math.min(100,(targetEducated/remainingPopulation)*100)):0;
+ const actualEducated=targetEducated-oldEducated;
+ db.eventHistory.unshift({uid:pending.uid,stateId:s.id,stateName:s.name,eventId:event.id,eventTitle:event.title,year:pending.year,choice:optionId,choiceText:opt.text,gold:actualGold,happiness:Number(opt.happiness||0),population:actualPopulation,soldiers:actualSoldiers,guns:actualGuns,educatedPopulation:actualEducated,date:new Date().toLocaleString("tr-TR"),user:currentUserEmail});
  if(db.eventHistory.length>500)db.eventHistory.pop();
- addLog({stateId:s.id,stateName:s.name,action:`🎲 Olay: ${event.title} — ${optionId} seçildi`,cost:Math.abs(actualGold),qty:1,oldTreasury:oldT,newTreasury:s.treasury});
+ const newArmy=(s.piyade||0)+(s.nisanci||0)+(s.suvari||0);
+ const newGuns=(s.kucuk_top||0)+(s.orta_top||0)+(s.buyuk_top||0);
+ const newEducated=calcPop(s).edu;
+ addLog({
+   stateId:s.id,stateName:s.name,logType:"event",
+   action:`🎲 Olay: ${event.title} — ${optionId}) ${opt.text}`,
+   cost:0,qty:1,eventChoice:optionId,choiceText:opt.text,
+   eventChanges:[
+     {label:"Hazine",kind:"money",old:oldT,new:s.treasury},
+     {label:"Mutluluk",kind:"percent",old:oldH,new:s.happiness},
+     {label:"Nüfus",kind:"number",old:oldP,new:s.population},
+     {label:"Asker",kind:"number",old:oldArmy,new:newArmy},
+     {label:"Top",kind:"number",old:oldGuns,new:newGuns},
+     {label:"Eğitimli nüfus",kind:"number",old:oldEducated,new:newEducated}
+   ]
+ });
  db.pendingEvents=(db.pendingEvents||[]).filter(x=>x.uid!==pending.uid);
  queueSave();
  closeModal();
- alert(`${event.title}\n\nSeçenek ${optionId}: ${opt.text}\n\nHazine: ${actualGold>=0?'+':''}${money(actualGold)}\nMutluluk: ${Number(opt.happiness||0)>=0?'+':''}${Number(opt.happiness||0)}%`);
+ alert(`${event.title}\n\nSeçenek ${optionId}: ${opt.text}\n\n${eventEffectSummary({gold:actualGold,happiness:Number(opt.happiness||0),population:actualPopulation,soldiers:actualSoldiers,guns:actualGuns,educatedPopulation:actualEducated})}`);
  openDetail(s.id);
 }
 function openRandomEvent(uid){
  const pending=(db.pendingEvents||[]).find(x=>x.uid===uid); if(!pending)return;
  const s=getState(pending.stateId); if(!s)return;
  const e=pending.event;
- const opts=e.options.map(o=>`<button class="event-option" onclick="applyEventChoice('${pending.uid}','${o.id}')"><div style="font-size:15px;font-weight:bold;">${o.id}) ${esc(o.text)}</div><div class="sub" style="margin-top:5px;">💰 ${o.gold>=0?'+':''}${money(o.gold)} &nbsp; | &nbsp; 😊 ${o.happiness>=0?'+':''}${o.happiness}%</div></button>`).join('');
- modal(`<h2>🎲 ${esc(e.title)}</h2><div class="badge">${esc(e.category)} • ${pending.year}</div><p style="font-size:14px;line-height:1.5;margin-top:12px;">${esc(e.description)}</p><p class="sub">Devlet: <b>${esc(s.name)}</b></p>${opts}<p class="sub" style="margin-top:10px;">⚠️ Seçim yapıldığında geri alınamaz.</p>`);
+ const opts=e.options.map(o=>`<button type="button" class="event-option" onclick="applyEventChoice('${pending.uid}','${o.id}')"><div style="font-size:15px;font-weight:bold;">${o.id}) ${esc(o.text)}</div><div class="sub" style="margin-top:5px;">${eventEffectSummary(o)}</div></button>`).join('');
+ modal(`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><h2 style="margin-top:0;">🎲 ${esc(e.title)}</h2><button type="button" class="btn red small" onclick="closeModal()">✕ ÇIKIŞ</button></div><div class="badge">${esc(e.category)} • ${pending.year}</div><p style="font-size:14px;line-height:1.5;margin-top:12px;">${esc(e.description)}</p><p class="sub">Devlet: <b>${esc(s.name)}</b></p>${opts}<p class="sub" style="margin-top:10px;">⚠️ Seçim yapıldığında geri alınamaz.</p>`);
 }
 function renderPendingEvents(){
  const mine=isAdmin?(db.pendingEvents||[]):(db.pendingEvents||[]).filter(e=>e.stateId && getState(e.stateId)?.ownerEmail===currentUserEmail);
@@ -566,14 +628,14 @@ function openEventHistoryAdmin(){
  if(!isAdmin)return;
  const hist=db.eventHistory||[];
  const pending=db.pendingEvents||[];
- const rows=hist.map(h=>`<div class="event-card"><b>${esc(h.stateName)}</b> — ${esc(h.eventTitle)} <span class="badge">${h.year}</span><div class="sub">Seçim: <b>${h.choice}</b> — ${esc(h.choiceText)} | 💰 ${h.gold>=0?'+':''}${money(h.gold)} | 😊 ${h.happiness>=0?'+':''}${h.happiness}%<br>${esc(h.date||'')}</div></div>`).join('');
+ const rows=hist.map(h=>`<div class="event-card"><b>${esc(h.stateName)}</b> — ${esc(h.eventTitle)} <span class="badge">${h.year}</span><div class="sub">Seçim: <b>${h.choice}</b> — ${esc(h.choiceText)}<br>${eventEffectSummary(h)}<br>${esc(h.date||'')}</div></div>`).join('');
  const pendingRows=pending.map(e=>`<div class="event-card"><b>${esc(e.stateName)}</b> — ${esc(e.event.title)} <span class="badge">${e.year}</span><div class="sub">Henüz seçim yapılmadı.</div></div>`).join('');
  modal(`<h2>🎲 RASTGELE OLAYLAR</h2><div class="event-result"><b>Mevcut yıl:</b> ${db.gameYear} &nbsp; | &nbsp; <b>Bekleyen:</b> ${pending.length}</div><h4 style="color:var(--gold);font-family:'Oswald';">BEKLEYEN OLAYLAR</h4>${pendingRows||'<p class="sub">Bekleyen olay yok.</p>'}<h4 style="color:var(--gold);font-family:'Oswald';">SEÇİM GEÇMİŞİ</h4><div style="max-height:50vh;overflow:auto;">${rows||'<p class="sub">Henüz olay seçimi yapılmadı.</p>'}</div><div class="actions" style="margin-top:10px;"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
 }
 function openEventPoolAdmin(){
  if(!isAdmin)return;
  const pool=getEventPool();
- const rows=pool.map((e,i)=>`<div class="event-card"><div style="display:flex;justify-content:space-between;gap:8px;"><b>${i+1}. ${esc(e.title)}</b><span class="badge">${esc(e.category)}</span></div><div class="sub">${esc(e.description)}</div><div style="margin-top:5px;font-size:11px;">A: ${esc(e.options[0].text)} → ${e.options[0].gold>=0?'+':''}${money(e.options[0].gold)}, ${e.options[0].happiness>=0?'+':''}${e.options[0].happiness}%<br>B: ${esc(e.options[1].text)} → ${e.options[1].gold>=0?'+':''}${money(e.options[1].gold)}, ${e.options[1].happiness>=0?'+':''}${e.options[1].happiness}%</div></div>`).join('');
+ const rows=pool.map((e,i)=>`<div class="event-card"><div style="display:flex;justify-content:space-between;gap:8px;"><b>${i+1}. ${esc(e.title)}</b><span class="badge">${esc(e.category)}</span></div><div class="sub">${esc(e.description)}</div><div style="margin-top:5px;font-size:11px;">${e.options.map(o=>`${o.id}: ${esc(o.text)} → ${eventEffectSummary(o)}`).join('<br>')}</div></div>`).join('');
  modal(`<h2>🗂️ OLAY HAVUZU (${pool.length})</h2><p class="sub">100 hazır olay. Ekonomik ve mutluluk sonuçları sınırlar içinde tutulur.</p><div style="max-height:70vh;overflow:auto;">${rows}</div><div class="actions" style="margin-top:10px;"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
 }
 
@@ -586,10 +648,13 @@ const defaultSettings={
  prices:{piyade:21,suvari:40,nisanci:30,kucuk_top:10000,orta_top:25000,buyuk_top:45000,kucuk_gemi:65000,orta_gemi:95000,buyuk_gemi:130000,kucuk_liman:100000,orta_liman:180000,buyuk_liman:300000,kucuk_ocak:80000,orta_ocak:150000,buyuk_ocak:250000,okul:120000,istihbarat_binasi:200000},
  capacity:{kucuk_liman:5,orta_liman:7,buyuk_liman:10,kucuk_ocak:10,orta_ocak:20,buyuk_ocak:35},
  upkeep:{piyade:35,suvari:55,nisanci:45,kucuk_top:7500,orta_top:15000,buyuk_top:25000,kucuk_gemi:20000,orta_gemi:35000,buyuk_gemi:50000},
+ garrisonUpkeep:{city:5,fortress:8},
+ populationBuildingGrowth:{hastane:0.5,asevi:0.4,su_degirmeni:0.6,kervansaray:0.3,pazar:0.4},
+ populationBuildingCostPerPerson:{hastane:0.10,asevi:0.05,su_degirmeni:0.08,kervansaray:0.12,pazar:0.10},
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
- images:{piyade:"",suvari:"",nisanci:"",kucuk_top:"",orta_top:"",buyuk_top:"",kucuk_gemi:"",orta_gemi:"",buyuk_gemi:"",kucuk_liman:"",orta_liman:"",buyuk_liman:"",kucuk_ocak:"",orta_ocak:"",buyuk_ocak:"",okul:"",istihbarat_binasi:""},
+ images:{piyade:"",suvari:"",nisanci:"",kucuk_top:"",orta_top:"",buyuk_top:"",kucuk_gemi:"",orta_gemi:"",buyuk_gemi:"",kucuk_liman:"",orta_liman:"",buyuk_liman:"",kucuk_ocak:"",orta_ocak:"",buyuk_ocak:"",okul:"",istihbarat_binasi:"",fortress:"",fortress_garrison:"",hastane:"",asevi:"",su_degirmeni:"",kervansaray:"",pazar:""},
  customItems: [] 
 };
 
@@ -650,6 +715,11 @@ function getAdvisorEffects(s) {
 
 async function init(){
  try{
+  if(LOCAL_MODE){
+   await showApp({user:{email:SUPER_ADMINS[0]}});
+   startGlobalClock();
+   return;
+  }
   initSupabase();
   const {data:{session},error}=await sb.auth.getSession();
   if(error) throw error;
@@ -790,12 +860,30 @@ document.getElementById("authBtn").onclick=async()=>{
  }
 };
 
-async function logout(){await sb.auth.signOut()}
+async function logout(){if(LOCAL_MODE){renderHome();toast("Yerel yönetici modu",true);return}await sb.auth.signOut()}
 
 async function loadDB(){
- if(!sb){toast("Supabase bağlantısı kurulamadı.");return}
  toast("Veriler yükleniyor…");
- const {data,error}=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+ let data,error;
+ if(LOCAL_MODE){
+   try{
+     const saved=localStorage.getItem(LOCAL_DB_KEY);
+     if(saved){data={data:JSON.parse(saved)};}
+     else{
+       const response=await fetch("game_state_rows.json?v=2",{cache:"no-store"});
+       if(!response.ok)throw new Error("game_state_rows.json okunamadı: HTTP "+response.status);
+       const rows=await response.json();
+       const row=(Array.isArray(rows)?rows:[rows]).find(item=>Number(item.id)===1);
+       if(!row||row.data==null)throw new Error("id=1 data kaydı bulunamadı");
+       data={data:typeof row.data==="string"?JSON.parse(row.data):row.data};
+     }
+     error=null;
+   }catch(localError){error=localError;data=null;}
+ }else{
+   if(!sb){toast("Supabase bağlantısı kurulamadı.");return}
+   const result=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+   data=result.data;error=result.error;
+ }
  if(error){toast("Supabase okuma hatası: "+error.message);return}
  if(data?.data){
     db=data.data;
@@ -803,10 +891,23 @@ async function loadDB(){
     db.settings.prices={...defaultSettings.prices,...(db.settings?.prices||{})};
     db.settings.capacity={...defaultSettings.capacity,...(db.settings?.capacity||{})};
     db.settings.upkeep={...defaultSettings.upkeep,...(db.settings?.upkeep||{})};
+    db.settings.garrisonUpkeep={...defaultSettings.garrisonUpkeep,...(db.settings?.garrisonUpkeep||{})};
+    db.settings.populationBuildingGrowth={...defaultSettings.populationBuildingGrowth,...(db.settings?.populationBuildingGrowth||{})};
+    db.settings.populationBuildingCostPerPerson={...defaultSettings.populationBuildingCostPerPerson,...(db.settings?.populationBuildingCostPerPerson||{})};
     db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.images={...defaultSettings.images,...(db.settings?.images||{})};
     db.settings.customItems = db.settings.customItems || [];
+    if(LOCAL_MODE && db.settings.localEventPoolVersion!==4){
+        const eventResponse=await fetch("events-100.json?v=4",{cache:"no-store"});
+        if(!eventResponse.ok)throw new Error("100 olay havuzu okunamadı: HTTP "+eventResponse.status);
+        const newEvents=await eventResponse.json();
+        if(!Array.isArray(newEvents)||newEvents.length!==100)throw new Error("Olay havuzu tam olarak 100 olay içermiyor.");
+        db.settings.randomEvents=newEvents;
+        db.settings.localEventPoolVersion=4;
+        const newEventMap=new Map(newEvents.map(event=>[event.id,event]));
+        db.pendingEvents=(db.pendingEvents||[]).map(pending=>({...pending,event:newEventMap.get(pending.eventId||pending.event?.id)||pending.event}));
+    }
     db.purchaseLog = db.purchaseLog || []; 
     db.letters = db.letters || [];
     db.timerSeconds = db.timerSeconds || 0;
@@ -828,16 +929,24 @@ async function loadDB(){
         s.hiredAdvisors = s.hiredAdvisors || [];
         s.advisorHiredYears = s.advisorHiredYears || {}; // Hangi paşanın kaç yıldır çalıştırıldığı
         s.advisorSlots = s.advisorSlots || 3;
+        s.cityCount = Math.max(0, Math.floor(Number(s.cityCount)||0));
+        s.fortressCount = Math.max(0, Math.floor(Number(s.fortressCount)||0));
+        s.cityGarrison = Math.max(0, Math.floor(Number(s.cityGarrison)||0));
+        s.fortressGarrison = Math.max(0, Math.floor(Number(s.fortressGarrison)||0));
+        s.garrisonWarDeaths = Math.max(0, Math.floor(Number(s.garrisonWarDeaths)||0));
+        ["hastane","asevi","su_degirmeni","kervansaray","pazar"].forEach(key=>s[key]=Math.max(0,Math.floor(Number(s[key])||0)));
     });
  }
  else {
     db={states:[],settings:structuredClone(defaultSettings),transfers:[], purchaseLog:[], letters:[], advisors:structuredClone(DEFAULT_45_ADVISORS), timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]};
     await saveDB();
  }
+ if(LOCAL_MODE)localStorage.setItem(LOCAL_DB_KEY,JSON.stringify(db));
  toast("Sistem Aktif",true);
 }
 
 async function saveDB(){
+ if(LOCAL_MODE){try{localStorage.setItem(LOCAL_DB_KEY,JSON.stringify(db));toast("Yerel kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true}catch(e){toast("Yerel kayıt hatası: "+e.message);return false}}
  if(!sb) return false;
  const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
  if(error){toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
@@ -933,6 +1042,25 @@ function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canM
     </div>`;
 }
 
+function buildPopulationBuildingCard(s,key,name,imgUrl,canManage){
+ const safeImg=cleanUrl(imgUrl);
+ const growth=Math.max(0,Number(db.settings.populationBuildingGrowth?.[key])||0);
+ const costPerPerson=Math.max(0,Number(db.settings.populationBuildingCostPerPerson?.[key])||0);
+ const price=Math.max(0,Math.round((Number(s.population)||0)*costPerPerson));
+ return `<div class="unit-card">
+   ${safeImg?`<div class="unit-img-box"><img src="${esc(safeImg)}"></div>`:''}
+   <div class="unit-details">
+     <div class="unit-title">${esc(name)}</div>
+     <div class="unit-info-grid">
+       <div>Mevcut: <strong>${num(s[key]||0)}</strong></div>
+       <div>Nüfus: <strong style="color:var(--green)">+%${num(growth)}</strong></div>
+       <div>Fiyat: <strong style="color:var(--gold)">${money(price)}</strong></div>
+     </div>
+     ${canManage?`<div class="unit-buy-row"><input id="qty_${s.id}_${key}" type="number" min="1" value="1" oninput="document.getElementById('tot_${s.id}_${key}').innerText=money(${price}*(this.value||0))"><button class="btn green" onclick="buildPopulationBuilding('${s.id}','${key}','${esc(name)}')">İNŞA ET</button></div><div id="tot_${s.id}_${key}" style="text-align:center;font-size:10px;margin-top:2px;color:var(--gold);">${money(price)}</div>`:'<div style="text-align:center;padding:3px;background:var(--red);color:#fff;font-size:10px;border-radius:2px;">YETKİ YOK</div>'}
+   </div>
+ </div>`;
+}
+
 function openDetail(id){
  const s=getState(id);
  if(!s) return;
@@ -957,6 +1085,8 @@ function openDetail(id){
  const navUpkeep = calcNavyUpkeep(s);
  const cusUpkeep = calcCustomUpkeep(s);
  const advSalary = calcAdvisorExpenses(s);
+ const cityGarrisonExpense = calcCityGarrisonExpense(s);
+ const fortressGarrisonExpense = calcFortressGarrisonExpense(s);
  const totalExpenses = calcExpenses(s);
  
  let tempLedgerTotal = 0;
@@ -1052,6 +1182,8 @@ function openDetail(id){
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Donanma / Gemi Bakımı</span><b style="color:var(--red)">-${money(navUpkeep)} ${adv.navyUpkeepDiscount > 0 ? `<small style="color:var(--green)">(-%${adv.navyUpkeepDiscount})</small>` : ''}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Özel Birim Giderleri</span><b style="color:var(--red)">-${money(cusUpkeep)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Danışman / Vezir Maaşları</span><b style="color:var(--red)">-${money(advSalary)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Şehir Garnizonu (${num(s.cityGarrison||0)} asker)</span><b style="color:var(--red)">-${money(cityGarrisonExpense)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Kale Garnizonu (${num(s.fortressGarrison||0)} asker)</span><b style="color:var(--red)">-${money(fortressGarrisonExpense)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sivil Saray / Kamu Gideri</span><b style="color:var(--red)">-${money(s.civilExpense)}</b></div>
         <div style="display:flex; justify-content:space-between; margin-top:6px; font-weight:bold; font-size:13px; border-top:1px dashed var(--line); padding-top:4px;">
             <span>TOPLAM OTOMATİK GİDER:</span>
@@ -1265,6 +1397,33 @@ function openDetail(id){
  });
  eylemHtml += `</div></div>`;
 
+ // 8. ÜLKE YÖNETİMİ: KALE, GARNİZON VE NÜFUS BİNALARI
+ const fortressImg=cleanUrl(imgs.fortress);
+ const fortressGarrisonImg=cleanUrl(imgs.fortress_garrison);
+ const populationBuildings=[
+   ["hastane","Hastane"],["asevi","Aşevi"],["su_degirmeni","Su Değirmeni"],["kervansaray","Kervansaray"],["pazar","Pazar"]
+ ];
+ const populationBuildingsHtml=populationBuildings.map(([key,name])=>buildPopulationBuildingCard(s,key,name,imgs[key],canManage)).join('');
+ let countryManagementHtml=`<div>
+   <h4 style="color:var(--border-gold);margin:0 0 8px;font-family:'Oswald';">🏰 KALE VE GARNİZON YÖNETİMİ</h4>
+   <p class="sub">Garnizona eklenen yeni askerler elverişli nüfustan düşer. Kale garnizon giderleri yıl sonunda hazineden kesilir.</p>
+   <div class="event-result" style="margin-bottom:10px;">
+     <b>Mevcut kale garnizonu:</b> ${num(s.fortressGarrison||0)} asker &nbsp; | &nbsp; <b>Boştaki elverişli asker:</b> ${num(p.elig)}
+   </div>
+   <div class="unit-grid">
+     <div class="unit-card">${fortressImg?`<div class="unit-img-box"><img src="${esc(fortressImg)}"></div>`:''}<div class="unit-details"><div class="unit-title">Kale</div>${field("country_fortressCount","Kale Sayısı",s.fortressCount||0,"number")}</div></div>
+     <div class="unit-card">${fortressGarrisonImg?`<div class="unit-img-box"><img src="${esc(fortressGarrisonImg)}"></div>`:''}<div class="unit-details"><div class="unit-title">Kale Garnizonu</div>${field("country_fortressGarrison","Asker Sayısı",s.fortressGarrison||0,"number")}</div></div>
+   </div>
+   <div class="event-result" style="margin-top:10px;">
+     Kale garnizonu asker başı yıllık gider: <b>${money(db.settings.garrisonUpkeep.fortress)}</b><br>
+     Mevcut kale garnizonu gideri: <b style="color:var(--red)">-${money(fortressGarrisonExpense)}</b>
+   </div>
+   ${canManage?`<button class="btn green" style="width:100%;margin-top:10px;" onclick="saveCountryManagement('${s.id}')">ÜLKE YÖNETİMİNİ KAYDET</button>`:'<p class="sub">Bu devleti düzenleme yetkiniz yok.</p>'}
+   <h4 style="color:var(--border-gold);margin:18px 0 8px;font-family:'Oswald';">🏗️ NÜFUSU GELİŞTİREN BİNALAR</h4>
+   <p class="sub">Her bina, inşa edildiği andaki toplam nüfusu admin panelinde belirlenen oran kadar artırır.</p>
+   <div class="unit-grid">${populationBuildingsHtml}</div>
+ </div>`;
+
  // ANA DETAY DÜZENİ
  document.getElementById("detail").innerHTML = `
  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -1315,6 +1474,7 @@ function openDetail(id){
             <div class="hoi-tab" id="tab-btn-mektup" onclick="switchTab('mektup')">Mektuplar ${unreadCount > 0 ? `<span class="badge-count">${unreadCount}</span>` : ''}</div>
             ${(s.istihbarat_binasi || 0) > 0 ? `<div class="hoi-tab" id="tab-btn-intel" onclick="switchTab('intel')">🕵️ İstihbarat</div>` : ''}
             <div class="hoi-tab" id="tab-btn-eylem" onclick="switchTab('eylem')">Siyaset</div>
+            <div class="hoi-tab" id="tab-btn-country" onclick="switchTab('country')">Ülke Yönetimi</div>
         </div>
         
         <div class="tab-content active" id="tab-content-asker">
@@ -1339,9 +1499,55 @@ function openDetail(id){
         <div class="tab-content" id="tab-content-eylem">
             ${eylemHtml}
         </div>
+        <div class="tab-content" id="tab-content-country">
+            ${countryManagementHtml}
+        </div>
     </div>
  </div>
  `;
+}
+
+function saveCountryManagement(stateId){
+ const s=getState(stateId); if(!s)return;
+ if(!isAdmin && s.ownerEmail!==currentUserEmail)return;
+ const fortressCount=Math.max(0,Math.floor(Number(document.getElementById("f_country_fortressCount").value)||0));
+ const fortressGarrison=Math.max(0,Math.floor(Number(document.getElementById("f_country_fortressGarrison").value)||0));
+ const oldTotal=s.fortressGarrison||0;
+ const newTotal=fortressGarrison;
+ const added=newTotal-oldTotal;
+ const available=calcPop(s).elig;
+ if(added>available){alert(`Elverişli nüfus yetersiz! En fazla ${num(available)} yeni garnizon askeri ekleyebilirsiniz.`);return;}
+ s.fortressCount=fortressCount;
+ s.fortressGarrison=fortressGarrison;
+ addLog({stateId:s.id,stateName:s.name,action:"Ülke Yönetimi: Kale ve garnizon güncellendi",qty:1,cost:0,unitName:"Kale Garnizonu",oldUnit:oldTotal,newUnit:newTotal});
+ queueSave();
+ openDetail(stateId);
+ switchTab('country');
+}
+
+function buildPopulationBuilding(stateId,key,labelName){
+ const s=getState(stateId); if(!s)return;
+ if(!isAdmin&&s.ownerEmail!==currentUserEmail)return;
+ const allowed=["hastane","asevi","su_degirmeni","kervansaray","pazar"];
+ if(!allowed.includes(key))return;
+ const qty=Math.max(0,Math.floor(Number(document.getElementById(`qty_${stateId}_${key}`)?.value)||0));
+ if(qty<=0)return;
+ const growth=Math.max(0,Number(db.settings.populationBuildingGrowth?.[key])||0);
+ const oldPopulation=Math.max(0,Math.floor(Number(s.population)||0));
+ const unitPrice=Math.max(0,Math.round(oldPopulation*(Math.max(0,Number(db.settings.populationBuildingCostPerPerson?.[key])||0))));
+ const totalCost=unitPrice*qty;
+ if((Number(s.treasury)||0)<totalCost){alert(`Hazine yetersiz! Toplam inşaat maliyeti: ${money(totalCost)}`);return;}
+ const addedPopulation=Math.floor(oldPopulation*(growth/100)*qty);
+ const oldCount=s[key]||0;
+ const oldTreasury=Number(s.treasury)||0;
+ s.treasury=oldTreasury-totalCost;
+ s[key]=oldCount+qty;
+ s.population=oldPopulation+addedPopulation;
+ addLog({stateId:s.id,stateName:s.name,action:`Bina İnşası: ${labelName} — nüfus +${num(addedPopulation)}`,qty,cost:totalCost,oldTreasury,newTreasury:s.treasury,unitName:labelName,oldUnit:oldCount,newUnit:s[key]});
+ queueSave();
+ openDetail(stateId);
+ switchTab('country');
+ toast(`${labelName} inşa edildi. ${money(totalCost)} harcandı; nüfus ${num(oldPopulation)} → ${num(s.population)} oldu.`,true);
 }
 
 // ---------------- DANIŞMAN ATAMA & 1 YIL KONTROLÜ ----------------
@@ -1652,13 +1858,14 @@ function calcPop(s){
   if(adv.stopAnarchy) anarRate = 0;
   
   let anarCount = Math.floor(pop * (anarRate/100));
-  let armySize = (s.piyade||0) + (s.suvari||0) + (s.nisanci||0);
+  let armySize = (s.piyade||0) + (s.suvari||0) + (s.nisanci||0) + (s.cityGarrison||0) + (s.fortressGarrison||0);
   if(db.settings.customItems) {
      db.settings.customItems.filter(x=>x.category==='asker' && (!x.faction || x.faction===s.id)).forEach(x => armySize += (s[x.id]||0));
   }
   let eligRate = hap * 0.3;
   let maxElig = Math.floor(pop * (eligRate/100));
-  let availableElig = Math.max(0, maxElig - armySize);
+  // Savaşta ölen garnizon askerleri terhis edilmiş sayılmaz ve elverişli havuza dönmez.
+  let availableElig = Math.max(0, maxElig - armySize - (Number(s.garrisonWarDeaths)||0));
   let remCount = Math.max(0, pop - anarCount - Math.max(maxElig, armySize));
   let eduCount = Math.floor(remCount * (edu/100));
   let otherCount = remCount - eduCount;
@@ -1710,8 +1917,14 @@ function calcAdvisorExpenses(s){
   }
   return total;
 }
+function calcCityGarrisonExpense(s){
+  return Math.max(0,Number(s.cityGarrison)||0)*Math.max(0,Number(db.settings.garrisonUpkeep?.city)||0);
+}
+function calcFortressGarrisonExpense(s){
+  return Math.max(0,Number(s.fortressGarrison)||0)*Math.max(0,Number(db.settings.garrisonUpkeep?.fortress)||0);
+}
 function calcExpenses(s){
-  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + Number(s.civilExpense||0);
+  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcCityGarrisonExpense(s) + calcFortressGarrisonExpense(s) + Number(s.civilExpense||0);
 }
 
 function addLog(data) {
@@ -1730,7 +1943,11 @@ function addLog(data) {
         newTreasury: data.newTreasury,
         unitName: data.unitName || "",
         oldUnit: data.oldUnit,
-        newUnit: data.newUnit
+        newUnit: data.newUnit,
+        logType: data.logType || "",
+        eventChoice: data.eventChoice || "",
+        choiceText: data.choiceText || "",
+        eventChanges: Array.isArray(data.eventChanges) ? data.eventChanges : []
     });
     if(db.purchaseLog.length > 300) db.purchaseLog.pop();
 }
@@ -2079,6 +2296,18 @@ function openPurchaseLogs(){
             diffContent.push(`<span>${esc(l.unitName)}: <b>${num(l.oldUnit)}</b> ➔ <b>${num(l.newUnit)}</b> (<span class="${diffClass}">${diffSign}${num(uDiff)}</span>)</span>`);
         }
 
+        if(l.logType === "event" && Array.isArray(l.eventChanges)) {
+            diffContent = [];
+            l.eventChanges.forEach(change => {
+                const oldValue=Number(change.old||0), newValue=Number(change.new||0), changeAmount=newValue-oldValue;
+                if(!changeAmount) return;
+                const diffClass=changeAmount>=0?'diff-pos':'diff-neg';
+                const sign=changeAmount>=0?'+':'';
+                const format=value=>change.kind==='money'?money(value):(change.kind==='percent'?`${Number(value).toLocaleString('tr-TR',{maximumFractionDigits:1})}%`:num(value));
+                diffContent.push(`<span><b>${esc(change.label)}</b>: ${format(oldValue)} ➔ ${format(newValue)} (<span class="${diffClass}">${sign}${format(changeAmount)}</span>)</span>`);
+            });
+        }
+
         return `
         <div class="log-item">
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -2086,7 +2315,7 @@ function openPurchaseLogs(){
                     <b>${esc(l.state)}</b>: ${esc(l.item)}
                     <div class="sub">${esc(l.user)} | ${l.date}</div>
                 </div>
-                <div style="text-align:right;">
+                <div style="text-align:right;" class="${l.logType==='event'?'hidden':''}">
                     <div>${l.qty > 1 ? l.qty + 'x ' : ''}<span style="color:var(--gold)">${money(l.cost)}</span></div>
                 </div>
             </div>
@@ -2206,9 +2435,49 @@ function passOneYear(){
     if(currentId) openDetail(currentId); else renderHome();
 }
 
+function switchAdminTab(tabId){
+ document.querySelectorAll('#modalContent .admin-hoi-tab').forEach(el=>el.classList.remove('active'));
+ document.querySelectorAll('#modalContent .admin-tab-content').forEach(el=>el.classList.remove('active'));
+ document.getElementById('admin-tab-btn-'+tabId)?.classList.add('active');
+ document.getElementById('admin-tab-'+tabId)?.classList.add('active');
+}
+
+function organizeAdminTabs(){
+ const root=document.getElementById('modalContent');
+ if(!root)return;
+ const children=Array.from(root.children);
+ const title=children.find(el=>el.tagName==='H2');
+ const footer=children.find(el=>el.classList?.contains('actions')&&el.querySelector?.('[onclick*="saveAdmin"]'));
+ const defs=[
+   ['actions','⚙️ İşlemler'],['divan','👑 Divan'],['images','🖼️ Görseller'],
+   ['custom','🌟 Özel Birimler'],['economy','💰 Fiyatlar & Ordu'],['population','🏰 Nüfus & Garnizon']
+ ];
+ const panels={};
+ defs.forEach(([id])=>{const panel=document.createElement('div');panel.id='admin-tab-'+id;panel.className='admin-tab-content'+(id==='actions'?' active':'');panels[id]=panel;});
+ let current='actions';
+ children.forEach(node=>{
+   if(node===title||node===footer)return;
+   if(node.tagName==='H4'){
+     const heading=(node.textContent||'').toLocaleUpperCase('tr-TR');
+     if(heading.includes('DİVAN'))current='divan';
+     else if(heading.includes('GÖRSEL'))current='images';
+     else if(heading.includes('ÖZEL BİRİM'))current='custom';
+     else if(heading.includes('GARNİZON')||heading.includes('NÜFUS'))current='population';
+     else if(heading.includes('SATIN ALMA')||heading.includes('KAPASİTE')||heading.includes('BAKIM')||heading.includes('FERMAN')||heading.includes('SEFER'))current='economy';
+   }
+   panels[current].appendChild(node);
+ });
+ const tabs=document.createElement('div');
+ tabs.className='hoi-tabs';
+ tabs.innerHTML=defs.map(([id,label])=>`<div id="admin-tab-btn-${id}" class="admin-hoi-tab${id==='actions'?' active':''}" onclick="switchAdminTab('${id}')">${label}</div>`).join('');
+ const panelWrap=document.createElement('div');
+ defs.forEach(([id])=>panelWrap.appendChild(panels[id]));
+ root.replaceChildren(...[title,tabs,panelWrap,footer].filter(Boolean));
+}
+
 function openAdmin(){
  if(!isAdmin) return; 
- const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost;
+ const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost,gu=db.settings.garrisonUpkeep,pg=db.settings.populationBuildingGrowth,pc=db.settings.populationBuildingCostPerPerson;
  const img=db.settings.images||{};
  const stateOpts = `<option value="">🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
  
@@ -2238,8 +2507,8 @@ function openAdmin(){
     </div>`;
  }).join("");
 
- modal(`<h2>⚙ KÜRESEL AYARLAR</h2>
- <div class="actions" style="margin:8px 0;"><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button></div>
+ modal(`<h2 style="display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:var(--panel);padding:8px 0;margin-top:0;">⚙ KÜRESEL AYARLAR <button class="btn red" style="font-size:18px;line-height:1;padding:7px 11px;" onclick="closeModal()" title="Küresel ayarları kapat">✕</button></h2>
+ <div class="actions" style="margin:8px 0;"><button class="btn red" onclick="openWarGarrisonModal()">⚔️ SAVAŞ</button><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button></div>
 
  <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN PAŞALARI YÖNETİMİ (${(db.advisors||[]).length} Paşa)</h4>
  <p class="sub" style="margin-bottom:8px;">Paşaların ömürlerini, yıldızlarını, maaşlarını ve çarpanlarını düzenleyin.</p>
@@ -2290,6 +2559,13 @@ function openAdmin(){
     ${field("img_buyuk_ocak", "Büyük Top Ocağı Resmi URL", img.buyuk_ocak||"", "text")}
     ${field("img_okul", "Okul Resmi URL", img.okul||"", "text")}
     ${field("img_istihbarat_binasi", "İstihbarat Dairesi Resmi URL", img.istihbarat_binasi||"", "text")}
+    ${field("img_fortress", "Kale Resmi URL", img.fortress||"", "text")}
+    ${field("img_fortress_garrison", "Kale Garnizonu Resmi URL", img.fortress_garrison||"", "text")}
+    ${field("img_hastane", "Hastane Resmi URL", img.hastane||"", "text")}
+    ${field("img_asevi", "Aşevi Resmi URL", img.asevi||"", "text")}
+    ${field("img_su_degirmeni", "Su Değirmeni Resmi URL", img.su_degirmeni||"", "text")}
+    ${field("img_kervansaray", "Kervansaray Resmi URL", img.kervansaray||"", "text")}
+    ${field("img_pazar", "Pazar Resmi URL", img.pazar||"", "text")}
  </div>
 
  <h4 style="color:var(--border-gold); margin:16px 0 6px; font-family:'Oswald';">🌟 ÖZEL BİRİM / BİNA EKLE</h4>
@@ -2308,9 +2584,86 @@ function openAdmin(){
  <h4 style="margin-top:14px; color:var(--border-gold); font-family:'Oswald';">SATIN ALMA FİYATLARI</h4><div class="formgrid">${Object.keys(p).map(k=>field("p_"+k,k,p[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--border-gold); font-family:'Oswald';">KAPASİTELER</h4><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--border-gold); font-family:'Oswald';">BAKIM GİDERLERİ</h4><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
+ <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">GARNİZON YILLIK GİDERLERİ (Asker Başı)</h4>
+ <div class="formgrid">
+   ${field("gu_city","Şehir Garnizonu Asker Başı / Yıl",gu.city,"number")}
+   ${field("gu_fortress","Kale Garnizonu Asker Başı / Yıl",gu.fortress,"number")}
+ </div>
+ <h4 style="margin-top:10px; color:var(--green); font-family:'Oswald';">NÜFUS BİNALARI ARTIŞ ORANLARI (%)</h4>
+ <div class="formgrid">
+   ${field("pg_hastane","Hastane Nüfus Artışı (%)",pg.hastane,"number")}
+   ${field("pg_asevi","Aşevi Nüfus Artışı (%)",pg.asevi,"number")}
+   ${field("pg_su_degirmeni","Su Değirmeni Nüfus Artışı (%)",pg.su_degirmeni,"number")}
+   ${field("pg_kervansaray","Kervansaray Nüfus Artışı (%)",pg.kervansaray,"number")}
+   ${field("pg_pazar","Pazar Nüfus Artışı (%)",pg.pazar,"number")}
+ </div>
+ <h4 style="margin-top:10px; color:var(--gold); font-family:'Oswald';">NÜFUSA GÖRE BİNA MALİYETİ (Kişi Başı TL)</h4>
+ <p class="sub">Güncel bina fiyatı = devletin toplam nüfusu × kişi başı maliyet.</p>
+ <div class="formgrid">
+   ${field("pc_hastane","Hastane Kişi Başı Maliyet",pc.hastane,"number")}
+   ${field("pc_asevi","Aşevi Kişi Başı Maliyet",pc.asevi,"number")}
+   ${field("pc_su_degirmeni","Su Değirmeni Kişi Başı Maliyet",pc.su_degirmeni,"number")}
+   ${field("pc_kervansaray","Kervansaray Kişi Başı Maliyet",pc.kervansaray,"number")}
+   ${field("pc_pazar","Pazar Kişi Başı Maliyet",pc.pazar,"number")}
+ </div>
  <h4 style="margin-top:10px; color:var(--gold); font-family:'Oswald';">FERMAN ÇARPANLARI</h4><div class="formgrid">${Object.keys(ec).map(k=>field("ec_"+k,k,ec[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">SEFER & İKMAL (Birim Başı)</h4><div class="formgrid">${Object.keys(cc).map(k=>field("cc_"+k,k,cc[k],"number")).join("")}</div>
- <div class="actions" style="margin-top:14px"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn blue" onclick="saveAdmin(true)">KAYDET</button></div>`)
+ <div class="actions" style="margin-top:14px"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn blue" onclick="saveAdmin(true)">KAYDET</button></div>`);
+ organizeAdminTabs();
+}
+
+// ---------------- SAVAŞTA GARNİZON KAYIPLARI (ADMİN) ----------------
+function openWarGarrisonModal(){
+ if(!isAdmin) return;
+ const opts=`<option value="">Devlet seçin…</option>`+db.states.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+ modal(`<h2>⚔️ SAVAŞ — GARNİZON KAYIPLARI</h2>
+   <p class="sub">Savaşta ölen garnizon askerleri garnizondan düşer ve elverişli nüfusa geri eklenmez.</p>
+   <div class="formgrid">
+     <div class="full"><label>Devlet</label><select id="war_state" onchange="renderWarGarrisonFields()">${opts}</select></div>
+   </div>
+   <div id="war_garrison_fields"><p class="sub">İşlem yapmak için önce bir devlet seçin.</p></div>
+   <div class="actions" style="margin-top:14px"><button class="btn" onclick="openAdmin()">GERİ</button></div>`);
+}
+
+function renderWarGarrisonFields(){
+ const stateId=document.getElementById("war_state")?.value;
+ const box=document.getElementById("war_garrison_fields");
+ const s=getState(stateId);
+ if(!box) return;
+ if(!s){box.innerHTML='<p class="sub">İşlem yapmak için önce bir devlet seçin.</p>';return;}
+ box.innerHTML=`<div class="event-result" style="margin-top:10px;">
+     <b>${esc(s.name)}</b><br>
+     Şehir garnizonu: <b>${num(s.cityGarrison||0)}</b> asker<br>
+     Kale garnizonu: <b>${num(s.fortressGarrison||0)}</b> asker<br>
+     Önceki savaşlarda ölen garnizon: <b style="color:var(--red)">${num(s.garrisonWarDeaths||0)}</b> asker
+   </div>
+   <div class="formgrid" style="margin-top:10px;">
+     ${field("war_city_deaths","Şehir Garnizonu Ölümü",0,"number")}
+     ${field("war_fortress_deaths","Kale Garnizonu Ölümü",0,"number")}
+   </div>
+   <button class="btn red" style="width:100%;margin-top:10px;" onclick="applyWarGarrisonDeaths('${s.id}')">KAYIPLARI UYGULA</button>`;
+}
+
+function applyWarGarrisonDeaths(stateId){
+ if(!isAdmin) return;
+ const s=getState(stateId);
+ if(!s) return;
+ const cityDeaths=Math.max(0,Math.floor(Number(document.getElementById("f_war_city_deaths")?.value)||0));
+ const fortressDeaths=Math.max(0,Math.floor(Number(document.getElementById("f_war_fortress_deaths")?.value)||0));
+ if(cityDeaths===0&&fortressDeaths===0){alert("En az bir kayıp sayısı girin.");return;}
+ if(cityDeaths>(s.cityGarrison||0)){alert("Şehir garnizonu kaybı mevcut şehir garnizonundan fazla olamaz.");return;}
+ if(fortressDeaths>(s.fortressGarrison||0)){alert("Kale garnizonu kaybı mevcut kale garnizonundan fazla olamaz.");return;}
+ const oldTotal=(s.cityGarrison||0)+(s.fortressGarrison||0);
+ const totalDeaths=cityDeaths+fortressDeaths;
+ s.cityGarrison-=cityDeaths;
+ s.fortressGarrison-=fortressDeaths;
+ s.garrisonWarDeaths=(s.garrisonWarDeaths||0)+totalDeaths;
+ addLog({stateId:s.id,stateName:s.name,action:`Savaş kaybı: Şehir ${num(cityDeaths)}, Kale ${num(fortressDeaths)} garnizon askeri öldü`,qty:totalDeaths,cost:0,unitName:"Toplam Garnizon",oldUnit:oldTotal,newUnit:oldTotal-totalDeaths});
+ queueSave();
+ toast(`${s.name}: ${num(totalDeaths)} garnizon askeri savaşta öldü.`);
+ openWarGarrisonModal();
+ const selector=document.getElementById("war_state");
+ if(selector){selector.value=s.id;renderWarGarrisonFields();}
 }
 
 // ---------------- DANIŞMAN DÜZENLEME & KAYDETME (ADMİN) ----------------
@@ -2447,11 +2800,14 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.prices).forEach(k=>{ const el=document.getElementById("f_p_"+k); if(el) db.settings.prices[k]=Number(el.value||0); });
  Object.keys(db.settings.capacity).forEach(k=>{ const el=document.getElementById("f_c_"+k); if(el) db.settings.capacity[k]=Number(el.value||0); });
  Object.keys(db.settings.upkeep).forEach(k=>{ const el=document.getElementById("f_u_"+k); if(el) db.settings.upkeep[k]=Number(el.value||0); });
+ Object.keys(db.settings.garrisonUpkeep).forEach(k=>{ const el=document.getElementById("f_gu_"+k); if(el) db.settings.garrisonUpkeep[k]=Math.max(0,Number(el.value||0)); });
+ Object.keys(db.settings.populationBuildingGrowth).forEach(k=>{ const el=document.getElementById("f_pg_"+k); if(el) db.settings.populationBuildingGrowth[k]=Math.max(0,Number(el.value||0)); });
+ Object.keys(db.settings.populationBuildingCostPerPerson).forEach(k=>{ const el=document.getElementById("f_pc_"+k); if(el) db.settings.populationBuildingCostPerPerson[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
  Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
  
  db.settings.images = db.settings.images || {};
- const imgKeys = ["piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul","istihbarat_binasi"];
+ const imgKeys = ["piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul","istihbarat_binasi","fortress","fortress_garrison","hastane","asevi","su_degirmeni","kervansaray","pazar"];
  imgKeys.forEach(k => {
      const el = document.getElementById("f_img_" + k);
      if(el) db.settings.images[k] = cleanUrl(el.value);
