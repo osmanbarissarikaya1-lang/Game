@@ -93,6 +93,32 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .money{color:var(--green);font-weight:700}
 .home-ruler-img { width:42px; height:42px; max-width:42px; max-height:42px; border-radius:3px; border:1px solid var(--border-gold); object-fit:contain; margin-right:10px; flex-shrink:0; background:#0a0c0e;}
 
+/* ORANLI DEVLET KARTLARI — tüm parçalar aynı 5/3 koordinat sisteminde */
+.cards{grid-template-columns:repeat(auto-fill,minmax(min(100%,350px),1fr));gap:12px}.premium-state-card{--card-accent:#c8a24e;--card-bright:#f0cf7b;position:relative;width:100%;aspect-ratio:5/3;min-height:0;padding:0;overflow:hidden;border:1px solid var(--card-accent);border-radius:3px;background-color:#0b0c0d;background-image:linear-gradient(105deg,rgba(16,18,19,.08),rgba(0,0,0,.40)),url('assets/panel-dark-texture.png');background-repeat:no-repeat,repeat;background-size:100% 100%,auto 100%;box-shadow:inset 0 0 0 3px #060708,inset 0 0 0 4px color-mix(in srgb,var(--card-accent) 48%,#17120c),inset 0 0 25px #000,0 5px 12px rgba(0,0,0,.6)}.premium-state-card.theme-crimea{--card-accent:#74406f;--card-bright:#d18ac9}.premium-state-card.theme-sun{--card-accent:#3d769b;--card-bright:#8cc8eb}.premium-state-card:before,.premium-state-card:after{content:"";position:absolute;z-index:5;pointer-events:none;width:7%;height:11%;border-color:var(--card-bright)}.premium-state-card:before{left:2%;top:3%;border-left:2px solid;border-top:2px solid}.premium-state-card:after{right:2%;bottom:3%;border-right:2px solid;border-bottom:2px solid}.state-frame-line{position:absolute;inset:2.2%;z-index:1;pointer-events:none;border:1px solid color-mix(in srgb,var(--card-accent) 60%,#2a251b);box-shadow:inset 0 0 12px #000}.state-frame-line:before,.state-frame-line:after{content:"◆";position:absolute;color:var(--card-accent);font-size:clamp(6px,1.4vw,11px)}.state-frame-line:before{left:1%;bottom:1%}.state-frame-line:after{right:1%;top:1%}.state-portrait-shell{position:absolute;z-index:3;left:5%;top:10%;width:27%;height:52%;padding:1.1%;border:1px solid var(--card-bright);background:#090a0b;box-shadow:inset 0 0 0 2px #070809,0 3px 8px #000;clip-path:polygon(12% 0,88% 0,100% 10%,100% 90%,88% 100%,12% 100%,0 90%,0 10%)}.theme-crimea .state-portrait-shell{clip-path:polygon(22% 0,78% 0,100% 13%,100% 87%,78% 100%,22% 100%,0 87%,0 13%)}.theme-sun .state-portrait-shell{clip-path:polygon(16% 0,84% 0,100% 16%,100% 84%,84% 100%,16% 100%,0 84%,0 16%)}.state-portrait-shell img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top;background:#08090a}.state-portrait-shell.empty{background:linear-gradient(145deg,#17191b,#070809)}.state-medallion{position:absolute;z-index:6;left:15.5%;top:56%;width:7%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;color:var(--card-bright);border:2px solid var(--card-bright);background:#101113;box-shadow:0 2px 5px #000;font:700 clamp(9px,1.6vw,16px)/1 Georgia,serif}.state-card-identity{position:absolute;z-index:3;left:35%;right:23%;top:11%;min-width:0}.state-card-identity h2{margin:0;color:var(--card-bright);font-family:'Playfair Display',serif;font-size:clamp(15px,2.35vw,25px);line-height:1.02;text-shadow:0 2px 2px #000;overflow-wrap:anywhere}.state-card-ruler{margin-top:4%;color:#d3cec3;font-family:'Playfair Display',serif;font-size:clamp(9px,1.15vw,13px);text-transform:uppercase}.state-card-ruler .mine{color:var(--green);font-family:'Oswald',sans-serif}.state-card-badge{position:absolute;z-index:4;right:5%;top:12%;max-width:20%;padding:2% 2.2%;border:1px solid var(--card-bright);outline:1px solid color-mix(in srgb,var(--card-accent) 65%,transparent);outline-offset:2px;color:var(--card-bright);background:#0a0b0d;box-shadow:inset 0 0 8px #000;font:700 clamp(7px,.9vw,10px)/1 'Oswald',sans-serif;text-align:center;text-transform:uppercase;white-space:nowrap}.state-card-stats{position:absolute;z-index:3;left:35%;right:5%;top:41%;height:31%;display:grid;grid-template-columns:1fr 1fr;gap:5% 2%}.state-card-stat{min-width:0;padding:3% 5%;border:1px solid color-mix(in srgb,var(--card-accent) 55%,#29251e);background:linear-gradient(180deg,rgba(23,24,26,.9),rgba(7,8,9,.9));box-shadow:inset 0 1px rgba(255,255,255,.025);overflow:hidden}.state-card-stat small{display:block;color:#b9b3a8;font:600 clamp(7px,.95vw,10px)/1 'Oswald',sans-serif}.state-card-stat b{display:block;margin-top:3%;color:#ece8df;font:700 clamp(10px,1.45vw,16px)/1 'Roboto Condensed',sans-serif;white-space:nowrap}.state-card-stat.money-stat b{color:var(--green)}.state-card-enter{position:absolute;z-index:4;left:20%;right:20%;bottom:7%;height:14%;padding:0;border:1px solid #f0d181;outline:1px solid #704b17;outline-offset:-4px;color:#1c1206;background:linear-gradient(180deg,#ecd083,#c29442 52%,#9e6e24);box-shadow:inset 0 2px rgba(255,244,200,.55),inset 0 -3px rgba(74,42,7,.38),0 3px 7px #000;font:900 clamp(10px,1.4vw,15px)/1 'Playfair Display',serif;text-shadow:0 1px rgba(255,244,200,.35)}.state-card-enter:hover{filter:brightness(1.08)}@media(max-width:380px){.premium-state-card{aspect-ratio:5/3}.state-card-stats{gap:4% 1.5%}.state-card-stat{padding-left:4%;padding-right:3%}.state-card-badge{right:4%}.state-card-identity{right:22%}}
+
+/* ÜRETİLMİŞ BOŞ KART ZEMİNLERİ + CANLI HTML KATMANI */
+.premium-state-card{aspect-ratio:5/3;border:0;background-position:center;background-repeat:no-repeat;background-size:100% 100%;box-shadow:0 5px 14px rgba(0,0,0,.68)}
+.premium-state-card.theme-ottoman{background-image:url('assets/state-card-ottoman-bg-v1.png')}.premium-state-card.theme-crimea{background-image:url('assets/state-card-crimea-bg-v1.png')}.premium-state-card.theme-sun{background-image:url('assets/state-card-sun-bg-v1.png')}
+.premium-state-card:before,.premium-state-card:after,.state-frame-line,.state-medallion{display:none}.state-portrait-shell{left:7.4%;top:11.2%;width:20.2%;height:43.7%;padding:0;border:0;background:#070809;box-shadow:none;clip-path:polygon(12% 0,88% 0,100% 10%,100% 90%,88% 100%,12% 100%,0 90%,0 10%)}.theme-crimea .state-portrait-shell{clip-path:polygon(18% 0,82% 0,100% 12%,100% 88%,82% 100%,18% 100%,0 88%,0 12%)}.theme-sun .state-portrait-shell{clip-path:polygon(14% 0,86% 0,100% 12%,100% 88%,86% 100%,14% 100%,0 88%,0 12%)}
+.state-card-identity{left:31.5%;right:29%;top:11.5%}.state-card-identity h2{font-size:clamp(14px,2.15vw,24px)}.state-card-ruler{margin-top:3%;font-size:clamp(8px,1.05vw,12px)}.state-card-badge{right:7.3%;top:12.8%;max-width:20%;padding:1.5% 1.7%;border:0;outline:0;background:transparent;box-shadow:none}.state-card-stats{left:31%;right:7.2%;top:48%;height:31.5%;gap:4.5% 2%}.state-card-stat{padding:4% 5%;border:0;background:transparent;box-shadow:none}.state-card-stat small{font-size:clamp(7px,.9vw,10px)}.state-card-stat b{font-size:clamp(10px,1.35vw,15px)}.state-card-enter{left:22.3%;right:22.3%;bottom:5.4%;height:11.5%;border:0;outline:0;background:transparent;box-shadow:none}.state-card-enter:hover{filter:brightness(1.13)}
+
+/* V69 — PORTRE VE CANLI METİNLERİ ZEMİNDEKİ KUTULARA OTURT */
+.state-portrait-shell{left:8.15%;top:12.7%;width:18.15%;height:37.2%;background:transparent;clip-path:polygon(11% 0,89% 0,100% 11%,100% 89%,89% 100%,11% 100%,0 89%,0 11%)}.state-portrait-shell img{object-fit:contain;object-position:center bottom;background:transparent}.theme-crimea .state-portrait-shell,.theme-sun .state-portrait-shell{left:8.15%;top:12.7%;width:18.15%;height:37.2%}.state-card-identity{left:31.3%;right:28.5%;top:11%;height:26%;display:flex;flex-direction:column;justify-content:center}.state-card-identity h2{font-size:clamp(13px,2vw,22px);line-height:1.02}.state-card-ruler{margin-top:3%;font-size:clamp(8px,1vw,11px)}.state-card-badge{right:7.1%;top:12.2%;width:19.5%;max-width:none;height:10.5%;padding:0;display:flex;align-items:center;justify-content:center;line-height:1;text-align:center;overflow:hidden;text-overflow:ellipsis}.state-card-stats{left:31.25%;right:7.25%;top:48.2%;height:31%;gap:4.8% 2.1%}.state-card-stat{padding:0 4%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.state-card-stat small,.state-card-stat b{width:100%;margin:0;text-align:center;line-height:1.05}.state-card-stat b{margin-top:3%}.state-card-enter{display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;padding:0}
+
+/* V70 — PORTRE ÇERÇEVESİNİN İÇ BOŞLUĞU VE DÜĞME OPTİK MERKEZİ */
+.state-portrait-shell,.theme-crimea .state-portrait-shell,.theme-sun .state-portrait-shell{left:9.35%;top:16.8%;width:17.7%;height:34.5%;clip-path:polygon(8% 0,92% 0,100% 9%,100% 91%,92% 100%,8% 100%,0 91%,0 9%)}
+.state-portrait-shell img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.state-card-enter{bottom:5.7%;height:11.8%;padding:0 0 .8% 0;box-sizing:border-box}
+
+/* V71 — PORTRE DOLGUSU, KUTU AMBLEMLERİ VE UNVAN TACI */
+.state-portrait-shell,.theme-crimea .state-portrait-shell,.theme-sun .state-portrait-shell{left:7.95%;top:12.2%;width:19.55%;height:41.2%;clip-path:polygon(10% 0,90% 0,100% 10%,100% 90%,90% 100%,63% 100%,58% 84%,42% 84%,37% 100%,10% 100%,0 90%,0 10%)}.state-portrait-shell img{object-fit:cover;object-position:center top;transform:scale(1.03)}.state-card-stat{display:grid;grid-template-columns:26% 74%;grid-template-rows:45% 55%;align-items:center;justify-items:start;padding:0 4%;text-align:left}.state-card-stat:before{grid-column:1;grid-row:1/3;align-self:center;justify-self:center;color:#c99b45;font:700 clamp(13px,2.2vw,24px)/1 Georgia,serif;text-shadow:0 2px 2px #000}.state-card-stat:nth-child(1):before{content:"▣"}.state-card-stat:nth-child(2):before{content:"♟"}.state-card-stat:nth-child(3):before{content:"⚔"}.state-card-stat:nth-child(4):before{content:"⚓"}.state-card-stat small,.state-card-stat b{grid-column:2;width:100%;text-align:left;margin:0}.state-card-stat small{align-self:end}.state-card-stat b{align-self:start;margin-top:2%}.state-card-badge{overflow:visible}.state-card-badge:before{content:"♛";position:absolute;left:50%;top:-62%;transform:translateX(-50%);color:var(--card-bright);font:700 clamp(9px,1.35vw,15px)/1 Georgia,serif;text-shadow:0 2px 2px #000}
+
+/* V72 — TAŞMA, HAZİNE SİMGESİ, TAÇ VE GÜNEŞ DÜĞMESİ */
+.state-portrait-shell,.theme-crimea .state-portrait-shell,.theme-sun .state-portrait-shell{overflow:hidden;left:8.2%;top:12.8%;width:19.05%;height:40.1%}.state-portrait-shell img{transform:none;max-width:100%;max-height:100%}.state-card-stat:nth-child(1):before{content:"";width:clamp(12px,2vw,21px);height:clamp(8px,1.35vw,14px);box-sizing:border-box;border:1px solid #c99b45;border-radius:2px;background:linear-gradient(to bottom,transparent 0 28%,#c99b45 29% 40%,transparent 41%),linear-gradient(135deg,#392508,#9e6f25 52%,#362307);box-shadow:inset 0 0 0 1px #151009,0 1px 2px #000}.state-card-badge:before{content:none;display:none}.state-card-ruler{font-size:clamp(10px,1.2vw,14px);font-weight:700;line-height:1.05}.theme-sun .state-card-enter{border:1px solid #8cc8eb;outline:1px solid #234f70;outline-offset:-4px;background:linear-gradient(180deg,#79b6d8,#397b9f 52%,#245573);box-shadow:inset 0 2px rgba(218,242,255,.55),inset 0 -3px rgba(7,36,55,.42),0 3px 7px #000;color:#07131b;text-shadow:0 1px rgba(218,242,255,.4)}
+
+/* V73 — GÜNEŞ ZEMİNİ V2 VE GERÇEK SANDIK İKONU */
+.premium-state-card.theme-sun{background-image:url('assets/state-card-sun-bg-v2.png')}.theme-sun .state-card-enter{border:0;outline:0;background:transparent;box-shadow:none;color:#07131b;text-shadow:0 1px rgba(218,242,255,.4)}.state-card-stat:nth-child(1):before{content:"";width:clamp(15px,2.4vw,26px);height:clamp(12px,1.95vw,21px);border:0;border-radius:0;background:url('assets/icon-treasure-gold.svg') center/contain no-repeat;box-shadow:none}
+
 /* KOMPAKT DETAY EKRANI */
 .detail-layout {
     display: grid;
@@ -153,6 +179,136 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .pol-stat-row span:last-child { font-weight:bold; font-family:'Oswald', sans-serif;}
 .prog-bar-bg { background:rgba(10, 12, 14, 0.6); height:8px; border:1px solid var(--line); border-radius:2px; margin-top:3px; overflow:hidden; }
 .prog-bar-fill { background:var(--green); height:100%; }
+
+/* Osmanlı'ya özel, verileri canlı kalan yönetim kartı */
+.ottoman-detail-theme {
+    position:relative; overflow:hidden; border:1px solid #9d7734; border-top:2px solid #d4b05d;
+    background:#090b0c url('assets/panel-dark-texture.png') center/cover;
+    box-shadow:inset 0 0 0 3px #08090a,inset 0 0 0 4px #4b391d,inset 0 0 28px #000,0 5px 16px #0008;
+}
+.ottoman-detail-theme::before,.ottoman-detail-theme::after { content:""; position:absolute; width:25px; height:25px; z-index:4; pointer-events:none; }
+.ottoman-detail-theme::before { top:5px; left:5px; border-top:2px solid #c59a48; border-left:2px solid #c59a48; }
+.ottoman-detail-theme::after { right:5px; bottom:5px; border-right:2px solid #c59a48; border-bottom:2px solid #c59a48; }
+.ottoman-detail-theme .political-header { background:linear-gradient(180deg,#17140e,#090a0b); border-bottom:1px solid #806127; padding:12px 10px 9px; }
+.ottoman-detail-theme .political-header h1 { color:#dfbe72!important; font-size:22px; line-height:1.05; text-shadow:0 2px 2px #000; }
+.ottoman-detail-theme .ruler-portrait-container { padding:12px 16px 0; background:transparent; border:0; }
+.ottoman-detail-theme .big-portrait { width:100%; max-height:285px; object-fit:cover; object-position:center 20%; border:2px solid #b98c3c; outline:1px solid #58401b; outline-offset:3px; box-shadow:inset 0 0 15px #000,0 4px 12px #000; }
+.ottoman-detail-theme .ruler-name-plate { width:82%; margin-top:-12px; padding:9px 6px 7px; border:1px solid #c39b50; background:linear-gradient(180deg,#332713,#100e0b); box-shadow:inset 0 0 0 2px #080706,0 3px 8px #000; }
+.ottoman-detail-theme .ruler-name-plate strong { color:#e3c277; font-size:17px; }
+.ottoman-detail-theme .pol-stats { padding:15px 13px 17px; }
+.ottoman-detail-theme .happiness-panel { display:flex; flex-direction:column; align-items:center; margin-bottom:12px; padding:10px 8px; border:1px solid #59441f; background:#080a0bcc; box-shadow:inset 0 0 14px #000; }
+.ottoman-detail-theme .happiness-label { color:#bcae91; letter-spacing:1px; }
+.ottoman-detail-theme .happiness-value { display:grid; place-items:center; width:72px; height:72px; margin:5px auto 7px; border-radius:50%; border:3px double #c59a48; background:radial-gradient(circle,#19261e 0,#0a0d0b 68%); font-size:23px!important; box-shadow:0 0 0 3px #090a0b,0 0 0 4px #664c22; }
+.ottoman-detail-theme .happiness-panel .prog-bar-bg { width:92%; height:7px; border-color:#6f5427; }
+.ottoman-detail-theme .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:12px; }
+.ottoman-detail-theme .summary-stat { min-height:55px; margin:0; padding:7px 5px; flex-direction:column; justify-content:center; align-items:center; border:1px solid #715629; background:linear-gradient(180deg,#17140f,#090a0b); box-shadow:inset 0 0 8px #000; text-align:center; }
+.ottoman-detail-theme .summary-stat .muted { font-size:10px; text-transform:uppercase; }
+.ottoman-detail-theme .summary-stat span:last-child { margin-top:3px; color:#e1bd68; font-size:16px; }
+.ottoman-detail-theme .population-section-title { color:#d4ae5c; margin:10px 0 5px; padding:6px 4px; font-family:'Oswald'; font-size:11px; border-top:1px solid #6a5024; border-bottom:1px solid #6a5024; letter-spacing:.5px; }
+.ottoman-detail-theme .class-row { position:relative; min-height:24px; margin:0; padding:7px 3px 6px 29px; border-bottom:1px solid #302b21; }
+.ottoman-detail-theme .class-row::before { position:absolute; left:5px; top:6px; color:#c79e50; font-size:14px; }
+.ottoman-detail-theme .educated-row::before { content:"▤"; }.ottoman-detail-theme .ordinary-row::before { content:"♟"; }
+.ottoman-detail-theme .eligible-row::before { content:"♜"; }.ottoman-detail-theme .army-row::before { content:"⚔"; }
+.ottoman-detail-theme .anarchy-row::before { content:"Ⓐ"; color:#a54a43; }
+
+/* Üretilen boş çerçeve görselinin üzerine canlı veriler yerleşir. */
+.ottoman-detail-theme {
+    padding:14px 13px 17px;
+    background:#070809 url('assets/ottoman-management-shell-v1.png') center/100% 100% no-repeat;
+    border:0; border-radius:0;
+}
+.ottoman-detail-theme::before,.ottoman-detail-theme::after { display:none; }
+.ottoman-detail-theme .political-header { min-height:60px; display:grid; place-items:center; padding:8px 28px 3px; background:transparent; border:0; }
+.ottoman-detail-theme .political-header h1 { font-size:21px; }
+.ottoman-detail-theme .ruler-portrait-container { padding:11px 23px 0; }
+.ottoman-detail-theme .big-portrait { height:255px; max-height:none; object-fit:cover; object-position:center 18%; border:0; outline:0; border-radius:0; box-shadow:none; }
+.ottoman-detail-theme .ruler-name-plate { width:73%; min-height:56px; margin-top:-9px; display:flex; flex-direction:column; justify-content:center; padding:6px; background:#08090ad9; }
+.ottoman-detail-theme .pol-stats { padding:13px 20px 19px; }
+.ottoman-detail-theme .happiness-panel { min-height:176px; justify-content:center; padding:25px 11px 9px; background:transparent; border:0; box-shadow:none; }
+.ottoman-detail-theme .happiness-label { font-family:'Playfair Display',serif!important; color:#d8b76d!important; font-size:13px!important; }
+.ottoman-detail-theme .happiness-value { width:76px; height:76px; margin:8px auto 10px; }
+.ottoman-detail-theme .summary-grid { gap:10px; margin:4px 0 13px; }
+.ottoman-detail-theme .summary-stat { min-height:64px; padding:8px 5px; background:#08090abf; border-color:#80612d; }
+.ottoman-detail-theme .population-section-title { margin:7px 0 0; text-align:center; border:0; }
+.ottoman-detail-theme .class-row { background:#08090a80; }
+
+/* Yeni görsel kabuğun üzerinde eski panel çizgilerini göstermeme. */
+.ottoman-detail-theme .ruler-name-plate { background:transparent; border:0; box-shadow:none; }
+.ottoman-detail-theme .happiness-value { background:transparent; border:0; box-shadow:none; }
+.ottoman-detail-theme .happiness-panel .prog-bar-bg { background:transparent; border:0; border-radius:0; }
+.ottoman-detail-theme .happiness-panel .prog-bar-fill { border-radius:0; box-shadow:none; }
+.ottoman-detail-theme .summary-stat { background:transparent; border:0; box-shadow:none; }
+.ottoman-detail-theme .population-section-title { background:transparent; }
+.ottoman-detail-theme .class-row { background:transparent; border-bottom:0; }
+
+@media(max-width:700px){
+  .ottoman-detail-theme { padding:14px 12px 17px; }
+  .ottoman-detail-theme .big-portrait { height:270px; }
+  .ottoman-detail-theme .political-header h1 { font-size:23px; }
+}
+
+/* Osmanlı kartı: görsel sabit, yalnızca portre ve metinler canlı katmandır. */
+.ottoman-detail-theme { display:block; position:relative; width:100%; aspect-ratio:979/1618; min-height:0; padding:0; }
+.ottoman-detail-theme .political-header { position:absolute; z-index:2; left:7%; top:2.3%; width:86%; height:6%; min-height:0; padding:0; }
+.ottoman-detail-theme .political-header h1 { font-size:clamp(15px,5.5vw,22px); white-space:nowrap; }
+.ottoman-detail-theme .ruler-portrait-container { position:absolute; z-index:2; left:8.2%; top:8.8%; width:83.6%; height:34%; padding:0; display:block; }
+.ottoman-detail-theme .big-portrait { position:absolute; left:2.5%; top:2.5%; width:95%; height:88%; max-height:none; object-fit:cover; object-position:center 18%; }
+.ottoman-detail-theme .ruler-name-plate { position:absolute; left:13%; bottom:-1%; width:74%; height:17%; min-height:0; margin:0; padding:0 4px; display:flex; align-items:center; justify-content:center; }
+.ottoman-detail-theme .ruler-name-plate strong { font-size:clamp(12px,4.5vw,17px); line-height:1; }
+.ottoman-detail-theme .ruler-name-plate span { font-size:clamp(7px,2.5vw,10px); line-height:1.2; }
+.ottoman-detail-theme .pol-stats { position:absolute; z-index:2; left:5.4%; top:43.5%; width:89.2%; height:52.8%; padding:0; font-size:clamp(8px,2.8vw,12px); }
+.ottoman-detail-theme .happiness-panel { position:absolute; left:0; top:0; width:100%; height:31%; min-height:0; margin:0; padding:4% 3% 2%; }
+.ottoman-detail-theme .happiness-label { font-size:clamp(9px,3vw,13px)!important; }
+.ottoman-detail-theme .happiness-value { width:35%; height:auto; aspect-ratio:1; margin:3% auto 0; font-size:clamp(18px,7vw,27px)!important; }
+.ottoman-detail-theme .happiness-value small { display:block; }
+.ottoman-detail-theme .happiness-panel .prog-bar-bg { position:absolute; left:7%; bottom:5%; width:86%; height:5%; }
+.ottoman-detail-theme .summary-grid { position:absolute; left:0; top:32%; width:100%; height:17%; margin:0; gap:3%; }
+.ottoman-detail-theme .summary-stat { position:relative; min-height:0; height:100%; padding:8% 3% 2% 26%; align-items:center; }
+.ottoman-detail-theme .summary-stat::before { position:absolute; left:8%; top:31%; color:#c59a48; font-size:clamp(16px,6vw,25px); }
+.ottoman-detail-theme .summary-stat:first-child::before { content:"⚖"; }
+.ottoman-detail-theme .summary-stat:last-child::before { content:"♟♟"; letter-spacing:-4px; }
+.ottoman-detail-theme .summary-stat .muted { font-size:clamp(7px,2.3vw,10px); }
+.ottoman-detail-theme .summary-stat span:last-child { font-size:clamp(13px,4.5vw,18px); }
+.ottoman-detail-theme .population-section-title { position:absolute; left:0; top:51%; width:100%; height:8%; margin:0; padding:2% 0 0; font-size:clamp(8px,2.8vw,12px); }
+.ottoman-detail-theme .class-row { position:absolute; left:3%; width:94%; height:8%; min-height:0; margin:0; padding:1.5% 1% 0 12%; align-items:center; }
+.ottoman-detail-theme .class-row::before { left:2%; top:16%; font-size:clamp(11px,4vw,16px); }
+.ottoman-detail-theme .educated-row { top:59%; }.ottoman-detail-theme .ordinary-row { top:67%; }
+.ottoman-detail-theme .eligible-row { top:75%; }.ottoman-detail-theme .army-row { top:83%; }
+.ottoman-detail-theme .anarchy-row { top:91%; }
+@media(max-width:700px){
+  .ottoman-detail-theme { padding:0; }
+  .ottoman-detail-theme .big-portrait { height:88%; }
+  .ottoman-detail-theme .political-header h1 { font-size:clamp(15px,5.5vw,22px); }
+}
+
+/* Birebir onaylanan kart: yalnızca değişken alanlar canlı HTML katmanıdır. */
+.ottoman-detail-theme { aspect-ratio:289/491; background:#090a0b url('assets/ottoman-management-card-exact-v1.png') center/100% 100% no-repeat; }
+.ottoman-detail-theme .political-header { display:none; }
+.ottoman-detail-theme .ruler-portrait-container { position:absolute; inset:0; width:100%; height:100%; padding:0; }
+.ottoman-detail-theme .big-portrait { display:none; }
+.ottoman-detail-theme .ruler-name-plate { left:27%; top:36.7%; bottom:auto; width:46%; height:6.4%; padding:0 2px; background:#0b0c0c; }
+.ottoman-detail-theme .ruler-name-plate strong { font-size:clamp(10px,3.7vw,14px); color:#d8b76d; }
+.ottoman-detail-theme .ruler-name-plate span { font-size:clamp(6px,2vw,8px); }
+.ottoman-detail-theme .pol-stats { position:absolute; inset:0; width:100%; height:100%; padding:0; }
+.ottoman-detail-theme .happiness-panel { left:5%; top:43.8%; width:90%; height:17.5%; padding:0; }
+.ottoman-detail-theme .happiness-label { display:none; }
+.ottoman-detail-theme .happiness-value { position:absolute; left:35%; top:20%; width:30%; height:auto; margin:0; background:#102219; border-radius:50%; font-size:clamp(17px,6.5vw,24px)!important; }
+.ottoman-detail-theme .happiness-value small { font-size:.52em!important; }
+.ottoman-detail-theme .happiness-panel .prog-bar-bg { left:7%; bottom:4%; width:86%; height:6%; background:#0a0b0b; border:1px solid #765725; }
+.ottoman-detail-theme .summary-grid { left:5%; top:62.3%; width:90%; height:8.6%; gap:2%; }
+.ottoman-detail-theme .summary-stat { padding:40% 3% 0; justify-content:flex-start; background:transparent; }
+.ottoman-detail-theme .summary-stat::before,.ottoman-detail-theme .summary-stat .muted { display:none; }
+.ottoman-detail-theme .summary-stat span:last-child { display:block; padding:0 3px; background:#0a0b0b; font-size:clamp(11px,4vw,15px); line-height:1.1; }
+.ottoman-detail-theme .population-section-title { display:none; }
+.ottoman-detail-theme .class-row { left:7%; width:86%; height:4%; padding:0; align-items:center; font-size:clamp(7px,2.5vw,10px); }
+.ottoman-detail-theme .class-row::before { display:none; }
+.ottoman-detail-theme .class-row .muted { visibility:hidden; }
+.ottoman-detail-theme .class-row span:last-child { padding-left:4px; background:#0a0b0b; line-height:1.15; }
+.ottoman-detail-theme .educated-row { top:75.4%; }.ottoman-detail-theme .ordinary-row { top:79.7%; }
+.ottoman-detail-theme .eligible-row { top:84.1%; }.ottoman-detail-theme .army-row { top:88.4%; }
+.ottoman-detail-theme .anarchy-row { top:92.8%; }
+.ottoman-detail-theme .educated-row .muted { visibility:visible; padding-right:4px; background:#0a0b0b; }
+@media(max-width:700px){ .ottoman-detail-theme { padding:0; } }
 
 /* SAĞ PANEL */
 .content-panel {
@@ -446,6 +602,14 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     .content-panel > .hoi-tabs .hoi-tab.active { border-color:var(--border-gold); box-shadow:inset 3px 0 0 var(--border-gold); }
     .content-panel > .tab-content { grid-column:1; grid-row:3; padding:8px; width:100%; min-width:0; overflow-x:hidden; }
     .unit-grid { grid-template-columns: 1fr; }
+    #tab-content-asker > .unit-grid {
+        max-height: 780px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        padding-right: 4px;
+    }
     .cards { grid-template-columns: 1fr; }
     .formgrid { grid-template-columns: 1fr; }
     .political-header h1 { font-size: 18px; }
@@ -484,6 +648,91 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     .finance-dashboard .finance-panel .list-item b{white-space:normal;max-width:48%;overflow-wrap:anywhere;}
     input,select,textarea { min-width:0; max-width:100%; }
 }
+/* v81: devlet seçim kartlarıyla aynı temiz çerçeve + canlı katman sistemi */
+.ottoman-detail-theme{display:block;position:relative;width:100%;aspect-ratio:979/1618;min-height:0;padding:0;background:#070809 url('assets/ottoman-management-shell-v1.png') center/100% 100% no-repeat;border:0;overflow:hidden}
+.ottoman-detail-theme .political-header{display:grid;position:absolute;z-index:3;left:8%;top:2.4%;width:84%;height:6%;min-height:0;place-items:center;padding:0;background:transparent;border:0}
+.ottoman-detail-theme .political-header h1{display:block;margin:0;color:#dfbe72!important;font-size:clamp(14px,5.1vw,21px);line-height:1;white-space:nowrap}
+.ottoman-detail-theme .ruler-portrait-container{display:block;position:absolute;z-index:2;left:8.2%;top:8.8%;width:83.6%;height:34%;padding:0}
+.ottoman-detail-theme .big-portrait{display:block;position:absolute;left:2.5%;top:2.5%;width:95%;height:88%;max-height:none;object-fit:cover;object-position:center 18%;border:0;outline:0;box-shadow:none}
+.ottoman-detail-theme .ruler-name-plate{display:flex;position:absolute;left:13%;top:auto;bottom:-1%;width:74%;height:17%;min-height:0;margin:0;padding:0 4px;flex-direction:column;align-items:center;justify-content:center;background:transparent;border:0;box-shadow:none}
+.ottoman-detail-theme .ruler-name-plate strong{color:#dfbe72;font-size:clamp(11px,4.1vw,16px);line-height:1}.ottoman-detail-theme .ruler-name-plate span{font-size:clamp(6px,2.2vw,9px);line-height:1.2}
+.ottoman-detail-theme .pol-stats{display:block;position:absolute;z-index:3;left:5.4%;top:43.5%;width:89.2%;height:52.8%;padding:0;font-size:clamp(7px,2.6vw,11px)}
+.ottoman-detail-theme .happiness-panel{display:flex;position:absolute;left:0;top:0;width:100%;height:31%;min-height:0;margin:0;padding:4% 3% 2%;flex-direction:column;align-items:center;justify-content:center;background:transparent;border:0;box-shadow:none}
+.ottoman-detail-theme .happiness-label{display:block;color:#d8b76d!important;font:700 clamp(8px,2.8vw,12px)/1 'Playfair Display',serif!important}
+.ottoman-detail-theme .happiness-value{display:grid;position:static;width:35%;height:auto;aspect-ratio:1;margin:3% auto 0;place-items:center;color:var(--green);background:transparent;border:0;border-radius:0;box-shadow:none;font-size:clamp(17px,6.5vw,26px)!important}.ottoman-detail-theme .happiness-value small{display:block;font-size:.52em!important}
+.ottoman-detail-theme .happiness-panel .prog-bar-bg{position:absolute;left:7%;bottom:5%;width:86%;height:5%;background:transparent;border:0}
+.ottoman-detail-theme .summary-grid{display:grid;position:absolute;left:0;top:32%;width:100%;height:17%;margin:0;grid-template-columns:1fr 1fr;gap:3%}
+.ottoman-detail-theme .summary-stat{display:flex;position:relative;height:100%;min-height:0;margin:0;padding:8% 3% 2% 26%;flex-direction:column;align-items:center;justify-content:center;background:transparent;border:0;box-shadow:none}
+.ottoman-detail-theme .summary-stat::before{display:block;position:absolute;left:8%;top:31%;color:#c59a48;font-size:clamp(15px,5.5vw,23px)}.ottoman-detail-theme .summary-stat:first-child::before{content:"⚖"}.ottoman-detail-theme .summary-stat:last-child::before{content:"♟♟";letter-spacing:-4px}
+.ottoman-detail-theme .summary-stat .muted{display:inline;color:#b9b0a0;font-size:clamp(6px,2.1vw,9px)}.ottoman-detail-theme .summary-stat span:last-child{display:inline;margin-top:2%;padding:0;color:#dfbe72;background:transparent;font-size:clamp(11px,4vw,16px)}
+.ottoman-detail-theme .population-section-title{display:block;position:absolute;left:0;top:51%;width:100%;height:8%;margin:0;padding:2% 0 0;color:#d4ae5c;background:transparent;border:0;text-align:center;font-size:clamp(7px,2.5vw,11px)}
+.ottoman-detail-theme .class-row{display:flex;position:absolute;left:3%;width:94%;height:8%;min-height:0;margin:0;padding:1.5% 1% 0 12%;align-items:center;justify-content:space-between;background:transparent;border:0;font-size:clamp(7px,2.5vw,10px)}
+.ottoman-detail-theme .class-row::before{display:block;position:absolute;left:2%;top:16%;color:#c79e50;font-size:clamp(10px,3.7vw,15px)}.ottoman-detail-theme .class-row .muted{visibility:visible;padding:0;background:transparent}.ottoman-detail-theme .class-row span:last-child{padding:0;background:transparent}
+.ottoman-detail-theme .educated-row{top:59%}.ottoman-detail-theme .ordinary-row{top:67%}.ottoman-detail-theme .eligible-row{top:75%}.ottoman-detail-theme .army-row{top:83%}.ottoman-detail-theme .anarchy-row{top:91%}
+.ottoman-detail-theme .educated-row::before{content:"▤"}.ottoman-detail-theme .ordinary-row::before{content:"♟"}.ottoman-detail-theme .eligible-row::before{content:"♜"}.ottoman-detail-theme .army-row::before{content:"⚔"}.ottoman-detail-theme .anarchy-row::before{content:"Ⓐ";color:#a54a43}
+/* v82 hizalama ve eski çizgi temizliği */
+.ottoman-detail-theme .big-portrait{top:2.8%;height:82%;object-position:center 15%}
+.ottoman-detail-theme .ruler-name-plate{bottom:1.2%;height:15.5%}
+.ottoman-detail-theme .ruler-name-plate strong{font-size:clamp(10px,3.7vw,15px)}
+.ottoman-detail-theme .pol-stats{top:44.2%;height:52%}
+.ottoman-detail-theme .happiness-panel{height:30%;padding-top:6%}
+.ottoman-detail-theme .happiness-value{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:.9;margin-top:4%}
+.ottoman-detail-theme .happiness-value small{margin-top:7%;line-height:1}
+.ottoman-detail-theme .happiness-panel .prog-bar-bg{bottom:3.5%;height:4%}
+.ottoman-detail-theme .summary-grid{top:31.5%;height:17.5%}
+.ottoman-detail-theme .population-section-title{top:50.5%}
+.ottoman-detail-theme .educated-row{top:58.5%}.ottoman-detail-theme .ordinary-row{top:66.5%}.ottoman-detail-theme .eligible-row{top:74.5%}.ottoman-detail-theme .army-row{top:82.5%}.ottoman-detail-theme .anarchy-row{top:90.5%}
+.ottoman-detail-theme .pol-stat-row,.ottoman-detail-theme .summary-stat,.ottoman-detail-theme .class-row,.ottoman-detail-theme .ruler-name-plate,.ottoman-detail-theme .happiness-panel{border:0!important;outline:0!important;box-shadow:none!important}
+/* v83 bağımsız Osmanlı yönetim kartı */
+.ottoman-management-card{position:relative;width:100%;aspect-ratio:979/1618;overflow:hidden;background:#070809 url('assets/ottoman-management-shell-v1.png') center/100% 100% no-repeat;color:#d9c59a;font-family:'Playfair Display',serif}
+.om-title{position:absolute;left:8%;top:2.6%;width:84%;height:5%;display:grid;place-items:center;color:#dfbe72;font-size:clamp(15px,5.2vw,22px);font-weight:800;white-space:nowrap}
+.om-portrait{position:absolute;left:10.4%;top:9.5%;width:79.2%;height:28.3%;object-fit:cover;object-position:center 16%}
+.om-ruler{position:absolute;left:27%;top:36.2%;width:46%;height:6.3%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.om-ruler b{color:#dfbe72;font-size:clamp(11px,4vw,16px);line-height:1}.om-ruler small{margin-top:3%;color:#aaa399;font:700 clamp(6px,2.1vw,9px)/1 'Oswald',sans-serif;text-transform:uppercase}.om-ruler .mine{color:var(--green)}
+.om-happiness{position:absolute;left:5.5%;top:44.2%;width:89%;height:16.8%;text-align:center}
+.om-happiness-label{color:#cdb06d;font-size:clamp(8px,2.8vw,12px);font-weight:700;letter-spacing:.04em}
+.om-happiness-value{position:absolute;left:36%;top:24%;width:28%;height:48%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--green);font:800 clamp(18px,6.8vw,27px)/.9 'Roboto Condensed',sans-serif}
+.om-happiness-value small{margin-top:9%;color:var(--gold);font-size:.5em;line-height:1}
+.om-happiness-bar{position:absolute;left:7%;bottom:4.5%;width:86%;height:4%;overflow:hidden}.om-happiness-bar>i{display:block;height:100%;background:var(--green)}
+.om-summary{position:absolute;left:5.5%;top:62.3%;width:89%;height:8.6%;display:grid;grid-template-columns:1fr 1fr;gap:3%}
+.om-summary-box{display:grid;grid-template-columns:28% 72%;grid-template-rows:44% 56%;align-items:center;padding:5% 5% 2%}
+.om-summary-icon{grid-row:1/3;color:#c89d4d;font-size:clamp(16px,5.4vw,23px);text-align:center}.om-summary-label{align-self:end;color:#b9b0a0;font:600 clamp(6px,2vw,9px)/1 'Oswald',sans-serif;text-align:center}.om-summary-value{align-self:start;color:#dfbe72;font:800 clamp(11px,4vw,16px)/1.1 'Roboto Condensed',sans-serif;text-align:center;white-space:nowrap}
+.om-pop-title{position:absolute;left:8%;top:72%;width:84%;height:4%;display:grid;place-items:center;color:#cdb06d;font-size:clamp(7px,2.5vw,11px);font-weight:700}
+.om-pop-rows{position:absolute;left:8%;top:76%;width:84%;height:20%}.om-pop-row{height:20%;display:grid;grid-template-columns:10% 62% 28%;align-items:center;font:600 clamp(7px,2.4vw,10px)/1 'Roboto Condensed',sans-serif}.om-pop-icon{color:#c89d4d;text-align:center}.om-pop-value{text-align:right;color:#e2ddd2;font-weight:800;white-space:nowrap}.om-pop-value.green{color:var(--green)}.om-pop-value.red{color:var(--red);font-size:.9em}
+/* v84 son görsel oranları */
+.ottoman-management-card{box-shadow:0 6px 18px #000b}
+.om-title{top:2.8%;font-size:clamp(16px,5.4vw,23px);text-shadow:0 2px 2px #000}
+.om-portrait{left:10.8%;top:9.7%;width:78.4%;height:27.3%;object-position:center 20%}
+.om-ruler{left:26%;top:35.7%;width:48%;height:6.6%}.om-ruler b{font-size:clamp(12px,4.2vw,17px)}.om-ruler small{font-size:clamp(7px,2.2vw,9px)}
+.om-happiness{top:43.8%;height:17.2%}.om-happiness-label{font-size:clamp(9px,3vw,13px)}.om-happiness-value{top:23%;font-size:clamp(19px,7vw,28px)}
+.om-summary{top:62.1%;height:8.9%}.om-summary-label{font-size:clamp(7px,2.2vw,10px)}.om-summary-value{font-size:clamp(12px,4.25vw,17px)}
+.om-pop-title{top:71.7%;font-size:clamp(8px,2.7vw,12px)}
+.om-pop-rows{top:75.6%;height:20.5%}.om-pop-row{grid-template-columns:10% 61% 29%;font-size:clamp(8px,2.65vw,11px)}.om-pop-value.red{font-size:.78em}
+@media(max-width:700px){.ottoman-management-card{width:100%;max-width:370px;margin:0 auto}}
+/* v85 portre, nüfus simgesi ve anarşist satırı */
+.ottoman-management-card::after{content:"";position:absolute;z-index:3;pointer-events:none;left:9.4%;top:8.9%;width:81.2%;height:29.1%;box-sizing:border-box;border:1px solid #9b7533;box-shadow:inset 0 0 0 2px #090807,inset 0 0 0 3px #4e3919}
+.om-portrait{left:10.4%;top:9.7%;width:79.2%;height:27.5%;object-position:center 17%;clip-path:inset(0 round 2px)}
+.om-population-icon{font-family:Georgia,serif;font-size:clamp(12px,4.4vw,19px);letter-spacing:-5px;transform:translateX(-2px)}
+.om-pop-value.red{max-width:100%;font-size:clamp(5px,1.9vw,8px);line-height:1;text-align:right;white-space:nowrap}
+.om-title,.om-ruler{z-index:4}
+/* v86: istenmeyen ikinci portre çerçevesi kaldırıldı */
+.ottoman-management-card::after{content:none!important;display:none!important}
+.om-portrait{left:10.8%;top:9.7%;width:78.4%;height:27.3%;object-position:center 20%;clip-path:none}
+.om-ruler{left:26%;top:35.7%;width:48%;height:6.6%;z-index:4}
+/* v88: PNG arka plan + sabit viewBox SVG veri katmanı */
+.ottoman-svg-card{width:100%;max-width:390px;height:auto;align-self:start;margin:0 auto;aspect-ratio:992/1586;background:#070809 url('assets/ottoman-management-textured-base-v1.png') center/100% 100% no-repeat;overflow:hidden;box-shadow:none}
+.ottoman-svg-card.detail-crimea{background-image:url('assets/crimea-management-textured-base-v1.png')}
+.ottoman-svg-card.detail-sun{background-image:url('assets/sun-management-textured-base-v1.png')}
+.theme-ottoman .state-card-ruler{color:#f0cf7b}.theme-crimea .state-card-ruler{color:#d18ac9}.theme-sun .state-card-ruler{color:#8cc8eb}
+.detail-crimea .ottoman-card-svg>g:first-of-type text{fill:#d5a0d1!important}
+.detail-crimea .ottoman-card-svg>g:first-of-type text:nth-of-type(5){font-size:58px}
+.detail-sun .ottoman-card-svg>g:first-of-type text{fill:#9fd3f2!important}
+.detail-crimea .ottoman-card-svg rect[y="948"]{fill:#a964a2!important}
+.detail-sun .ottoman-card-svg rect[y="948"]{fill:#5aa5d0!important}
+.detail-crimea .ottoman-card-svg image[clip-path*="omFinalFrameClip"]{filter:hue-rotate(250deg) saturate(.62)}
+.detail-sun .ottoman-card-svg image[clip-path*="omFinalFrameClip"]{filter:hue-rotate(175deg) saturate(.72)}
+.ottoman-card-svg{display:block;width:100%;height:100%;overflow:visible}.ottoman-card-svg text{paint-order:stroke;stroke:#080909;stroke-width:1.4px;stroke-linejoin:round}
+.ottoman-svg-card{box-shadow:none!important}
 </style>
 </head>
 <body>
@@ -524,7 +773,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
-const SUPER_ADMINS = ["osman.baris.sarikaya1@gmail.com"]; 
+const SUPER_ADMINS = ["barisozasik1@gmail.com"]; 
 let currentUserEmail = null;
 let isAdmin = false;
 
@@ -1421,26 +1670,14 @@ function renderHome(){
   const accent=s.color||"#c5a059";
   const rulerImgClean = cleanUrl(s.rulerImage);
   const unreadLetters = (db.letters||[]).filter(l => l.toStateId === s.id && !l.read).length;
+  const stateKey=`${s.id||''} ${s.name||''}`.toLocaleLowerCase('tr-TR');
+  const cardTheme=stateKey.includes('kırım')||stateKey.includes('kirim')||stateKey.includes('crimea')?'theme-crimea':stateKey.includes('güneş')||stateKey.includes('gunes')||stateKey.includes('sun')?'theme-sun':'theme-ottoman';
+  const medallion=cardTheme==='theme-crimea'?'T':cardTheme==='theme-sun'?'☀':'☾';
 
-  return `<div class="state-card" style="border-left: 3px solid ${esc(accent)};">
-   <div class="state-head">
-     <div style="display:flex; align-items:center;">
-       ${rulerImgClean ? `<img src="${esc(rulerImgClean)}" class="home-ruler-img">` : ''}
-       <div><h2 style="color:${esc(accent)}; font-size:16px;">${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"Lider Yok")} ${isMine ? '<span style="color:var(--gold)">(Sen)</span>' : ''}</div></div>
-     </div>
-     <div style="display:flex; align-items:center; gap:5px;">
-       ${unreadLetters > 0 ? `<span class="badge-count" title="Yeni Mektup!">✉ ${unreadLetters}</span>` : ''}
-       <span class="badge">${esc(s.title||"Devlet")}</span>
-     </div>
-   </div>
-   <div class="stats-grid">
-    <div><span class="muted">HAZİNE:</span> <span class="money">${money(s.treasury)}</span></div>
-    <div><span class="muted">NÜFUS:</span> ${num(s.population)}</div>
-    <div><span class="muted">ORDU:</span> ${num(army)}</div>
-    <div><span class="muted">TOP/GEMİ:</span> ${num(guns)} / ${num(ships)}</div>
-   </div>
-   <div style="margin-top:10px;"><button class="btn blue" style="width:100%; padding:8px;" onclick="openDetail('${s.id}')">YÖNETİME GİR →</button></div>
-  </div>`
+  return `<div class="state-card premium-state-card ${cardTheme}">
+   <div class="state-frame-line"></div><div class="state-portrait-shell${rulerImgClean?'':' empty'}">${rulerImgClean?`<img src="${esc(rulerImgClean)}" alt="">`:''}</div><div class="state-medallion">${medallion}</div>
+   <div class="state-card-identity"><h2>${esc(s.name)}</h2><div class="state-card-ruler">${esc(s.ruler||'Lider Yok')} ${isMine?'<span class="mine">(SEN)</span>':''}</div></div><div class="state-card-badge">${esc(s.title||'Devlet')}</div>
+   ${unreadLetters>0?`<span class="badge-count" style="position:absolute;right:4%;top:28%;z-index:6">✉ ${unreadLetters}</span>`:''}<div class="state-card-stats"><div class="state-card-stat money-stat"><small>HAZİNE</small><b>${money(s.treasury)}</b></div><div class="state-card-stat"><small>NÜFUS</small><b>${num(s.population)}</b></div><div class="state-card-stat"><small>ORDU</small><b>${num(army)}</b></div><div class="state-card-stat"><small>TOP/GEMİ</small><b>${num(guns)} / ${num(ships)}</b></div></div><button class="state-card-enter" onclick="openDetail('${s.id}')">YÖNETİME GİR &nbsp;→</button></div>`
  }).join("")
 }
 
@@ -1881,6 +2118,30 @@ function openDetail(id){
    <div class="unit-grid population-building-grid">${populationBuildingsHtml}</div>
  </div>`;
 
+ const detailStateKey = `${s.id||''} ${s.name||''}`.toLocaleLowerCase('tr-TR');
+ const isOttomanDetail = detailStateKey.includes('osmanlı') || detailStateKey.includes('osmanli') || detailStateKey.includes('osmalı') || detailStateKey.includes('osmali') || detailStateKey.includes('ottoman');
+ const isCrimeaDetail = detailStateKey.includes('kırım') || detailStateKey.includes('kirim') || detailStateKey.includes('crimea');
+ const isSunDetail = detailStateKey.includes('güneş') || detailStateKey.includes('gunes') || detailStateKey.includes('sun');
+ const isPremiumDetail = isOttomanDetail || isCrimeaDetail || isSunDetail;
+ const detailCardClass = isCrimeaDetail?'detail-crimea':isSunDetail?'detail-sun':'detail-ottoman';
+ const detailCardAsset = isCrimeaDetail?'assets/crimea-management-textured-base-v1.png':isSunDetail?'assets/sun-management-textured-base-v1.png':'assets/ottoman-management-textured-base-v1.png';
+ const detailAccent = isCrimeaDetail?'#d5a0d1':isSunDetail?'#9fd3f2':'#f0cf82';
+ const happinessNow=Math.max(0,Math.min(100,s.happiness+adv.happinessBonus));
+ const omGClr=happinessNow>=60?'var(--green)':happinessNow>=30?'#d4a940':'var(--red)';
+ const educatedRateText=Number(p.eduRate||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const leftPoliticalHtml=isPremiumDetail?`
+  <div class="ottoman-svg-card"><svg class="ottoman-card-svg" viewBox="0 0 979 1618" role="img" aria-label="${esc(s.name)} yönetim özeti"><defs><clipPath id="omPortraitClip"><rect x="92" y="148" width="795" height="438" rx="5"/></clipPath></defs>${rulerImgClean?`<image href="${esc(rulerImgClean)}" x="92" y="148" width="795" height="438" preserveAspectRatio="xMidYMid slice" clip-path="url(#omPortraitClip)"/>`:''}<g font-family="'Playfair Display',Georgia,serif" text-anchor="middle"><text x="489.5" y="98" fill="#dfbe72" font-size="47" font-weight="800">${esc(s.name)}</text><text x="489.5" y="635" fill="#dfbe72" font-size="39" font-weight="800">${esc(s.ruler||'Lider Yok')}</text><text x="489.5" y="674" fill="#aaa399" font-family="Oswald,sans-serif" font-size="22" font-weight="700">${esc(s.title||'Devlet')}${isOwner?' (SEN)':''}</text><text x="489.5" y="757" fill="#cdb06d" font-size="30" font-weight="700">HALK MUTLULUĞU</text><text x="489.5" y="870" fill="${omGClr}" font-family="'Roboto Condensed',sans-serif" font-size="66" font-weight="900">${num(happinessNow)}%</text>${adv.happinessBonus!==0?`<text x="489.5" y="914" fill="#d4a940" font-family="'Roboto Condensed',sans-serif" font-size="30" font-weight="800">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</text>`:''}</g><rect x="111" y="956" width="757" height="14" rx="3" fill="#090b09"/><rect x="111" y="956" width="${(757*happinessNow/100).toFixed(1)}" height="14" rx="3" fill="${omGClr}"/><g font-family="Oswald,sans-serif" text-anchor="middle"><text x="225" y="1055" fill="#c89d4d" font-size="45">⚖</text><text x="330" y="1032" fill="#b9b0a0" font-size="22">VERGİ ORANI</text><text x="330" y="1082" fill="#dfbe72" font-size="42" font-weight="800">%${num(s.tax)}</text><text x="585" y="1055" fill="#c89d4d" font-size="36">♟♟♟</text><text x="735" y="1032" fill="#b9b0a0" font-size="22">TOPLAM NÜFUS</text><text x="735" y="1082" fill="#dfbe72" font-size="39" font-weight="800">${num(s.population)}</text><text x="489.5" y="1185" fill="#cdb06d" font-family="'Playfair Display',Georgia,serif" font-size="29" font-weight="700">NÜFUS VE SINIF DAĞILIMI</text></g><g font-family="'Roboto Condensed',Arial,sans-serif" font-size="25" dominant-baseline="middle"><text x="105" y="1270" fill="#c89d4d" font-size="29">▤</text><text x="155" y="1270" fill="#d0cbc2">Eğitimli Sınıf (%${educatedRateText})</text><text x="875" y="1270" text-anchor="end" fill="#e2ddd2" font-weight="800">${num(p.edu)}</text><text x="105" y="1334" fill="#c89d4d" font-size="29">♟</text><text x="155" y="1334" fill="#d0cbc2">Sıradan Halk</text><text x="875" y="1334" text-anchor="end" fill="#e2ddd2" font-weight="800">${num(p.other)}</text><text x="105" y="1398" fill="#c89d4d" font-size="29">♜</text><text x="155" y="1398" fill="#d0cbc2">Boştaki Elverişli Asker</text><text x="875" y="1398" text-anchor="end" fill="#28d17c" font-weight="800">${num(p.elig)}</text><text x="105" y="1462" fill="#c89d4d" font-size="29">⚔</text><text x="155" y="1462" fill="#d0cbc2">Silahaltındaki Ordu</text><text x="875" y="1462" text-anchor="end" fill="#e2ddd2" font-weight="800">${num(p.armySize)}</text><text x="105" y="1526" fill="#cf4138" font-size="29">Ⓐ</text><text x="155" y="1526" fill="#d0cbc2">Anarşistler</text><text x="875" y="1526" text-anchor="end" fill="#cf4138" font-size="22" font-weight="800">${adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)}</text></g></svg></div>
+  <div class="ottoman-management-card" style="display:none">
+   <div class="om-title">${esc(s.name)}</div>
+   ${rulerImgClean?`<img class="om-portrait" src="${esc(rulerImgClean)}">`:''}
+   <div class="om-ruler"><b>${esc(s.ruler||'Lider Yok')}</b><small>${esc(s.title||'Devlet')} ${isOwner?'<span class="mine">(SEN)</span>':''}</small></div>
+   <div class="om-happiness"><div class="om-happiness-label">HALK MUTLULUĞU</div><div class="om-happiness-value">${num(happinessNow)}%${adv.happinessBonus!==0?`<small>(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</small>`:''}</div><div class="om-happiness-bar" title="Halk mutluluğu: %${num(happinessNow)}"><i style="width:${happinessNow}%"></i></div></div>
+   <div class="om-summary"><div class="om-summary-box"><span class="om-summary-icon">⚖</span><span class="om-summary-label">VERGİ ORANI</span><b class="om-summary-value">%${num(s.tax)}</b></div><div class="om-summary-box"><span class="om-summary-icon om-population-icon">♟♟♟</span><span class="om-summary-label">TOPLAM NÜFUS</span><b class="om-summary-value">${num(s.population)}</b></div></div>
+   <div class="om-pop-title">NÜFUS VE SINIF DAĞILIMI</div>
+   <div class="om-pop-rows"><div class="om-pop-row"><span class="om-pop-icon">▤</span><span>Eğitimli Sınıf (%${educatedRateText})</span><b class="om-pop-value">${num(p.edu)}</b></div><div class="om-pop-row"><span class="om-pop-icon">♟</span><span>Sıradan Halk</span><b class="om-pop-value">${num(p.other)}</b></div><div class="om-pop-row"><span class="om-pop-icon">♜</span><span>Boştaki Elverişli Asker</span><b class="om-pop-value green">${num(p.elig)}</b></div><div class="om-pop-row"><span class="om-pop-icon">⚔</span><span>Silahaltındaki Ordu</span><b class="om-pop-value">${num(p.armySize)}</b></div><div class="om-pop-row"><span class="om-pop-icon" style="color:var(--red)">Ⓐ</span><span>Anarşistler</span><b class="om-pop-value red">${adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)}</b></div></div>
+ </div>`:`
+ <div class="political-panel"><div class="political-header"><h1 style="color:${esc(s.color||'var(--border-gold)')};">${esc(s.name)}</h1></div><div class="ruler-portrait-container">${rulerImgClean?`<img src="${esc(rulerImgClean)}" class="big-portrait">`:'<div class="sub">Portre Yok</div>'}<div class="ruler-name-plate"><strong>${esc(s.ruler||'Lider Yok')}</strong><span>${esc(s.title||'Devlet')} ${isOwner?'<b style="color:var(--green)">(SEN)</b>':''}</span></div></div><div class="pol-stats"><div style="text-align:center;margin-bottom:10px;"><div class="sub">HALK MUTLULUĞU</div><div style="font-size:20px;font-weight:bold;color:var(--green)">${num(happinessNow)}%</div><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${happinessNow}%"></div></div></div><div class="pol-stat-row"><span class="muted">Vergi Oranı</span><span style="color:var(--gold)">%${num(s.tax)}</span></div><div class="pol-stat-row"><span class="muted">Toplam Nüfus</span><span>${num(s.population)}</span></div><div class="population-section-title">NÜFUS VE SINIF DAĞILIMI</div><div class="pol-stat-row"><span class="muted">Eğitimli Sınıf (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div><div class="pol-stat-row"><span class="muted">Sıradan Halk</span><span>${num(p.other)}</span></div><div class="pol-stat-row"><span class="muted">Boştaki Elverişli Asker</span><span>${num(p.elig)}</span></div><div class="pol-stat-row"><span class="muted">Silahaltındaki Ordu</span><span>${num(p.armySize)}</span></div><div class="pol-stat-row"><span class="muted">Anarşistler</span><span>${adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)}</span></div></div></div>`;
+
  // ANA DETAY DÜZENİ
  document.getElementById("detail").innerHTML = `
  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -1890,6 +2151,8 @@ function openDetail(id){
  
  <div class="detail-layout">
     <!-- SOL PANEL: LİDER & SİYASET & NÜFUS -->
+    ${leftPoliticalHtml}
+    <!--
     <div class="political-panel">
         <div class="political-header">
             <h1 style="color:${esc(s.color||"var(--border-gold)")};">${esc(s.name)}</h1>
@@ -1903,23 +2166,25 @@ function openDetail(id){
         </div>
         
         <div class="pol-stats">
-            <div style="text-align:center; margin-bottom:10px;">
-                <div style="color:var(--muted); font-size:10px; font-family:'Oswald';">HALK MUTLULUĞU</div>
-                <div style="font-size:20px; font-weight:bold; color:var(--green);">${num(s.happiness + adv.happinessBonus)}% ${adv.happinessBonus!==0?`<small style="font-size:12px; color:var(--gold)">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</small>`:''}</div>
+            <div class="happiness-panel" style="text-align:center; margin-bottom:10px;">
+                <div class="happiness-label" style="color:var(--muted); font-size:10px; font-family:'Oswald';">HALK MUTLULUĞU</div>
+                <div class="happiness-value" style="font-size:20px; font-weight:bold; color:var(--green);">${num(s.happiness + adv.happinessBonus)}% ${adv.happinessBonus!==0?`<small style="font-size:12px; color:var(--gold)">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</small>`:''}</div>
                 <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${Math.max(0,Math.min(100,s.happiness+adv.happinessBonus))}%;"></div></div>
             </div>
 
-            <div class="pol-stat-row"><span class="muted">Vergi Oranı</span><span style="color:var(--gold)">%${num(s.tax)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Toplam Nüfus</span><span>${num(s.population)}</span></div>
+            <div class="summary-grid">
+              <div class="pol-stat-row summary-stat"><span class="muted">Vergi Oranı</span><span style="color:var(--gold)">%${num(s.tax)}</span></div>
+              <div class="pol-stat-row summary-stat"><span class="muted">Toplam Nüfus</span><span>${num(s.population)}</span></div>
+            </div>
             
-            <div style="color:var(--border-gold); margin:12px 0 4px; font-size:11px; font-family:'Oswald'; border-bottom:1px solid var(--line);">👥 NÜFUS VE SINIF DAĞILIMI</div>
-            <div class="pol-stat-row"><span class="muted">Eğitimli Sınıf (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Sıradan Halk</span><span>${num(p.other)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Boştaki Elverişli Asker</span><span style="color:var(--green)">${num(p.elig)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Silahaltındaki Ordu</span><span>${num(p.armySize)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Anarşistler</span><span style="color:var(--red)">${adv.stopAnarchy ? '0 (Nizam Sağlandı)' : num(p.anar)}</span></div>
+            <div class="population-section-title">NÜFUS VE SINIF DAĞILIMI</div>
+            <div class="pol-stat-row class-row educated-row"><span class="muted">Eğitimli Sınıf (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div>
+            <div class="pol-stat-row class-row ordinary-row"><span class="muted">Sıradan Halk</span><span>${num(p.other)}</span></div>
+            <div class="pol-stat-row class-row eligible-row"><span class="muted">Boştaki Elverişli Asker</span><span style="color:var(--green)">${num(p.elig)}</span></div>
+            <div class="pol-stat-row class-row army-row"><span class="muted">Silahaltındaki Ordu</span><span>${num(p.armySize)}</span></div>
+            <div class="pol-stat-row class-row anarchy-row"><span class="muted">Anarşistler</span><span style="color:var(--red)">${adv.stopAnarchy ? '0 (Nizam Sağlandı)' : num(p.anar)}</span></div>
         </div>
-    </div>
+    </div> -->
 
     <!-- SAĞ PANEL: SEKMELER -->
     <div class="content-panel">
@@ -1967,6 +2232,66 @@ function openDetail(id){
     </div>
  </div>
  `;
+ if(isPremiumDetail){
+   const svg=document.querySelector('.ottoman-card-svg');
+   if(svg){
+     svg.parentElement.classList.add(detailCardClass);
+     const rulerTitle=svg.querySelector('text[y="674"]');
+     if(rulerTitle){rulerTitle.setAttribute('fill','#dfbe72');rulerTitle.textContent='';const titlePart=document.createElementNS('http://www.w3.org/2000/svg','tspan');titlePart.textContent=s.title||'Devlet';rulerTitle.appendChild(titlePart);if(isOwner){const minePart=document.createElementNS('http://www.w3.org/2000/svg','tspan');minePart.setAttribute('fill','#28d17c');minePart.textContent=' (SEN)';rulerTitle.appendChild(minePart)}}
+     const happinessText=svg.querySelector('text[y="870"]');if(happinessText)happinessText.setAttribute('fill','#dfbe72');
+     [['225','205','1062'],['330','325','1045'],['585','575','1062'],['735','735','1045']].forEach(([oldX,newX,newY])=>{const el=svg.querySelector(`text[x="${oldX}"][y="${oldX==='330'||oldX==='735'?'1032':'1055'}"]`);if(el){el.setAttribute('x',newX);el.setAttribute('y',newY);if(oldX==='330'||oldX==='735')el.setAttribute('fill','#cdb06d')}});
+     svg.querySelectorAll('text[y="1082"]').forEach(el=>el.setAttribute('y','1093'));
+     const portrait=svg.querySelector('image');if(portrait){portrait.setAttribute('x','108');portrait.setAttribute('y','165');portrait.setAttribute('width','763');portrait.setAttribute('height','395');portrait.setAttribute('preserveAspectRatio','xMidYMid slice')}
+     if(happinessText){happinessText.setAttribute('y','862');happinessText.setAttribute('font-family',"'Playfair Display',Georgia,serif");happinessText.setAttribute('font-size','61');happinessText.setAttribute('stroke','#3b280d');happinessText.setAttribute('stroke-width','1')}
+     const barRects=[...svg.querySelectorAll('rect[y="956"]')];if(barRects[0])barRects[0].setAttribute('fill','transparent');if(barRects[1]){barRects[1].setAttribute('x','121');barRects[1].setAttribute('y','966');barRects[1].setAttribute('width',String((737*happinessNow/100).toFixed(1)));barRects[1].setAttribute('height','9');barRects[1].setAttribute('rx','2');barRects[1].setAttribute('fill','#c89a3f');barRects[1].setAttribute('stroke','#6e4a18');barRects[1].setAttribute('stroke-width','1')}
+     const taxIcon=svg.querySelector('text[x="205"][y="1062"]');if(taxIcon){taxIcon.setAttribute('x','190');taxIcon.setAttribute('y','1068')}
+     const taxLabel=svg.querySelector('text[x="325"][y="1045"]');if(taxLabel){taxLabel.setAttribute('x','315');taxLabel.setAttribute('y','1042')}
+     const taxValue=svg.querySelector('text[x="330"][y="1093"],text[x="325"][y="1093"]');if(taxValue){taxValue.setAttribute('x','315');taxValue.setAttribute('y','1090')}
+     const popIcon=svg.querySelector('text[x="575"][y="1062"]');if(popIcon){popIcon.setAttribute('x','565');popIcon.setAttribute('y','1068')}
+     const popLabel=svg.querySelector('text[x="735"][y="1045"]');if(popLabel)popLabel.setAttribute('y','1042');const popValue=svg.querySelector('text[x="735"][y="1093"]');if(popValue)popValue.setAttribute('y','1090');
+     if(portrait){portrait.setAttribute('x','100');portrait.setAttribute('y','155');portrait.setAttribute('width','779');portrait.setAttribute('height','430')}
+     if(happinessText){happinessText.setAttribute('y','862');happinessText.setAttribute('font-family','Georgia,serif');happinessText.setAttribute('font-size','58');happinessText.setAttribute('stroke','none');happinessText.setAttribute('paint-order','normal')}
+     if(barRects[1]){barRects[1].setAttribute('x','114');barRects[1].setAttribute('y','958');barRects[1].setAttribute('width',String((751*happinessNow/100).toFixed(1)));barRects[1].setAttribute('height','8');barRects[1].setAttribute('rx','1');barRects[1].setAttribute('stroke','none')}
+     const svgTexts=[...svg.querySelectorAll('text')],textByValue=value=>svgTexts.find(el=>el.textContent.trim()===value);
+     const taxLabelFinal=textByValue('VERGİ ORANI');if(taxLabelFinal){taxLabelFinal.setAttribute('x','318');taxLabelFinal.setAttribute('y','1052')}
+     const populationLabelFinal=textByValue('TOPLAM NÜFUS');if(populationLabelFinal){populationLabelFinal.setAttribute('x','735');populationLabelFinal.setAttribute('y','1052')}
+     const taxValueFinal=svgTexts.find(el=>el.textContent.trim()===`%${num(s.tax)}`);if(taxValueFinal){taxValueFinal.setAttribute('x','318');taxValueFinal.setAttribute('y','1098')}
+     const populationValueFinal=svgTexts.find(el=>el.textContent.trim()===num(s.population));if(populationValueFinal){populationValueFinal.setAttribute('x','735');populationValueFinal.setAttribute('y','1098')}
+     if(taxIcon){taxIcon.setAttribute('x','195');taxIcon.setAttribute('y','1080')}if(popIcon){popIcon.setAttribute('x','575');popIcon.setAttribute('y','1080')}
+     if(portrait){portrait.setAttribute('x','94');portrait.setAttribute('y','148');portrait.setAttribute('width','791');portrait.setAttribute('height','455')}
+     if(happinessText){happinessText.textContent=`%${num(happinessNow)}`;happinessText.setAttribute('x','489.5');happinessText.setAttribute('y','862');happinessText.setAttribute('text-anchor','middle');happinessText.setAttribute('dominant-baseline','middle')}
+     if(taxLabelFinal){taxLabelFinal.setAttribute('x','315');taxLabelFinal.setAttribute('text-anchor','middle')}if(taxValueFinal){taxValueFinal.setAttribute('x','315');taxValueFinal.setAttribute('text-anchor','middle')}
+     if(populationLabelFinal){populationLabelFinal.setAttribute('x','735');populationLabelFinal.setAttribute('text-anchor','middle')}if(populationValueFinal){populationValueFinal.setAttribute('x','735');populationValueFinal.setAttribute('text-anchor','middle')}
+     if(taxLabelFinal){taxLabelFinal.setAttribute('x','264');taxLabelFinal.setAttribute('y','1052');taxLabelFinal.setAttribute('text-anchor','middle')}if(taxValueFinal){taxValueFinal.setAttribute('x','264');taxValueFinal.setAttribute('y','1098');taxValueFinal.setAttribute('text-anchor','middle')}
+     if(populationLabelFinal){populationLabelFinal.setAttribute('x','714');populationLabelFinal.setAttribute('y','1052');populationLabelFinal.setAttribute('text-anchor','middle')}if(populationValueFinal){populationValueFinal.setAttribute('x','714');populationValueFinal.setAttribute('y','1098');populationValueFinal.setAttribute('text-anchor','middle')}
+     if(taxIcon){taxIcon.setAttribute('x','112');taxIcon.setAttribute('y','1080');taxIcon.setAttribute('text-anchor','middle')}if(popIcon){popIcon.setAttribute('x','540');popIcon.setAttribute('y','1080');popIcon.setAttribute('text-anchor','middle')}
+     if(taxLabelFinal){taxLabelFinal.setAttribute('x','315')}if(taxValueFinal){taxValueFinal.setAttribute('x','315')}
+     if(populationLabelFinal){populationLabelFinal.setAttribute('x','755')}if(populationValueFinal){populationValueFinal.setAttribute('x','755')}
+     if(taxIcon)taxIcon.setAttribute('x','115');if(popIcon)popIcon.setAttribute('x','555');
+     /* v16 onaylı Osmanlı SVG yerleşimi: tüm eski düzeltmelerden sonra uygulanır. */
+     svg.setAttribute('viewBox','0 0 992 1586');
+     const finalText=value=>[...svg.querySelectorAll('text')].find(el=>el.textContent.trim()===String(value));
+     const finalSet=(el,attrs)=>{if(el)Object.entries(attrs).forEach(([key,value])=>el.setAttribute(key,String(value)))};
+     const finalPortrait=svg.querySelector('image');
+     const finalClip=svg.querySelector('clipPath rect');
+     finalSet(finalClip,{x:96,y:140,width:800,height:412,rx:3});
+     finalSet(finalPortrait,{x:96,y:140,width:800,height:412,preserveAspectRatio:'xMidYMin slice'});
+     finalSet(finalText(s.name),{x:496,y:99,'text-anchor':'middle','font-size':36,fill:'#f0cf82','font-family':"'Playfair Display',Georgia,serif"});
+     finalSet(finalText(s.ruler||'Lider Yok'),{x:496,y:620,'text-anchor':'middle','font-size':34,fill:'#f0cf82'});
+     if(rulerTitle){rulerTitle.textContent=s.title||'Devlet';finalSet(rulerTitle,{x:496,y:653,'text-anchor':'middle','font-size':19,fill:'#f0cf82'});}
+     finalSet(finalText('HALK MUTLULUĞU'),{x:496,y:712,'text-anchor':'middle','font-size':23,fill:'#f0cf82'});
+     if(happinessText){happinessText.textContent=`%${num(happinessNow)}`;finalSet(happinessText,{x:496,y:812,'text-anchor':'middle','dominant-baseline':'middle','font-size':70,fill:'#f0cf82','font-family':"'Playfair Display',Georgia,serif"});}
+     const finalBonus=[...svg.querySelectorAll('text')].find(el=>/^\([+-]\d/.test(el.textContent.trim()));finalSet(finalBonus,{x:496,y:862,'text-anchor':'middle','font-size':25,fill:'#f0cf82'});
+     if(barRects[0])finalSet(barRects[0],{fill:'transparent'});if(barRects[1])finalSet(barRects[1],{x:111,y:948,width:(770*happinessNow/100).toFixed(1),height:7,rx:3.5,fill:'#d4a744',stroke:'none'});
+     finalSet(finalText('VERGİ ORANI'),{x:262,y:1039,'text-anchor':'middle','font-size':20,fill:'#f0cf82'});
+     finalSet(taxValueFinal,{x:262,y:1090,'text-anchor':'middle','font-size':43,fill:'#f0cf82'});
+     finalSet(finalText('TOPLAM NÜFUS'),{x:730,y:1039,'text-anchor':'middle','font-size':20,fill:'#f0cf82'});
+     finalSet(populationValueFinal,{x:730,y:1090,'text-anchor':'middle','font-size':23,fill:'#e7dcc1','font-family':"'Roboto Condensed',Arial,sans-serif",'font-weight':800});
+     finalSet(finalText('NÜFUS VE SINIF DAĞILIMI'),{x:496,y:1172,'text-anchor':'middle','font-size':21,fill:'#f0cf82'});
+     [['Eğitimli Sınıf',1242,num(p.edu)],['Sıradan Halk',1309,num(p.other)],['Boştaki Elverişli Asker',1377,num(p.elig)],['Silahaltındaki Ordu',1445,num(p.armySize)],['Anarşistler',1512,adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)]].forEach(([label,y,value])=>{const labelEl=[...svg.querySelectorAll('text')].find(el=>el.textContent.includes(label));const valueEl=[...svg.querySelectorAll('text')].find(el=>el!==labelEl&&el.textContent.trim()===String(value));finalSet(labelEl,{x:108,y});finalSet(valueEl,{x:881,y,'text-anchor':'end',fill:label==='Anarşistler'?'#cf4138':'#e7dcc1','font-family':"'Roboto Condensed',Arial,sans-serif",'font-size':23});});
+     svg.parentElement.innerHTML=`<svg class="ottoman-card-svg" viewBox="0 0 992 1586" role="img" aria-label="${esc(s.name)} yönetim özeti"><defs><clipPath id="omFinalPortraitClip"><rect x="96" y="140" width="800" height="412" rx="3"/></clipPath><clipPath id="omFinalFrameClip"><rect x="66" y="105" width="860" height="47"/><rect x="66" y="105" width="48" height="535"/><rect x="878" y="105" width="48" height="535"/><rect x="66" y="545" width="213" height="95"/><rect x="713" y="545" width="213" height="95"/><rect x="258" y="558" width="476" height="34"/><rect x="258" y="558" width="38" height="118"/><rect x="696" y="558" width="38" height="118"/><rect x="258" y="665" width="476" height="11"/></clipPath><linearGradient id="omGoldBar" x1="0" x2="1"><stop stop-color="#6f4814"/><stop offset=".45" stop-color="#d4a744"/><stop offset="1" stop-color="#f0d47e"/></linearGradient></defs>${rulerImgClean?`<image href="${esc(rulerImgClean)}" x="96" y="140" width="800" height="412" preserveAspectRatio="xMidYMin slice" clip-path="url(#omFinalPortraitClip)"/>`:''}<g font-family="Georgia,'Times New Roman',serif" text-anchor="middle"><text x="496" y="99" fill="#f0cf82" font-size="36" font-weight="700">${esc(s.name)}</text><text x="496" y="620" fill="#f0cf82" font-size="34" font-weight="700">${esc(s.ruler||'Lider Yok')}</text><text x="496" y="653" fill="#f0cf82" font-size="19" font-weight="700">${esc(s.title||'Devlet')}</text><text x="496" y="712" fill="#f0cf82" font-size="23" font-weight="700">HALK MUTLULUĞU</text><text x="496" y="812" dominant-baseline="middle" fill="#f0cf82" font-size="70" font-weight="700">%${num(happinessNow)}</text>${adv.happinessBonus!==0?`<text x="496" y="862" fill="#f0cf82" font-size="25" font-weight="700">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</text>`:''}<rect x="111" y="948" width="${(770*happinessNow/100).toFixed(1)}" height="7" rx="3.5" fill="url(#omGoldBar)"/><text x="262" y="1039" fill="#f0cf82" font-size="20">VERGİ ORANI</text><text x="262" y="1090" fill="#f0cf82" font-size="43" font-weight="700">%${num(s.tax)}</text><text x="730" y="1039" fill="#f0cf82" font-size="20">TOPLAM NÜFUS</text><text x="730" y="1090" fill="#f0cf82" font-size="39" font-weight="700">${num(s.population)}</text><text x="496" y="1172" fill="#f0cf82" font-size="21">NÜFUS VE SINIF DAĞILIMI</text></g><g font-family="'Roboto Condensed',Arial,sans-serif" font-size="23"><text x="108" y="1242" fill="#e7dcc1">▣  Eğitimli Sınıf (%${educatedRateText})</text><text x="881" y="1242" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.edu)}</text><text x="108" y="1309" fill="#e7dcc1">♟  Sıradan Halk</text><text x="881" y="1309" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.other)}</text><text x="108" y="1377" fill="#e7dcc1">♜  Boştaki Elverişli Asker</text><text x="881" y="1377" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.elig)}</text><text x="108" y="1445" fill="#e7dcc1">⚔  Silahaltındaki Ordu</text><text x="881" y="1445" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.armySize)}</text><text x="108" y="1512" fill="#cf4138">Ⓐ  Anarşistler</text><text x="881" y="1512" text-anchor="end" fill="#cf4138" font-weight="800">${adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)}</text></g><image href="assets/ottoman-management-textured-base-v1.png" x="0" y="0" width="992" height="1586" preserveAspectRatio="none" clip-path="url(#omFinalFrameClip)"/></svg>`;
+   }
+ }
 }
 
 function saveCountryManagement(stateId){
