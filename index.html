@@ -727,14 +727,26 @@ function getVisiblePendingEvents(){
 function renderPendingEvents(){
  const mine=getVisiblePendingEvents();
  if(!mine.length)return `<div class="event-result"><b>Şu anda bekleyen olay bulunmuyor.</b><div class="sub" style="margin-top:5px;">Yeni bir olay oluştuğunda bu sekmede görünecek.</div></div>`;
- return `<div style="margin-bottom:12px;"><h4 style="color:var(--border-gold);font-family:'Oswald';margin:0 0 7px;">🎲 BEKLEYEN RASTGELE OLAYLAR</h4>${mine.map(e=>`<div class="event-card"><div style="display:flex;justify-content:space-between;gap:8px;"><b>${esc(e.event.title)}</b><span class="badge">${e.year}</span></div><div class="sub">${esc(e.stateName)} • ${esc(e.event.category)}</div><button class="btn gold small" style="margin-top:7px;" onclick="openRandomEvent('${e.uid}')">OLAYI AÇ →</button></div>`).join('')}</div>`;
+ return `<div style="margin-bottom:12px;"><h4 style="color:var(--border-gold);font-family:'Oswald';margin:0 0 7px;">🎲 BEKLEYEN RASTGELE OLAYLAR</h4>${mine.map(e=>`<div class="event-card"><div style="display:flex;justify-content:space-between;gap:8px;"><b>${esc(e.event.title)}</b><span class="badge">${e.year}</span></div><div class="sub">${esc(e.stateName)} • ${esc(e.event.category)}</div><div class="actions" style="margin-top:7px;"><button class="btn gold small" onclick="openRandomEvent('${e.uid}')">OLAYI AÇ →</button>${isAdmin?`<button class="btn red small" onclick="deletePendingEvent('${e.uid}')">SİL</button>`:''}</div></div>`).join('')}</div>`;
+}
+function deletePendingEvent(uid){
+ if(!isAdmin)return;
+ const event=(db.pendingEvents||[]).find(item=>item.uid===uid);
+ if(!event)return;
+ if(!confirm(`"${event.event?.title||'Bu olay'}" olayı ${event.stateName} için silinsin mi?`))return;
+ db.pendingEvents=(db.pendingEvents||[]).filter(item=>item.uid!==uid);
+ addLog({stateId:event.stateId||"",stateName:event.stateName||"Bilinmeyen Devlet",action:`Rastgele olay admin tarafından silindi: ${event.event?.title||'Bilinmeyen olay'}`,qty:1,cost:0});
+ queueSave();
+ if(document.getElementById("modal")?.classList.contains("show"))openEventHistoryAdmin();
+ else if(currentId)openDetail(currentId);else renderHome();
+ toast("Bekleyen olay silindi.",true);
 }
 function openEventHistoryAdmin(){
  if(!isAdmin)return;
  const hist=db.eventHistory||[];
  const pending=db.pendingEvents||[];
  const rows=hist.map(h=>`<div class="event-card"><b>${esc(h.stateName)}</b> — ${esc(h.eventTitle)} <span class="badge">${h.year}</span><div class="sub">Seçim: <b>${h.choice}</b> — ${esc(h.choiceText)}<br>${eventEffectSummary(h)}<br>${esc(h.date||'')}</div></div>`).join('');
- const pendingRows=pending.map(e=>`<div class="event-card"><b>${esc(e.stateName)}</b> — ${esc(e.event.title)} <span class="badge">${e.year}</span><div class="sub">Henüz seçim yapılmadı.</div></div>`).join('');
+ const pendingRows=pending.map(e=>`<div class="event-card"><b>${esc(e.stateName)}</b> — ${esc(e.event.title)} <span class="badge">${e.year}</span><div class="sub">Henüz seçim yapılmadı.</div><button class="btn red small" style="margin-top:7px;" onclick="deletePendingEvent('${e.uid}')">SİL</button></div>`).join('');
  modal(`<h2>🎲 RASTGELE OLAYLAR</h2><div class="event-result"><b>Mevcut yıl:</b> ${db.gameYear} &nbsp; | &nbsp; <b>Bekleyen:</b> ${pending.length}</div><h4 style="color:var(--gold);font-family:'Oswald';">BEKLEYEN OLAYLAR</h4>${pendingRows||'<p class="sub">Bekleyen olay yok.</p>'}<h4 style="color:var(--gold);font-family:'Oswald';">SEÇİM GEÇMİŞİ</h4><div style="max-height:50vh;overflow:auto;">${rows||'<p class="sub">Henüz olay seçimi yapılmadı.</p>'}</div><div class="actions" style="margin-top:10px;"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
 }
 function openEventPoolAdmin(){
