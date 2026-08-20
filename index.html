@@ -27,6 +27,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
 .hidden{display:none !important;}
 .event-option{background:var(--panel-light);border:1px solid var(--line);padding:12px;border-radius:4px;margin-top:8px;cursor:pointer;text-align:left;width:100%;color:var(--text);transition:.15s}.event-option:hover{border-color:var(--border-gold);background:rgba(197,160,89,.12)}.event-result{background:rgba(10,12,14,.7);border:1px solid var(--border-gold);padding:10px;border-radius:4px;margin-top:10px}.event-card{background:rgba(17,20,24,.75);border:1px solid var(--line);border-left:3px solid var(--border-gold);padding:10px;border-radius:3px;margin-bottom:8px}.event-choice-a{color:#3498db;font-weight:bold}.event-choice-b{color:#e67e22;font-weight:bold}
 
+
 /* ÜST BAR */
 .top{display:flex;gap:10px;align-items:center;justify-content:space-between;background:rgba(21, 24, 29, 0.85);backdrop-filter:blur(8px);border:1px solid var(--border-steel);border-bottom:2px solid var(--border-gold);padding:10px 16px;border-radius:4px;position:sticky;top:5px;z-index:50;box-shadow: 0 4px 15px rgba(0,0,0,0.6);}
 .brand{font-size:18px;font-weight:700; color:var(--border-gold); font-family:'Oswald', sans-serif; letter-spacing:1px;}
@@ -1000,9 +1001,6 @@ document.getElementById("authBtn").onclick=async()=>{
   } else {
       const r=await sb.auth.signInWithPassword({email,password});
       if(r.error)throw r.error;
-      msg.className="success";
-      msg.textContent="Giriş başarılı, sisteme bağlanılıyor...";
-      showApp(r.data.session);
   }
  }catch(e){
      msg.className="error";
@@ -2674,4 +2672,566 @@ function transfer(id){
 
  addLog({
      stateId: t.id,
-     stateName: tSize bu konuda yardımcı olamıyorum. Yalnızca bir dil modeli olduğum için isteğinizi anlayamıyorum.
+     stateName: t.name,
+     action: `Transfer Alındı <- ${s.name} (${d})`,
+     cost: a,
+     qty: 1,
+     oldTreasury: oldTT,
+     newTreasury: t.treasury
+ });
+
+ closeModal();queueSave();openDetail(id)
+}
+
+function openPurchaseLogs(){
+    const myState = currentId ? getState(currentId) : null;
+    let filteredLogs = db.purchaseLog || [];
+    
+    if(!isAdmin) {
+        if(myState) {
+            filteredLogs = filteredLogs.filter(l => l.stateId === myState.id || l.state === myState.name);
+        } else {
+            const myStateIds = db.states.filter(s => s.ownerEmail === currentUserEmail).map(s => s.id);
+            filteredLogs = filteredLogs.filter(l => myStateIds.includes(l.stateId));
+        }
+    }
+    
+    let logHtml = filteredLogs.length ? filteredLogs.map(l => {
+        let diffContent = [];
+        
+        if(l.oldTreasury !== undefined && l.newTreasury !== undefined) {
+            let tDiff = l.newTreasury - l.oldTreasury;
+            let diffClass = tDiff >= 0 ? 'diff-pos' : 'diff-neg';
+            let diffSign = tDiff >= 0 ? '+' : '';
+            diffContent.push(`<span>Hazine: <b>${money(l.oldTreasury)}</b> ➔ <b>${money(l.newTreasury)}</b> (<span class="${diffClass}">${diffSign}${money(tDiff)}</span>)</span>`);
+        }
+        
+        if(l.unitName && l.oldUnit !== undefined && l.newUnit !== undefined) {
+            let uDiff = l.newUnit - l.oldUnit;
+            let diffClass = uDiff >= 0 ? 'diff-pos' : 'diff-neg';
+            let diffSign = uDiff >= 0 ? '+' : '';
+            diffContent.push(`<span>${esc(l.unitName)}: <b>${num(l.oldUnit)}</b> ➔ <b>${num(l.newUnit)}</b> (<span class="${diffClass}">${diffSign}${num(uDiff)}</span>)</span>`);
+        }
+
+        if(l.logType === "event" && Array.isArray(l.eventChanges)) {
+            diffContent = [];
+            l.eventChanges.forEach(change => {
+                const oldValue=Number(change.old||0), newValue=Number(change.new||0), changeAmount=newValue-oldValue;
+                if(!changeAmount) return;
+                const diffClass=changeAmount>=0?'diff-pos':'diff-neg';
+                const sign=changeAmount>=0?'+':'';
+                const format=value=>change.kind==='money'?money(value):(change.kind==='percent'?`${Number(value).toLocaleString('tr-TR',{maximumFractionDigits:1})}%`:num(value));
+                diffContent.push(`<span><b>${esc(change.label)}</b>: ${format(oldValue)} ➔ ${format(newValue)} (<span class="${diffClass}">${sign}${format(changeAmount)}</span>)</span>`);
+            });
+        }
+
+        return `
+        <div class="log-item">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <b>${esc(l.state)}</b>: ${esc(l.item)}
+                    <div class="sub">${esc(l.user)} | ${l.date}</div>
+                </div>
+                <div style="text-align:right;" class="${l.logType==='event'?'hidden':''}">
+                    <div>${l.qty > 1 ? l.qty + 'x ' : ''}<span style="color:var(--gold)">${money(l.cost)}</span></div>
+                </div>
+            </div>
+            ${diffContent.length > 0 ? `<div class="log-diff-box">${diffContent.join(' | ')}</div>` : ''}
+        </div>`;
+    }).join("") : "<p class=\"sub\">Kayıtlı işlem bulunmuyor.</p>";
+
+    modal(`<h2>📜 İŞLEM LOGLARI & DEĞİŞİM DEFTERİ</h2>
+    <p class="sub" style="margin-bottom:12px;">Yapılan harcamalar, alımlar ve kaynak değişimleri.</p>
+    <div style="max-height:60vh; overflow:auto; margin-bottom:12px;">${logHtml}</div>
+    <div class="actions"><button class="btn blue" onclick="closeModal()">KAPAT</button></div>`);
+}
+
+// ---------------- 1 YIL GEÇİR (PAŞA GELİŞİMİ, ÖMÜR VE SÖZLEŞME GÜNCELLEMESİ) ----------------
+function passOneYear(){
+    if(!isAdmin) return;
+    if(!confirm("⏳ Tüm devletler için 1 tam yıl geçirilecek.\n\nVergiler toplanacak, paşalar yaşlanacak ve gelişim gösterecek. Onaylıyor musunuz?")) return;
+    
+    // Sayaç sıfırlanır
+    db.timerSeconds = 0;
+    db.timerRunning = false;
+    db.gameYear = (Number(db.gameYear) || 1453) + 1;
+
+    let yearEventReport = [];
+    db.states.forEach(s => {
+        const generated = createYearEventsForState(s);
+        db.pendingEvents.push(...generated);
+        if(generated.length) yearEventReport.push(`${esc(s.name)}: ${generated.length} olay`);
+    });
+
+    let summaryHtml = "<h2>⏳ YIL SONU RAPORU & PAŞA GELİŞİMLERİ</h2>" + `<div class="event-result"><b>Yeni yıl: ${db.gameYear}</b><br>${yearEventReport.length ? "🎲 Yeni olaylar: " + yearEventReport.join(" • ") : "🎲 Bu yıl rastgele olay oluşmadı."}</div>` + "<div style='max-height:60vh; overflow:auto;'><div class='cards' style='grid-template-columns:1fr;'>";
+    
+    db.states.forEach(s => {
+        let inc = calcIncome(s);
+        let permInc = calcPermIncome(s); 
+        let exp = calcExpenses(s);
+        let tempLedgerTotal = 0;
+        if(s.customLedger && s.customLedger.length > 0) s.customLedger.forEach(item => { tempLedgerTotal += item.amount; });
+        
+        let net = inc + permInc - exp + tempLedgerTotal;
+        const oldT = s.treasury;
+        s.treasury += net;
+        s.customLedger = []; 
+        let col = net >= 0 ? 'var(--green)' : 'var(--red)';
+
+        // 1. Paşaların sözleşme sürelerini 1 yıl artır
+        s.advisorHiredYears = s.advisorHiredYears || {};
+        (s.hiredAdvisors || []).forEach(advId => {
+            s.advisorHiredYears[advId] = (s.advisorHiredYears[advId] || 0) + 1;
+        });
+
+        // 2. Paşaların yaşını artır, ömrü bitenleri emekli et ve 3 yılda bir %1-%8 arası geliştir
+        let advisorReport = [];
+        let survivingHired = [];
+        
+        (s.hiredAdvisors || []).forEach(advId => {
+            let adv = (db.advisors||[]).find(a => a.id === advId);
+            if(!adv) return;
+
+            adv.ageYears = (adv.ageYears || 5) + 1;
+            adv.maxAge = adv.maxAge || Math.floor(Math.random() * 21) + 10; // 10 ile 30 yıl arası
+
+            // Ömür kontrolü (Vefat / Emeklilik)
+            if(adv.ageYears >= adv.maxAge) {
+                advisorReport.push(`⚠️ <b>${adv.name}</b> yaşlılıktan vefat etti / emekli oldu.`);
+                delete s.advisorHiredYears[advId];
+                return; // Divandan düşer
+            }
+
+            survivingHired.push(advId);
+
+            // Her 3 yılda bir %1 ile %8 arası iyileştirme
+            adv.yearsSinceUpgrade = (adv.yearsSinceUpgrade || 0) + 1;
+            if(adv.yearsSinceUpgrade >= 3) {
+                adv.yearsSinceUpgrade = 0;
+                let boostPercent = Math.floor(Math.random() * 8) + 1; // %1 ile %8 arası
+                
+                // Buff çarpanlarını artır
+                if(adv.taxBonus>0) adv.taxBonus = Number((adv.taxBonus * (1 + boostPercent/100)).toFixed(1));
+                if(adv.milUpkeepDiscount>0) adv.milUpkeepDiscount = Number((adv.milUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.navyUpkeepDiscount>0) adv.navyUpkeepDiscount = Number((adv.navyUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.artUpkeepDiscount>0) adv.artUpkeepDiscount = Number((adv.artUpkeepDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.recruitDiscount>0) adv.recruitDiscount = Number((adv.recruitDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.infraDiscount>0) adv.infraDiscount = Number((adv.infraDiscount * (1 + boostPercent/100)).toFixed(1));
+                if(adv.happinessBonus>0) adv.happinessBonus = Number((adv.happinessBonus * (1 + boostPercent/100)).toFixed(1));
+
+                advisorReport.push(`📈 <b>${adv.name}</b> tecrübe kazandı ve %${boostPercent} oranında gelişti! (Yaş: ${adv.ageYears}/${adv.maxAge})`);
+            } else {
+                advisorReport.push(`👤 ${adv.name} (Yaş: ${adv.ageYears}/${adv.maxAge})`);
+            }
+        });
+        s.hiredAdvisors = survivingHired;
+        
+        addLog({
+            stateId: s.id,
+            stateName: s.name,
+            action: `Yıl Sonu Hasılası & Divan Güncellemesi`,
+            cost: Math.abs(net),
+            qty: 1,
+            oldTreasury: oldT,
+            newTreasury: s.treasury
+        });
+
+        summaryHtml += `<div class="list-item" style="flex-direction:column; align-items:stretch;">
+            <div style="border-bottom:1px solid var(--line); margin-bottom:4px; padding-bottom:4px;"><b>${esc(s.name)}</b></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                <div>Vergi: <span style="color:var(--green)">${money(inc)}</span> | Sabit: <span style="color:var(--green)">${money(permInc)}</span><br>Gider: <span style="color:var(--red)">${money(exp)}</span></div>
+                <div style="text-align:right;">Net: <b style="color:${col}; font-size:14px;">${net>=0?'+':''}${money(net)}</b><br>Kasa: ${money(s.treasury)}</div>
+            </div>
+            <div style="font-size:11px; color:var(--gold); background:rgba(10,12,14,0.6); padding:4px; border-radius:2px;"><b>Paşa Durumları:</b><br>${advisorReport.join('<br>') || 'Divanda paşa yok.'}</div>
+        </div>`;
+    });
+    
+    summaryHtml += "</div></div><div class='actions' style='margin-top:12px;'><button class='btn blue' style='width:100%;' onclick='closeModal()'>KAPAT</button></div>";
+    queueSave(); modal(summaryHtml);
+    renderTopActions();
+    if(currentId) openDetail(currentId); else renderHome();
+}
+
+function switchAdminTab(tabId){
+ document.querySelectorAll('#modalContent .admin-hoi-tab').forEach(el=>el.classList.remove('active'));
+ document.querySelectorAll('#modalContent .admin-tab-content').forEach(el=>el.classList.remove('active'));
+ document.getElementById('admin-tab-btn-'+tabId)?.classList.add('active');
+ document.getElementById('admin-tab-'+tabId)?.classList.add('active');
+}
+
+function organizeAdminTabs(){
+ const root=document.getElementById('modalContent');
+ if(!root)return;
+ const children=Array.from(root.children);
+ const title=children.find(el=>el.tagName==='H2');
+ const footer=children.find(el=>el.classList?.contains('actions')&&el.querySelector?.('[onclick*="saveAdmin"]'));
+ const defs=[
+   ['actions','⚙️ İşlemler'],['divan','👑 Divan'],['images','🖼️ Görseller'],
+   ['custom','🌟 Özel Birimler'],['economy','💰 Fiyatlar & Ordu'],['population','🏰 Nüfus & Garnizon']
+ ];
+ const panels={};
+ defs.forEach(([id])=>{const panel=document.createElement('div');panel.id='admin-tab-'+id;panel.className='admin-tab-content'+(id==='actions'?' active':'');panels[id]=panel;});
+ let current='actions';
+ children.forEach(node=>{
+   if(node===title||node===footer)return;
+   if(node.tagName==='H4'){
+     const heading=(node.textContent||'').toLocaleUpperCase('tr-TR');
+     if(heading.includes('DİVAN'))current='divan';
+     else if(heading.includes('GÖRSEL'))current='images';
+     else if(heading.includes('ÖZEL BİRİM'))current='custom';
+     else if(heading.includes('GARNİZON')||heading.includes('NÜFUS'))current='population';
+     else if(heading.includes('SATIN ALMA')||heading.includes('KAPASİTE')||heading.includes('BAKIM')||heading.includes('FERMAN')||heading.includes('SEFER'))current='economy';
+   }
+   panels[current].appendChild(node);
+ });
+ const tabs=document.createElement('div');
+ tabs.className='hoi-tabs';
+ tabs.innerHTML=defs.map(([id,label])=>`<div id="admin-tab-btn-${id}" class="admin-hoi-tab${id==='actions'?' active':''}" onclick="switchAdminTab('${id}')">${label}</div>`).join('');
+ const panelWrap=document.createElement('div');
+ defs.forEach(([id])=>panelWrap.appendChild(panels[id]));
+ root.replaceChildren(...[title,tabs,panelWrap,footer].filter(Boolean));
+}
+
+function openAdmin(){
+ if(!isAdmin) return; 
+ const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost,gu=db.settings.garrisonUpkeep,pg=db.settings.populationBuildingGrowth,pc=db.settings.populationBuildingCostPerPerson;
+ const img=db.settings.images||{};
+ const stateOpts = `<option value="">🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
+ 
+ let customHtml = (db.settings.customItems||[]).map(x => {
+    let fName = x.faction ? (getState(x.faction)?.name || "Silinmiş") : "Tümü";
+    let safeIcon = cleanUrl(x.icon);
+    return `<div class="list-item">
+      <div style="display:flex; align-items:center;">
+         ${safeIcon ? `<img src="${esc(safeIcon)}" style="width:32px;height:32px;object-fit:cover;margin-right:8px;border-radius:2px;">` : ''}
+         <div><b>${esc(x.name)}</b> <span class="badge">${esc(fName)}</span><br><span class="sub" style="font-size:11px;">(${x.category}) Fyt:${num(x.price)} | Bkm:${num(x.upkeep)} | İkm:${num(x.campCost||0)}</span></div>
+      </div>
+      <button class="btn red small" onclick="removeCustomItem('${x.id}')">SİL</button>
+    </div>`
+ }).join("");
+
+ let advisorsHtml = (db.advisors||[]).map((a, idx) => {
+    let fName = a.faction ? (getState(a.faction)?.name || "Özel Devlet") : (a.targetName || "Tümü");
+    return `<div class="list-item" style="flex-direction:column; align-items:stretch;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div><b>${esc(a.name)}</b> <span class="stars-span">${'★'.repeat(a.stars||1)}</span> <span class="sub">(${esc(a.role)})</span> <span class="badge">${esc(fName)}</span></div>
+        <div>
+            <button class="btn gold small" style="padding:2px 6px;" onclick="openEditAdvisorModal('${a.id}')">DÜZENLE</button>
+            <button class="btn red small" style="padding:2px 6px;" onclick="removeAdvisor('${a.id}')">SİL</button>
+        </div>
+      </div>
+      <div style="font-size:11px; margin-top:3px;"><span style="color:var(--green)">Artı: ${esc(a.buff)}</span> | <span style="color:var(--red)">Eksi: ${esc(a.debuff)}</span> | <span style="color:var(--gold)">Maaş: ${money(a.salary)}/yıl</span> | <span style="color:var(--muted)">Yaş: ${a.ageYears||5}/${a.maxAge||20}</span></div>
+    </div>`;
+ }).join("");
+
+ modal(`<h2 style="display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:var(--panel);padding:8px 0;margin-top:0;">⚙ KÜRESEL AYARLAR <button class="btn red" style="font-size:18px;line-height:1;padding:7px 11px;" onclick="closeModal()" title="Küresel ayarları kapat">✕</button></h2>
+ <div class="actions" style="margin:8px 0;"><button class="btn red" onclick="openWarGarrisonModal()">⚔️ SAVAŞ</button><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button></div>
+
+ <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN PAŞALARI YÖNETİMİ (${(db.advisors||[]).length} Paşa)</h4>
+ <p class="sub" style="margin-bottom:8px;">Paşaların ömürlerini, yıldızlarını, maaşlarını ve çarpanlarını düzenleyin.</p>
+ <div style="margin-bottom:12px; max-height:220px; overflow:auto;">${advisorsHtml || "<p class='sub'>Paşa yok.</p>"}</div>
+ 
+ <div class="formgrid" style="background:rgba(10, 12, 14, 0.7); padding:10px; border-radius:3px; border:1px solid var(--border-gold); margin-bottom:15px;">
+    <div class="full" style="color:var(--border-gold); font-size:12px; font-weight:bold; font-family:'Oswald';">➕ YENİ PAŞA / DANIŞMAN EKLE</div>
+    ${field("adv_new_name", "Paşa İsmi", "", "text")}
+    ${field("adv_new_role", "Unvanı / Rolü", "", "text")}
+    <div><label>Yıldız Seviyesi</label><select id="f_adv_new_stars"><option value="1">1 Yıldız (★)</option><option value="2">2 Yıldız (★★)</option><option value="3" selected>3 Yıldız (★★★)</option><option value="4">4 Yıldız (★★★★)</option><option value="5">5 Yıldız (★★★★★)</option></select></div>
+    <div><label>Hangi Devlete Özel?</label><select id="f_adv_new_faction">${stateOpts}</select></div>
+    ${field("adv_new_salary", "Yıllık Maaş (TL)", "25000", "number")}
+    ${field("adv_new_maxAge", "Ömür Beklentisi (Yıl)", "20", "number")}
+    ${field("adv_new_icon", "Resim URL (İsteğe Bağlı)", "", "text")}
+
+    <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR:</div>
+    ${field("adv_new_taxBonus", "Vergi Geliri Etkisi (+/- %)", "0", "number")}
+    ${field("adv_new_milUpkeepDiscount", "Ordu Bakım İndirimi (%)", "0", "number")}
+    ${field("adv_new_navyUpkeepDiscount", "Donanma Bakım İndirimi (%)", "0", "number")}
+    ${field("adv_new_artUpkeepDiscount", "Topçu Bakım İndirimi (%)", "0", "number")}
+    ${field("adv_new_recruitDiscount", "Asker Alım İndirimi (%)", "0", "number")}
+    ${field("adv_new_infraDiscount", "Bina Yapım İndirimi (%)", "0", "number")}
+    ${field("adv_new_happinessBonus", "Mutluluk Bonusu (+/- Puan)", "0", "number")}
+    <div><label>İsyan / Anarşiyi Sıfırla?</label><select id="f_adv_new_stopAnarchy"><option value="false">Hayır</option><option value="true">Evet (%0 Yapar)</option></select></div>
+    <div class="full"><label>Casusluk Sapmasını Sıfırla (Net Bilgi)?</label><select id="f_adv_new_spyAccuracyBonus"><option value="false">Hayır</option><option value="true">Evet (Tam Kesin Veri)</option></select></div>
+
+    <div class="full">${field("adv_new_buff", "Artı Açıklaması (Görsel Metin)", "", "text")}</div>
+    <div class="full">${field("adv_new_debuff", "Eksi Açıklaması (Görsel Metin)", "", "text")}</div>
+    <div class="full actions"><button class="btn green" style="width:100%;" onclick="addNewAdvisor()">➕ PAŞAYI KAYDET</button></div>
+ </div>
+
+ <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">🖼️ BİRLİK & BİNA GÖRSELLERİ (URL)</h4>
+ <div class="formgrid" style="background:rgba(10, 12, 14, 0.7); padding:10px; border-radius:3px; border:1px solid var(--border-steel);">
+    ${field("img_piyade", "Piyade Resmi URL", img.piyade||"", "text")}
+    ${field("img_suvari", "Süvari Resmi URL", img.suvari||"", "text")}
+    ${field("img_nisanci", "Nişancı Resmi URL", img.nisanci||"", "text")}
+    ${field("img_kucuk_top", "Küçük Top Resmi URL", img.kucuk_top||"", "text")}
+    ${field("img_orta_top", "Orta Top Resmi URL", img.orta_top||"", "text")}
+    ${field("img_buyuk_top", "Büyük Top Resmi URL", img.buyuk_top||"", "text")}
+    ${field("img_kucuk_gemi", "Küçük Gemi Resmi URL", img.kucuk_gemi||"", "text")}
+    ${field("img_orta_gemi", "Orta Gemi Resmi URL", img.orta_gemi||"", "text")}
+    ${field("img_buyuk_gemi", "Büyük Gemi Resmi URL", img.buyuk_gemi||"", "text")}
+    ${field("img_kucuk_liman", "Küçük Liman Resmi URL", img.kucuk_liman||"", "text")}
+    ${field("img_orta_liman", "Orta Liman Resmi URL", img.orta_liman||"", "text")}
+    ${field("img_buyuk_liman", "Büyük Liman Resmi URL", img.buyuk_liman||"", "text")}
+    ${field("img_kucuk_ocak", "Küçük Top Ocağı Resmi URL", img.kucuk_ocak||"", "text")}
+    ${field("img_orta_ocak", "Orta Top Ocağı Resmi URL", img.orta_ocak||"", "text")}
+    ${field("img_buyuk_ocak", "Büyük Top Ocağı Resmi URL", img.buyuk_ocak||"", "text")}
+    ${field("img_okul", "Okul Resmi URL", img.okul||"", "text")}
+    ${field("img_istihbarat_binasi", "İstihbarat Dairesi Resmi URL", img.istihbarat_binasi||"", "text")}
+    ${field("img_fortress", "Kale Resmi URL", img.fortress||"", "text")}
+    ${field("img_fortress_garrison", "Kale Garnizonu Resmi URL", img.fortress_garrison||"", "text")}
+    ${field("img_hastane", "Hastane Resmi URL", img.hastane||"", "text")}
+    ${field("img_asevi", "Aşevi Resmi URL", img.asevi||"", "text")}
+    ${field("img_su_degirmeni", "Su Değirmeni Resmi URL", img.su_degirmeni||"", "text")}
+    ${field("img_kervansaray", "Kervansaray Resmi URL", img.kervansaray||"", "text")}
+    ${field("img_pazar", "Pazar Resmi URL", img.pazar||"", "text")}
+ </div>
+
+ <h4 style="color:var(--border-gold); margin:16px 0 6px; font-family:'Oswald';">🌟 ÖZEL BİRİM / BİNA EKLE</h4>
+ <div style="margin-bottom:12px; max-height:180px; overflow:auto;">${customHtml || "<p class='sub'>Özel birim yok.</p>"}</div>
+ <div class="formgrid" style="background:rgba(10, 12, 14, 0.7); padding:10px; border-radius:3px; border:1px solid var(--border-gold);">
+    ${field("ci_name", "Birim Adı", "", "text")}
+    <div class="full"><label>Hangi Devlete Özel?</label><select id="f_ci_faction">${stateOpts}</select></div>
+    <div><label>Kategori</label><select id="f_ci_cat"><option value="asker">Askeri Birlik</option><option value="altyapi">Altyapı / Bina</option></select></div>
+    ${field("ci_icon", "Resim URL (Direct Link)", "", "text")}
+    ${field("ci_price", "Satın Alma Fiyatı", "0", "number")}
+    ${field("ci_upkeep", "Yıllık Bakım Gideri", "0", "number")}
+    ${field("ci_campCost", "Sefer İkmal Maliyeti", "0", "number")}
+    <div class="full actions"><button class="btn green" style="width:100%;" onclick="addCustomItem()">➕ BİRİMİ KAYDET</button></div>
+ </div>
+
+ <h4 style="margin-top:14px; color:var(--border-gold); font-family:'Oswald';">SATIN ALMA FİYATLARI</h4><div class="formgrid">${Object.keys(p).map(k=>field("p_"+k,k,p[k],"number")).join("")}</div>
+ <h4 style="margin-top:10px; color:var(--border-gold); font-family:'Oswald';">KAPASİTELER</h4><div class="formgrid">${Object.keys(c).map(k=>field("c_"+k,k,c[k],"number")).join("")}</div>
+ <h4 style="margin-top:10px; color:var(--border-gold); font-family:'Oswald';">BAKIM GİDERLERİ</h4><div class="formgrid">${Object.keys(u).map(k=>field("u_"+k,k,u[k],"number")).join("")}</div>
+ <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">GARNİZON YILLIK GİDERLERİ (Asker Başı)</h4>
+ <div class="formgrid">
+   ${field("gu_fortress","Kale Garnizonu Asker Başı / Yıl",gu.fortress,"number")}
+ </div>
+ <h4 style="margin-top:10px; color:var(--green); font-family:'Oswald';">NÜFUS BİNALARI ARTIŞ ORANLARI (%)</h4>
+ <div class="formgrid">
+   ${field("pg_hastane","Hastane Nüfus Artışı (%)",pg.hastane,"number")}
+   ${field("pg_asevi","Aşevi Nüfus Artışı (%)",pg.asevi,"number")}
+   ${field("pg_su_degirmeni","Su Değirmeni Nüfus Artışı (%)",pg.su_degirmeni,"number")}
+   ${field("pg_kervansaray","Kervansaray Nüfus Artışı (%)",pg.kervansaray,"number")}
+   ${field("pg_pazar","Pazar Nüfus Artışı (%)",pg.pazar,"number")}
+ </div>
+ <h4 style="margin-top:10px; color:var(--blue); font-family:'Oswald';">HARİTA İSTİHBARATI</h4>
+ <div class="formgrid">${field("map_intel_cost","İstihbaratsız Oyuncu Rapor Ücreti",db.settings.mapIntelReportCost||0,"number")}</div>
+ <h4 style="margin-top:10px; color:var(--gold); font-family:'Oswald';">NÜFUSA GÖRE BİNA MALİYETİ (Kişi Başı TL)</h4>
+ <p class="sub">Güncel bina fiyatı = devletin toplam nüfusu × kişi başı maliyet.</p>
+ <div class="formgrid">
+   ${field("pc_hastane","Hastane Kişi Başı Maliyet",pc.hastane,"number")}
+   ${field("pc_asevi","Aşevi Kişi Başı Maliyet",pc.asevi,"number")}
+   ${field("pc_su_degirmeni","Su Değirmeni Kişi Başı Maliyet",pc.su_degirmeni,"number")}
+   ${field("pc_kervansaray","Kervansaray Kişi Başı Maliyet",pc.kervansaray,"number")}
+   ${field("pc_pazar","Pazar Kişi Başı Maliyet",pc.pazar,"number")}
+ </div>
+ <h4 style="margin-top:10px; color:var(--gold); font-family:'Oswald';">FERMAN ÇARPANLARI</h4><div class="formgrid">${Object.keys(ec).map(k=>field("ec_"+k,k,ec[k],"number")).join("")}</div>
+ <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">SEFER & İKMAL (Birim Başı)</h4><div class="formgrid">${Object.keys(cc).map(k=>field("cc_"+k,k,cc[k],"number")).join("")}</div>
+ <div class="actions" style="margin-top:14px"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn blue" onclick="saveAdmin(true)">KAYDET</button></div>`);
+ organizeAdminTabs();
+}
+
+// ---------------- SAVAŞTA GARNİZON KAYIPLARI (ADMİN) ----------------
+function openWarGarrisonModal(){
+ if(!isAdmin) return;
+ const opts=`<option value="">Devlet seçin…</option>`+db.states.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+ modal(`<h2>⚔️ SAVAŞ — GARNİZON KAYIPLARI</h2>
+   <p class="sub">Savaşta ölen garnizon askerleri garnizondan düşer ve elverişli nüfusa geri eklenmez.</p>
+   <div class="formgrid">
+     <div class="full"><label>Devlet</label><select id="war_state" onchange="renderWarGarrisonFields()">${opts}</select></div>
+   </div>
+   <div id="war_garrison_fields"><p class="sub">İşlem yapmak için önce bir devlet seçin.</p></div>
+   <div class="actions" style="margin-top:14px"><button class="btn" onclick="openAdmin()">GERİ</button></div>`);
+}
+
+function renderWarGarrisonFields(){
+ const stateId=document.getElementById("war_state")?.value;
+ const box=document.getElementById("war_garrison_fields");
+ const s=getState(stateId);
+ if(!box) return;
+ if(!s){box.innerHTML='<p class="sub">İşlem yapmak için önce bir devlet seçin.</p>';return;}
+ box.innerHTML=`<div class="event-result" style="margin-top:10px;">
+     <b>${esc(s.name)}</b><br>
+     Kale garnizonu: <b>${num(s.fortressGarrison||0)}</b> asker<br>
+     Önceki savaşlarda ölen garnizon: <b style="color:var(--red)">${num(s.garrisonWarDeaths||0)}</b> asker
+   </div>
+   <div class="formgrid" style="margin-top:10px;">
+     ${field("war_fortress_deaths","Kale Garnizonu Ölümü",0,"number")}
+   </div>
+   <button class="btn red" style="width:100%;margin-top:10px;" onclick="applyWarGarrisonDeaths('${s.id}')">KAYIPLARI UYGULA</button>`;
+}
+
+function applyWarGarrisonDeaths(stateId){
+ if(!isAdmin) return;
+ const s=getState(stateId);
+ if(!s) return;
+ const fortressDeaths=Math.max(0,Math.floor(Number(document.getElementById("f_war_fortress_deaths")?.value)||0));
+ if(fortressDeaths===0){alert("En az bir kayıp sayısı girin.");return;}
+ if(fortressDeaths>(s.fortressGarrison||0)){alert("Kale garnizonu kaybı mevcut kale garnizonundan fazla olamaz.");return;}
+ const oldTotal=s.fortressGarrison||0;
+ const totalDeaths=fortressDeaths;
+ s.fortressGarrison-=fortressDeaths;
+ s.garrisonWarDeaths=(s.garrisonWarDeaths||0)+totalDeaths;
+ redistributeMapGarrisonsForStateIds([s.id]);
+ addLog({stateId:s.id,stateName:s.name,action:`Savaş kaybı: Kale garnizonunda ${num(fortressDeaths)} asker öldü`,qty:totalDeaths,cost:0,unitName:"Kale Garnizonu",oldUnit:oldTotal,newUnit:oldTotal-totalDeaths});
+ queueSave();
+ toast(`${s.name}: ${num(totalDeaths)} garnizon askeri savaşta öldü.`);
+ openWarGarrisonModal();
+ const selector=document.getElementById("war_state");
+ if(selector){selector.value=s.id;renderWarGarrisonFields();}
+}
+
+// ---------------- DANIŞMAN DÜZENLEME & KAYDETME (ADMİN) ----------------
+function openEditAdvisorModal(advId) {
+    const a = (db.advisors||[]).find(x => x.id === advId);
+    if(!a) return;
+    const stateOpts = `<option value="" ${!a.faction ? 'selected' : ''}>🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}" ${a.faction===x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join("");
+
+    modal(`<h2>👑 PAŞAYI DÜZENLE</h2>
+    <div class="formgrid">
+        ${field("adv_edit_name", "Paşa İsmi", a.name, "text")}
+        ${field("adv_edit_role", "Unvanı / Rolü", a.role, "text")}
+        <div><label>Yıldız Seviyesi</label><select id="f_adv_edit_stars">
+            <option value="1" ${a.stars===1?'selected':''}>1 Yıldız (★)</option>
+            <option value="2" ${a.stars===2?'selected':''}>2 Yıldız (★★)</option>
+            <option value="3" ${a.stars===3?'selected':''}>3 Yıldız (★★★)</option>
+            <option value="4" ${a.stars===4?'selected':''}>4 Yıldız (★★★★)</option>
+            <option value="5" ${a.stars===5?'selected':''}>5 Yıldız (★★★★★)</option>
+        </select></div>
+        <div><label>Hangi Devlete Özel?</label><select id="f_adv_edit_faction">${stateOpts}</select></div>
+        ${field("adv_edit_salary", "Yıllık Maaş (TL)", a.salary, "number")}
+        ${field("adv_edit_maxAge", "Ömür Beklentisi (Yıl)", a.maxAge||20, "number")}
+        ${field("adv_edit_icon", "Resim URL", a.icon||"", "text")}
+        
+        <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR:</div>
+        ${field("adv_edit_taxBonus", "Vergi Geliri Etkisi (+/- %)", a.taxBonus||0, "number")}
+        ${field("adv_edit_milUpkeepDiscount", "Ordu Bakım İndirimi (%)", a.milUpkeepDiscount||0, "number")}
+        ${field("adv_edit_navyUpkeepDiscount", "Donanma Bakım İndirimi (%)", a.navyUpkeepDiscount||0, "number")}
+        ${field("adv_edit_artUpkeepDiscount", "Topçu Bakım İndirimi (%)", a.artUpkeepDiscount||0, "number")}
+        ${field("adv_edit_recruitDiscount", "Asker Alım İndirimi (%)", a.recruitDiscount||0, "number")}
+        ${field("adv_edit_infraDiscount", "Bina Yapım İndirimi (%)", a.infraDiscount||0, "number")}
+        ${field("adv_edit_happinessBonus", "Mutluluk Bonusu (+/- Puan)", a.happinessBonus||0, "number")}
+        <div><label>İsyan / Anarşiyi Sıfırla?</label><select id="f_adv_edit_stopAnarchy"><option value="false" ${!a.stopAnarchy?'selected':''}>Hayır</option><option value="true" ${a.stopAnarchy?'selected':''}>Evet (%0 Yapar)</option></select></div>
+        <div class="full"><label>Casusluk Sapmasını Sıfırla (Net Bilgi)?</label><select id="f_adv_edit_spyAccuracyBonus"><option value="false" ${!a.spyAccuracyBonus?'selected':''}>Hayır</option><option value="true" ${a.spyAccuracyBonus?'selected':''}>Evet (Tam Kesin Veri)</option></select></div>
+
+        <div class="full">${field("adv_edit_buff", "Artı Açıklaması", a.buff, "text")}</div>
+        <div class="full">${field("adv_edit_debuff", "Eksi Açıklaması", a.debuff, "text")}</div>
+        <div class="full actions" style="margin-top:10px;">
+            <button class="btn" onclick="openAdmin()">GERİ</button>
+            <button class="btn green" onclick="saveAdvisorEdit('${a.id}')">KAYDET</button>
+        </div>
+    </div>`);
+}
+
+function saveAdvisorEdit(advId) {
+    const a = (db.advisors||[]).find(x => x.id === advId);
+    if(!a) return;
+    a.name = document.getElementById("f_adv_edit_name").value.trim() || a.name;
+    a.role = document.getElementById("f_adv_edit_role").value.trim() || a.role;
+    a.stars = Number(document.getElementById("f_adv_edit_stars").value) || 1;
+    a.faction = document.getElementById("f_adv_edit_faction").value;
+    a.salary = Number(document.getElementById("f_adv_edit_salary").value) || 0;
+    a.maxAge = Number(document.getElementById("f_adv_edit_maxAge").value) || 20;
+    a.icon = cleanUrl(document.getElementById("f_adv_edit_icon").value);
+    
+    a.taxBonus = Number(document.getElementById("f_adv_edit_taxBonus").value) || 0;
+    a.milUpkeepDiscount = Number(document.getElementById("f_adv_edit_milUpkeepDiscount").value) || 0;
+    a.navyUpkeepDiscount = Number(document.getElementById("f_adv_edit_navyUpkeepDiscount").value) || 0;
+    a.artUpkeepDiscount = Number(document.getElementById("f_adv_edit_artUpkeepDiscount").value) || 0;
+    a.recruitDiscount = Number(document.getElementById("f_adv_edit_recruitDiscount").value) || 0;
+    a.infraDiscount = Number(document.getElementById("f_adv_edit_infraDiscount").value) || 0;
+    a.happinessBonus = Number(document.getElementById("f_adv_edit_happinessBonus").value) || 0;
+    a.stopAnarchy = document.getElementById("f_adv_edit_stopAnarchy").value === 'true';
+    a.spyAccuracyBonus = document.getElementById("f_adv_edit_spyAccuracyBonus").value === 'true';
+
+    a.buff = document.getElementById("f_adv_edit_buff").value.trim();
+    a.debuff = document.getElementById("f_adv_edit_debuff").value.trim();
+    queueSave();
+    openAdmin();
+}
+
+function addNewAdvisor() {
+    const name = document.getElementById("f_adv_new_name").value.trim();
+    const role = document.getElementById("f_adv_new_role").value.trim();
+    const stars = Number(document.getElementById("f_adv_new_stars").value) || 1;
+    const faction = document.getElementById("f_adv_new_faction").value;
+    const salary = Number(document.getElementById("f_adv_new_salary").value) || 0;
+    const maxAge = Number(document.getElementById("f_adv_new_maxAge").value) || 20;
+    const icon = cleanUrl(document.getElementById("f_adv_new_icon").value);
+    
+    const taxBonus = Number(document.getElementById("f_adv_new_taxBonus").value) || 0;
+    const milUpkeepDiscount = Number(document.getElementById("f_adv_new_milUpkeepDiscount").value) || 0;
+    const navyUpkeepDiscount = Number(document.getElementById("f_adv_new_navyUpkeepDiscount").value) || 0;
+    const artUpkeepDiscount = Number(document.getElementById("f_adv_new_artUpkeepDiscount").value) || 0;
+    const recruitDiscount = Number(document.getElementById("f_adv_new_recruitDiscount").value) || 0;
+    const infraDiscount = Number(document.getElementById("f_adv_new_infraDiscount").value) || 0;
+    const happinessBonus = Number(document.getElementById("f_adv_new_happinessBonus").value) || 0;
+    const stopAnarchy = document.getElementById("f_adv_new_stopAnarchy").value === 'true';
+    const spyAccuracyBonus = document.getElementById("f_adv_new_spyAccuracyBonus").value === 'true';
+
+    const buff = document.getElementById("f_adv_new_buff").value.trim();
+    const debuff = document.getElementById("f_adv_new_debuff").value.trim();
+    
+    if(!name || !role) { alert("Paşa ismi ve rolü boş olamaz!"); return; }
+    
+    db.advisors = db.advisors || [];
+    db.advisors.push({
+        id: "adv_" + crypto.randomUUID().split("-")[0],
+        name, role, stars, faction, salary, maxAge, icon,
+        ageYears: 1, yearsSinceUpgrade: 0,
+        taxBonus, milUpkeepDiscount, navyUpkeepDiscount, artUpkeepDiscount,
+        recruitDiscount, infraDiscount, happinessBonus, stopAnarchy, spyAccuracyBonus,
+        buff, debuff
+    });
+    queueSave();
+    openAdmin();
+}
+
+function removeAdvisor(advId) {
+    if(!confirm("Bu paşayı silmek istediğinize emin misiniz?")) return;
+    db.advisors = (db.advisors||[]).filter(x => x.id !== advId);
+    db.states.forEach(s => {
+        if(s.hiredAdvisors) s.hiredAdvisors = s.hiredAdvisors.filter(id => id !== advId);
+    });
+    queueSave();
+    openAdmin();
+}
+
+function addCustomItem(){
+   const name = document.getElementById("f_ci_name").value.trim(), cat = document.getElementById("f_ci_cat").value, faction = document.getElementById("f_ci_faction").value;
+   const price = Number(document.getElementById("f_ci_price").value)||0, upkeep = Number(document.getElementById("f_ci_upkeep").value)||0, campCost = Number(document.getElementById("f_ci_campCost").value)||0, icon = cleanUrl(document.getElementById("f_ci_icon").value);
+   if(!name){alert("İsim gerekli!"); return;}
+   const id = "c_" + crypto.randomUUID().split("-")[0];
+   db.settings.customItems = db.settings.customItems || [];
+   db.settings.customItems.push({id, name, category: cat, price, upkeep, campCost, icon, faction});
+   saveAdmin(false);
+}
+function removeCustomItem(id){
+   if(!confirm("Emin misiniz?")) return;
+   db.settings.customItems = db.settings.customItems.filter(x => x.id !== id);
+   saveAdmin(false);
+}
+function saveAdmin(doClose = true){
+ const mapIntelCostEl=document.getElementById("f_map_intel_cost"); if(mapIntelCostEl)db.settings.mapIntelReportCost=Math.max(0,Number(mapIntelCostEl.value)||0);
+ Object.keys(db.settings.prices).forEach(k=>{ const el=document.getElementById("f_p_"+k); if(el) db.settings.prices[k]=Number(el.value||0); });
+ Object.keys(db.settings.capacity).forEach(k=>{ const el=document.getElementById("f_c_"+k); if(el) db.settings.capacity[k]=Number(el.value||0); });
+ Object.keys(db.settings.upkeep).forEach(k=>{ const el=document.getElementById("f_u_"+k); if(el) db.settings.upkeep[k]=Number(el.value||0); });
+ Object.keys(db.settings.garrisonUpkeep).forEach(k=>{ const el=document.getElementById("f_gu_"+k); if(el) db.settings.garrisonUpkeep[k]=Math.max(0,Number(el.value||0)); });
+ Object.keys(db.settings.populationBuildingGrowth).forEach(k=>{ const el=document.getElementById("f_pg_"+k); if(el) db.settings.populationBuildingGrowth[k]=Math.max(0,Number(el.value||0)); });
+ Object.keys(db.settings.populationBuildingCostPerPerson).forEach(k=>{ const el=document.getElementById("f_pc_"+k); if(el) db.settings.populationBuildingCostPerPerson[k]=Math.max(0,Number(el.value||0)); });
+ Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
+ Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
+ 
+ db.settings.images = db.settings.images || {};
+ const imgKeys = ["piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul","istihbarat_binasi","fortress","fortress_garrison","hastane","asevi","su_degirmeni","kervansaray","pazar"];
+ imgKeys.forEach(k => {
+     const el = document.getElementById("f_img_" + k);
+     if(el) db.settings.images[k] = cleanUrl(el.value);
+ });
+
+ if(doClose){ closeModal(); queueSave(); if(currentId) openDetail(currentId); } else { queueSave(); openAdmin(); }
+}
+
+window.addEventListener("load",init);
+</script>
+</body>
+</html>
