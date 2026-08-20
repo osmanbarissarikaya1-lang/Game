@@ -2173,118 +2173,96 @@ function runSpyIntel(myStateId) {
 }
 
 // ---------------- MEKTUPLAR ----------------
+function getLetterRecipients(excludeStateId=null){
+ const recipients=[],seen=new Set();
+ const add=(recipient)=>{
+   const key=normalizeMapName(recipient.name||"");
+   if(!key||seen.has(key))return;
+   seen.add(key);recipients.push(recipient);
+ };
+ db.states.forEach(state=>{if(state.id!==excludeStateId)add({id:state.id,name:state.name,ruler:state.ruler||"Lider",type:"state"});});
+ const mapCountries=new Map();
+ Object.keys(db.mapProvinceOwners||{}).forEach(provinceId=>{
+   const owner=getState(db.mapProvinceOwners[provinceId]);
+   const detail=db.mapProvinceDetails?.[provinceId]||{};
+   const name=detail.countryName||owner?.name||"";
+   if(name)mapCountries.set(normalizeMapName(name),name);
+ });
+ Object.values(db.mapProvinceDetails||{}).forEach(detail=>{
+   const name=detail?.countryName||"";
+   if(name)mapCountries.set(normalizeMapName(name),name);
+ });
+ mapCountries.forEach((name,key)=>{
+   if(!recipients.some(recipient=>normalizeMapName(recipient.name)===key))add({id:"map:"+key,name,ruler:"Harita Devleti",type:"map"});
+ });
+ return recipients.sort((a,b)=>a.name.localeCompare(b.name,"tr"));
+}
+function getLetterRecipientById(id,excludeStateId=null){
+ return getLetterRecipients(excludeStateId).find(recipient=>recipient.id===id)||null;
+}
 function openLetterModal(fromStateId, defaultTargetId = null) {
-    const sender = getState(fromStateId);
-    const targetOpts = db.states.filter(x => x.id !== fromStateId).map(x => `
-        <option value="${x.id}" ${defaultTargetId === x.id ? 'selected' : ''}>${esc(x.name)} (${esc(x.ruler||'Lider')})</option>
-    `).join('');
-
-    let senderField = isAdmin 
-        ? `<div><label>Gönderici Başlığı / Unvanı</label><input id="letter_sender_title" type="text" value="Devlet-i Aliyye Divanı"></div>` 
-        : `<div><label>Gönderen</label><input id="letter_sender_title" type="text" value="${esc(sender.name)} (${esc(sender.ruler||'Hükümdar')})" readonly></div>`;
-
-    modal(`<h2>✉️ DİPLOMATİK MEKTUP</h2>
-    <div class="formgrid">
-        ${senderField}
-        <div><label>Alıcı Devlet</label><select id="letter_target">${targetOpts}</select></div>
-        <div class="full"><label>Mühür / Logo URL (İsteğe Bağlı)</label><input id="letter_seal" type="text" placeholder="https://.../muhur.png"></div>
-        <div class="full"><label>Mektup Metni</label><textarea id="letter_body" placeholder="Hükümdara iletmek istediğiniz diplomatik mesaj..."></textarea></div>
-        <div class="full"><h4 style="margin:8px 0 4px; color:var(--border-gold); font-family:'Oswald';">EKLER (İsteğe Bağlı)</h4></div>
-        <div><label>Altın Gönder (Mevcut: ${money(sender.treasury)})</label><input id="letter_gold" type="number" min="0" value="0"></div>
-        <div><label>Piyade Gönder (Mevcut: ${num(sender.piyade||0)})</label><input id="letter_piyade" type="number" min="0" value="0"></div>
-        <div><label>Süvari Gönder (Mevcut: ${num(sender.suvari||0)})</label><input id="letter_suvari" type="number" min="0" value="0"></div>
-        <div><label>Nişancı Gönder (Mevcut: ${num(sender.nisanci||0)})</label><input id="letter_nisanci" type="number" min="0" value="0"></div>
-        <div class="full actions" style="margin-top:12px;"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn gold" onclick="sendLetter('${fromStateId}')">ULAKLA GÖNDER</button></div>
-    </div>`);
+ const isAdminLetter=fromStateId==="__admin__";
+ const sender=isAdminLetter?null:getState(fromStateId);
+ if(!isAdminLetter&&!sender)return;
+ const recipients=getLetterRecipients(isAdminLetter?null:fromStateId);
+ const targetOpts=recipients.map(recipient=>`<option value="${esc(recipient.id)}" ${defaultTargetId===recipient.id?'selected':''}>${esc(recipient.name)}${recipient.type==="map"?" (Harita Devleti)":" ("+esc(recipient.ruler||"Lider")+")"}</option>`).join("");
+ if(!targetOpts){alert("Mektup gönderilebilecek bir devlet bulunamadı.");return;}
+ const senderField=isAdminLetter
+   ? `<div><label>Gönderici Başlığı / Unvanı</label><input id="letter_sender_title" type="text" value="Devlet Yönetim Paneli"></div>`
+   : isAdmin
+     ? `<div><label>Gönderici Başlığı / Unvanı</label><input id="letter_sender_title" type="text" value="Devlet-i Aliyye Divanı"></div>`
+     : `<div><label>Gönderen</label><input id="letter_sender_title" type="text" value="${esc(sender.name)} (${esc(sender.ruler||"Hükümdar")})" readonly></div>`;
+ const attachments=isAdminLetter?"":`<div id="letter_attachments" class="full"><h4 style="margin:8px 0 4px; color:var(--border-gold); font-family:'Oswald';">EKLER (Yalnızca devlet kartı olan alıcılara)</h4><div class="formgrid"><div><label>Altın Gönder (Mevcut: ${money(sender.treasury)})</label><input id="letter_gold" type="number" min="0" value="0"></div><div><label>Piyade Gönder (Mevcut: ${num(sender.piyade||0)})</label><input id="letter_piyade" type="number" min="0" value="0"></div><div><label>Süvari Gönder (Mevcut: ${num(sender.suvari||0)})</label><input id="letter_suvari" type="number" min="0" value="0"></div><div><label>Nişancı Gönder (Mevcut: ${num(sender.nisanci||0)})</label><input id="letter_nisanci" type="number" min="0" value="0"></div></div><p class="sub">Harita devleti seçildiğinde ek gönderilemez; yalnızca diplomatik mektup kaydedilir.</p></div>`;
+ modal(`<h2>✉️ DİPLOMATİK MEKTUP</h2><div class="formgrid">${senderField}<div><label>Alıcı Devlet</label><select id="letter_target">${targetOpts}</select></div><div class="full"><label>Mühür / Logo URL (İsteğe Bağlı)</label><input id="letter_seal" type="text" placeholder="https://.../muhur.png"></div><div class="full"><label>Mektup Metni</label><textarea id="letter_body" placeholder="Hükümdara iletmek istediğiniz diplomatik mesaj..."></textarea></div>${attachments}<div class="full actions" style="margin-top:12px"><button class="btn" onclick="${isAdminLetter?'openAdminLetters()':'closeModal()'}">İPTAL</button><button class="btn gold" onclick="sendLetter('${fromStateId}')">ULAKLA GÖNDER</button></div></div>`);
 }
-
 function sendLetter(fromStateId) {
-    const sender = getState(fromStateId);
-    const targetId = document.getElementById("letter_target").value;
-    const target = getState(targetId);
-    if(!target) return;
-
-    const senderTitle = document.getElementById("letter_sender_title").value.trim() || sender.name;
-    const sealUrl = cleanUrl(document.getElementById("letter_seal").value);
-    const content = document.getElementById("letter_body").value.trim();
-    if(!content) { alert("Mektup metni boş olamaz!"); return; }
-
-    const gold = Math.max(0, Number(document.getElementById("letter_gold").value) || 0);
-    const piyade = Math.max(0, Number(document.getElementById("letter_piyade").value) || 0);
-    const suvari = Math.max(0, Number(document.getElementById("letter_suvari").value) || 0);
-    const nisanci = Math.max(0, Number(document.getElementById("letter_nisanci").value) || 0);
-
-    if(!isAdmin) {
-        if(gold > sender.treasury) { alert("Hazinenizde yeterli altın yok!"); return; }
-        if(piyade > (sender.piyade || 0)) { alert("Yeterli piyadeniz yok!"); return; }
-        if(suvari > (sender.suvari || 0)) { alert("Yeterli süvariniz yok!"); return; }
-        if(nisanci > (sender.nisanci || 0)) { alert("Yeterli nişancınız yok!"); return; }
-    }
-
-    const oldSenderT = sender.treasury;
-    const oldTargetT = target.treasury;
-    const oldSenderP = sender.piyade||0, oldTargetP = target.piyade||0;
-
-    if(gold > 0) { sender.treasury -= gold; target.treasury = (target.treasury || 0) + gold; }
-    if(piyade > 0) { sender.piyade = Math.max(0, (sender.piyade||0) - piyade); target.piyade = (target.piyade || 0) + piyade; }
-    if(suvari > 0) { sender.suvari = Math.max(0, (sender.suvari||0) - suvari); target.suvari = (target.suvari || 0) + suvari; }
-    if(nisanci > 0) { sender.nisanci = Math.max(0, (sender.nisanci||0) - nisanci); target.nisanci = (target.nisanci || 0) + nisanci; }
-
-    db.letters = db.letters || [];
-    db.letters.unshift({
-        id: crypto.randomUUID(),
-        fromStateId: sender.id,
-        fromStateName: sender.name,
-        senderTitle: senderTitle,
-        toStateId: target.id,
-        toStateName: target.name,
-        sealUrl: sealUrl,
-        content: content,
-        gold: gold,
-        piyade: piyade,
-        suvari: suvari,
-        nisanci: nisanci,
-        date: new Date().toLocaleDateString("tr-TR") + " " + new Date().toLocaleTimeString("tr-TR", {hour: '2-digit', minute:'2-digit'}),
-        read: false
-    });
-
-    addLog({
-        stateId: sender.id,
-        stateName: sender.name,
-        action: `Mektup & Yardım Gönderildi -> ${target.name}`,
-        cost: gold,
-        qty: 1,
-        oldTreasury: oldSenderT,
-        newTreasury: sender.treasury,
-        unitName: piyade > 0 ? "Piyade" : (suvari > 0 ? "Süvari" : (nisanci > 0 ? "Nişancı" : "")),
-        oldUnit: oldSenderP,
-        newUnit: sender.piyade||0
-    });
-
-    addLog({
-        stateId: target.id,
-        stateName: target.name,
-        action: `Mektup & Yardım Alındı <- ${sender.name}`,
-        cost: gold,
-        qty: 1,
-        oldTreasury: oldTargetT,
-        newTreasury: target.treasury,
-        unitName: piyade > 0 ? "Piyade" : (suvari > 0 ? "Süvari" : (nisanci > 0 ? "Nişancı" : "")),
-        oldUnit: oldTargetP,
-        newUnit: target.piyade||0
-    });
-
-    closeModal();
-    queueSave();
-    openDetail(fromStateId);
-    alert("Mektup başarıyla hedefe ulaştırıldı!");
+ const isAdminLetter=fromStateId==="__admin__";
+ const sender=isAdminLetter?null:getState(fromStateId);
+ if(!isAdminLetter&&!sender)return;
+ const targetId=document.getElementById("letter_target")?.value||"";
+ const recipient=getLetterRecipientById(targetId,isAdminLetter?null:fromStateId);
+ if(!recipient)return;
+ const target=recipient.type==="state"?getState(recipient.id):null;
+ const senderTitle=document.getElementById("letter_sender_title")?.value.trim()||(isAdminLetter?"Devlet Yönetim Paneli":sender.name);
+ const sealUrl=cleanUrl(document.getElementById("letter_seal")?.value||"");
+ const content=document.getElementById("letter_body")?.value.trim()||"";
+ if(!content){alert("Mektup metni boş olamaz!");return;}
+ const gold=Math.max(0,Number(document.getElementById("letter_gold")?.value)||0);
+ const piyade=Math.max(0,Number(document.getElementById("letter_piyade")?.value)||0);
+ const suvari=Math.max(0,Number(document.getElementById("letter_suvari")?.value)||0);
+ const nisanci=Math.max(0,Number(document.getElementById("letter_nisanci")?.value)||0);
+ if(!target&&(gold||piyade||suvari||nisanci)){alert("Harita devletlerine yalnızca mektup gönderilebilir; altın veya birlik ekleyemezsin.");return;}
+ if(sender&&!isAdmin){
+   if(gold>sender.treasury){alert("Hazinenizde yeterli altın yok!");return;}
+   if(piyade>(sender.piyade||0)){alert("Yeterli piyadeniz yok!");return;}
+   if(suvari>(sender.suvari||0)){alert("Yeterli süvariniz yok!");return;}
+   if(nisanci>(sender.nisanci||0)){alert("Yeterli nişancınız yok!");return;}
+ }
+ const oldSenderT=sender?.treasury||0,oldTargetT=target?.treasury||0,oldSenderP=sender?.piyade||0,oldTargetP=target?.piyade||0;
+ if(sender&&target){
+   if(gold>0){sender.treasury-=gold;target.treasury=(target.treasury||0)+gold;}
+   if(piyade>0){sender.piyade=Math.max(0,(sender.piyade||0)-piyade);target.piyade=(target.piyade||0)+piyade;}
+   if(suvari>0){sender.suvari=Math.max(0,(sender.suvari||0)-suvari);target.suvari=(target.suvari||0)+suvari;}
+   if(nisanci>0){sender.nisanci=Math.max(0,(sender.nisanci||0)-nisanci);target.nisanci=(target.nisanci||0)+nisanci;}
+ }
+ db.letters=db.letters||[];
+ db.letters.unshift({id:crypto.randomUUID(),fromStateId:isAdminLetter?"__admin__":sender.id,fromStateName:isAdminLetter?"Devlet Yönetim Paneli":sender.name,senderTitle,toStateId:recipient.id,toStateName:recipient.name,toType:recipient.type,sealUrl,content,gold,piyade,suvari,nisanci,date:new Date().toLocaleDateString("tr-TR")+" "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}),read:false});
+ if(sender)addLog({stateId:sender.id,stateName:sender.name,action:`Mektup & Yardım Gönderildi -> ${recipient.name}`,cost:gold,qty:1,oldTreasury:oldSenderT,newTreasury:sender.treasury,unitName:piyade>0?"Piyade":(suvari>0?"Süvari":(nisanci>0?"Nişancı":"")),oldUnit:oldSenderP,newUnit:sender.piyade||0});
+ if(target)addLog({stateId:target.id,stateName:target.name,action:`Mektup & Yardım Alındı <- ${isAdminLetter?"Yönetim Paneli":sender.name}`,cost:gold,qty:1,oldTreasury:oldTargetT,newTreasury:target.treasury,unitName:piyade>0?"Piyade":(suvari>0?"Süvari":(nisanci>0?"Nişancı":"")),oldUnit:oldTargetP,newUnit:target.piyade||0});
+ queueSave();
+ if(isAdminLetter){openAdminLetters();}else{closeModal();openDetail(sender.id);}
+ toast(`Mektup ${recipient.name} için kaydedildi.`,true);
 }
-
+function openAdminLetters(){
+ if(!isAdmin)return;
+ const letters=db.letters||[];
+ const list=letters.length?letters.map(letter=>`<div class="letter-box"><div class="letter-head"><b>${esc(letter.fromStateName||"Bilinmeyen")} → ${esc(letter.toStateName||"Bilinmeyen")}</b><span class="sub">${esc(letter.date||"")}</span></div><div class="sub" style="margin-bottom:6px;">${esc(letter.senderTitle||"")}${letter.toType==="map"?" • Harita Devleti":""}</div><div style="white-space:pre-wrap;">${esc(letter.content||"")}</div>${letter.gold||letter.piyade||letter.suvari||letter.nisanci?`<div class="sub" style="margin-top:7px;">Ekler: ${money(letter.gold||0)} • Piyade ${num(letter.piyade||0)} • Süvari ${num(letter.suvari||0)} • Nişancı ${num(letter.nisanci||0)}</div>`:""}</div>`).join(""):"<p class='sub'>Henüz gönderilmiş mektup yok.</p>";
+ modal(`<h2>✉️ TÜM MEKTUPLAR</h2><div class="actions" style="margin:8px 0 12px;"><button class="btn gold" onclick="openLetterModal('__admin__')">✉️ YENİ YÖNETİCİ MEKTUBU</button><button class="btn" onclick="openAdmin()">← AYARLARA DÖN</button></div><div style="max-height:65vh;overflow:auto;">${list}</div>`);
+}
 function deleteLetter(letterId, currentStateId) {
-    if(!confirm("Bu mektubu posta kutunuzdan silmek istediğinize emin misiniz?")) return;
-    db.letters = (db.letters || []).filter(l => l.id !== letterId);
-    queueSave();
-    openDetail(currentStateId);
+ if(!confirm("Bu mektubu posta kutunuzdan silmek istediğinize emin misiniz?"))return;
+ db.letters=(db.letters||[]).filter(letter=>letter.id!==letterId);
+ queueSave();openDetail(currentStateId);
 }
 
 function addLedgerItem(stateId) {
@@ -2997,7 +2975,7 @@ function openAdmin(){
  }).join("");
 
  modal(`<h2 style="display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:var(--panel);padding:8px 0;margin-top:0;">⚙ KÜRESEL AYARLAR <button class="btn red" style="font-size:18px;line-height:1;padding:7px 11px;" onclick="closeModal()" title="Küresel ayarları kapat">✕</button></h2>
- <div class="actions" style="margin:8px 0;"><button class="btn red" onclick="openWarGarrisonModal()">⚔️ SAVAŞ</button><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button></div>
+ <div class="actions" style="margin:8px 0;"><button class="btn red" onclick="openWarGarrisonModal()">⚔️ SAVAŞ</button><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button><button class="btn blue" onclick="openAdminLetters()">✉️ MEKTUPLAR</button></div>
 
  <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN PAŞALARI YÖNETİMİ (${(db.advisors||[]).length} Paşa)</h4>
  <p class="sub" style="margin-bottom:8px;">Paşaların ömürlerini, yıldızlarını, maaşlarını ve çarpanlarını düzenleyin.</p>
