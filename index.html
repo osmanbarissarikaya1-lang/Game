@@ -1650,7 +1650,7 @@ function openDetail(id){
                     <div><b>${esc(a.name)}</b> <span class="stars-span">${'★'.repeat(a.stars||1)}</span> <span class="badge">${esc(a.role)}</span></div>
                     <span style="color:var(--gold); font-weight:bold;">${money(a.salary)}/yıl</span>
                 </div>
-                <div style="font-size:10px; color:var(--muted); margin:2px 0;">Hizmet Süresi: <b>${hiredYears} Yıl</b> | Kalan Ömür: ${Math.max(0, (a.maxAge||20) - (a.ageYears||5))} Yıl</div>
+                <div style="font-size:10px; color:var(--muted); margin:2px 0;">Yaş: <b>${a.ageYears||5}</b> | Ölüm Yaşı: <b>${a.maxAge||20}</b> | Kalan Ömür: <b>${Math.max(0, (a.maxAge||20) - (a.ageYears||5))} Yıl</b> | Hizmet: <b>${hiredYears} Yıl</b></div>
                 <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
                 <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;">
@@ -2854,8 +2854,8 @@ function passOneYear(){
             let adv = (db.advisors||[]).find(a => a.id === advId);
             if(!adv) return;
 
-            adv.ageYears = (adv.ageYears || 5) + 1;
-            adv.maxAge = adv.maxAge || Math.floor(Math.random() * 21) + 10; // 10 ile 30 yıl arası
+            adv.ageYears = Number.isFinite(Number(adv.ageYears)) ? Number(adv.ageYears) + 1 : 6;
+            adv.maxAge = Number.isFinite(Number(adv.maxAge)) ? Number(adv.maxAge) : Math.floor(Math.random() * 21) + 60; // Eski kayıtlarda 60-80 arası varsayılan
 
             // Ömür kontrolü (Vefat / Emeklilik)
             if(adv.ageYears >= adv.maxAge) {
@@ -3000,7 +3000,8 @@ function openAdmin(){
     <div><label>Yıldız Seviyesi</label><select id="f_adv_new_stars"><option value="1">1 Yıldız (★)</option><option value="2">2 Yıldız (★★)</option><option value="3" selected>3 Yıldız (★★★)</option><option value="4">4 Yıldız (★★★★)</option><option value="5">5 Yıldız (★★★★★)</option></select></div>
     <div><label>Hangi Devlete Özel?</label><select id="f_adv_new_faction">${stateOpts}</select></div>
     ${field("adv_new_salary", "Yıllık Maaş (TL)", "25000", "number")}
-    ${field("adv_new_maxAge", "Ömür Beklentisi (Yıl)", "20", "number")}
+    ${field("adv_new_ageYears", "Başlangıç / Mevcut Yaş (Yıl)", "1", "number")}
+    ${field("adv_new_maxAge", "Ölüm / Maksimum Yaş (Yıl)", "70", "number")}
     ${field("adv_new_icon", "Resim URL (İsteğe Bağlı)", "", "text")}
 
     <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR:</div>
@@ -3169,7 +3170,8 @@ function openEditAdvisorModal(advId) {
         </select></div>
         <div><label>Hangi Devlete Özel?</label><select id="f_adv_edit_faction">${stateOpts}</select></div>
         ${field("adv_edit_salary", "Yıllık Maaş (TL)", a.salary, "number")}
-        ${field("adv_edit_maxAge", "Ömür Beklentisi (Yıl)", a.maxAge||20, "number")}
+        ${field("adv_edit_ageYears", "Mevcut Yaş (Yıl)", a.ageYears||5, "number")}
+        ${field("adv_edit_maxAge", "Ölüm / Maksimum Yaş (Yıl)", a.maxAge||20, "number")}
         ${field("adv_edit_icon", "Resim URL", a.icon||"", "text")}
         
         <div class="full" style="color:var(--gold); font-size:11px; font-weight:bold; margin-top:6px;">MATEMATİKSEL ÇARPANLAR:</div>
@@ -3200,7 +3202,8 @@ function saveAdvisorEdit(advId) {
     a.stars = Number(document.getElementById("f_adv_edit_stars").value) || 1;
     a.faction = document.getElementById("f_adv_edit_faction").value;
     a.salary = Number(document.getElementById("f_adv_edit_salary").value) || 0;
-    a.maxAge = Number(document.getElementById("f_adv_edit_maxAge").value) || 20;
+    a.ageYears = Math.max(0, Number(document.getElementById("f_adv_edit_ageYears").value) || 0);
+    a.maxAge = Math.max(a.ageYears + 1, Number(document.getElementById("f_adv_edit_maxAge").value) || 20);
     a.icon = cleanUrl(document.getElementById("f_adv_edit_icon").value);
     
     a.taxBonus = Number(document.getElementById("f_adv_edit_taxBonus").value) || 0;
@@ -3225,7 +3228,8 @@ function addNewAdvisor() {
     const stars = Number(document.getElementById("f_adv_new_stars").value) || 1;
     const faction = document.getElementById("f_adv_new_faction").value;
     const salary = Number(document.getElementById("f_adv_new_salary").value) || 0;
-    const maxAge = Number(document.getElementById("f_adv_new_maxAge").value) || 20;
+    const ageYears = Math.max(0, Number(document.getElementById("f_adv_new_ageYears").value) || 0);
+    const maxAge = Math.max(ageYears + 1, Number(document.getElementById("f_adv_new_maxAge").value) || 20);
     const icon = cleanUrl(document.getElementById("f_adv_new_icon").value);
     
     const taxBonus = Number(document.getElementById("f_adv_new_taxBonus").value) || 0;
@@ -3247,7 +3251,7 @@ function addNewAdvisor() {
     db.advisors.push({
         id: "adv_" + crypto.randomUUID().split("-")[0],
         name, role, stars, faction, salary, maxAge, icon,
-        ageYears: 1, yearsSinceUpgrade: 0,
+        ageYears, yearsSinceUpgrade: 0,
         taxBonus, milUpkeepDiscount, navyUpkeepDiscount, artUpkeepDiscount,
         recruitDiscount, infraDiscount, happinessBonus, stopAnarchy, spyAccuracyBonus,
         buff, debuff
