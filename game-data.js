@@ -76,3 +76,25 @@ const EVENT_CATEGORIES = [
 ];
 const EVENT_A_TEXTS=["Kaynak ayır ve halkı destekle","Hemen müdahale et","Devlet hazinesinden ödeme yap","Uzlaşma yolunu seç","Devlet desteğini artır"];
 const EVENT_B_TEXTS=["Masrafı reddet ve bekle","Sert tedbirler uygula","Harcamayı sınırlı tut","Talebi geri çevir","Yerel yöneticilere bırak"];
+
+
+// Diğer devletlerin aynı sıradaki paşaları, Osmanlı muadillerinin oyun
+// etkilerini kullanır. İsim, rol, maaş ve yaş bilgileri devletlere özgü kalır.
+const ADVISOR_EFFECT_FIELDS = [
+  "buff", "debuff", "taxBonus", "milUpkeepDiscount", "navyUpkeepDiscount",
+  "artUpkeepDiscount", "recruitDiscount", "infraDiscount", "happinessBonus",
+  "stopAnarchy", "spyAccuracyBonus"
+];
+
+DEFAULT_45_ADVISORS
+  .filter(advisor => advisor.id !== undefined && !advisor.id.startsWith("adv_os_"))
+  .forEach(advisor => {
+    const order = Number(advisor.id.split("_").pop());
+    const ottomanAdvisor = DEFAULT_45_ADVISORS.find(candidate => candidate.id === `adv_os_${order}`);
+
+    if (ottomanAdvisor && ottomanAdvisor.stars === advisor.stars) {
+      ADVISOR_EFFECT_FIELDS.forEach(field => {
+        advisor[field] = ottomanAdvisor[field];
+      });
+    }
+  });
