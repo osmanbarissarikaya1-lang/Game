@@ -1,2 +1,2 @@
 window.SUPABASE_URL = "https://jizagbzzpofdjblbuaps.supabase.co";
-window.SUPABASE_KEY = "sb_publishable_NF-GDxjVXI7d6QRQGOQTTw_oZWKdYhA";
+window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppemFnYnp6cG9mZGpibGJ1YXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMTA3NzYsImV4cCI6MjEwMTg4Njc3Nn0.2xIlLG8sq5pRh8sAMPyTgZLXwholGu8pF05qizA2Hsw";
