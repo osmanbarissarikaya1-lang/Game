@@ -93,6 +93,35 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .money{color:var(--green);font-weight:700}
 .home-ruler-img { width:42px; height:42px; max-width:42px; max-height:42px; border-radius:3px; border:1px solid var(--border-gold); object-fit:contain; margin-right:10px; flex-shrink:0; background:#0a0c0e;}
 
+/* FINAL CONSOLIDATED PREMIUM STATE CARD */
+.cards { grid-template-columns:repeat(auto-fill, minmax(min(100%, 350px), 1fr)); gap:12px; }
+.premium-state-card { --card-accent:#c8a24e; --card-bright:#f0cf7b; position:relative; width:100%; aspect-ratio:5/3; min-height:0; padding:0; overflow:hidden; border:0; background-color:#0b0c0d; background-position:center; background-repeat:no-repeat; background-size:100% 100%; box-shadow:0 5px 14px rgba(0,0,0,.68); }
+.premium-state-card.theme-ottoman { background-image:url('assets/state-card-ottoman-bg-v1.png'); }
+.premium-state-card.theme-crimea { --card-accent:#74406f; --card-bright:#d18ac9; background-image:url('assets/state-card-crimea-bg-v1.png'); }
+.premium-state-card.theme-sun { --card-accent:#3d769b; --card-bright:#8cc8eb; background-image:url('assets/state-card-sun-bg-v2.png'); }
+.premium-state-card:before, .premium-state-card:after, .state-frame-line, .state-medallion { display:none; }
+.state-portrait-shell { position:absolute; z-index:3; left:8.2%; top:12.8%; width:19.05%; height:40.1%; padding:0; border:0; background:transparent; box-shadow:none; overflow:hidden; clip-path:polygon(10% 0,90% 0,100% 10%,100% 90%,90% 100%,63% 100%,58% 84%,42% 84%,37% 100%,10% 100%,0 90%,0 10%); }
+.state-portrait-shell img { display:block; width:100%; height:100%; max-width:100%; max-height:100%; object-fit:cover; object-position:center top; background:transparent; transform:none; }
+.state-card-identity { position:absolute; z-index:3; left:31.3%; right:28.5%; top:11%; height:26%; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+.state-card-identity h2 { margin:0; color:var(--card-bright); font-family:'Playfair Display',serif; font-size:clamp(13px,2vw,22px); line-height:1.02; text-shadow:0 2px 2px #000; overflow-wrap:anywhere; }
+.state-card-ruler { margin-top:3%; color:#d3cec3; font-family:'Playfair Display',serif; font-size:clamp(10px,1.2vw,14px); font-weight:700; line-height:1.05; text-transform:uppercase; }
+.state-card-ruler .mine { color:var(--green); font-family:'Oswald',sans-serif; }
+.state-card-badge { position:absolute; z-index:4; right:7.1%; top:12.2%; width:19.5%; height:10.5%; max-width:none; padding:0; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1; overflow:visible; text-overflow:ellipsis; border:0; outline:0; background:transparent; box-shadow:none; color:var(--card-bright); font:700 clamp(7px,.9vw,10px)/1 'Oswald',sans-serif; text-transform:uppercase; white-space:nowrap; }
+.state-card-stats { position:absolute; z-index:3; left:31.25%; right:7.25%; top:48.2%; height:31%; display:grid; grid-template-columns:1fr 1fr; gap:4.8% 2.1%; }
+.state-card-stat { min-width:0; padding:0 4%; border:0; background:transparent; box-shadow:none; overflow:hidden; display:grid; grid-template-columns:26% 74%; grid-template-rows:45% 55%; align-items:center; justify-items:start; text-align:left; }
+.state-card-stat:before { grid-column:1; grid-row:1/3; align-self:center; justify-self:center; color:#c99b45; font:700 clamp(13px,2.2vw,24px)/1 Georgia,serif; text-shadow:0 2px 2px #000; }
+.state-card-stat:nth-child(1):before { content:""; width:clamp(15px,2.4vw,26px); height:clamp(12px,1.95vw,21px); border:0; border-radius:0; background:url('assets/icon-treasure-gold.svg') center/contain no-repeat; box-shadow:none; }
+.state-card-stat:nth-child(2):before { content:"♟"; }
+.state-card-stat:nth-child(3):before { content:"⚔"; }
+.state-card-stat:nth-child(4):before { content:"⚓"; }
+.state-card-stat small, .state-card-stat b { grid-column:2; width:100%; text-align:left; margin:0; display:block; }
+.state-card-stat small { color:#b9b3a8; font:600 clamp(7px,.95vw,10px)/1 'Oswald',sans-serif; align-self:end; }
+.state-card-stat b { margin-top:2%; color:#ece8df; font:700 clamp(10px,1.45vw,16px)/1 'Roboto Condensed',sans-serif; white-space:nowrap; align-self:start; }
+.state-card-stat.money-stat b { color:var(--green); }
+.state-card-enter { position:absolute; z-index:4; left:20%; right:20%; bottom:5.7%; height:11.8%; padding:0 0 .8% 0; box-sizing:border-box; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1; border:0; outline:0; background:transparent; box-shadow:none; color:#1c1206; font:900 clamp(10px,1.4vw,15px)/1 'Playfair Display',serif; text-shadow:0 1px rgba(255,244,200,.35); }
+.state-card-enter:hover { filter:brightness(1.08); }
+.theme-sun .state-card-enter { color:#07131b; text-shadow:0 1px rgba(218,242,255,.4); }
+@media(max-width:380px){ .state-card-stats { gap:4% 1.5%; } .state-card-stat { padding-left:4%; padding-right:3%; } .state-card-badge { right:4%; } .state-card-identity { right:22%; } }
 /* KOMPAKT DETAY EKRANI */
 .detail-layout {
     display: grid;
@@ -153,6 +182,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .pol-stat-row span:last-child { font-weight:bold; font-family:'Oswald', sans-serif;}
 .prog-bar-bg { background:rgba(10, 12, 14, 0.6); height:8px; border:1px solid var(--line); border-radius:2px; margin-top:3px; overflow:hidden; }
 .prog-bar-fill { background:var(--green); height:100%; }
+
 
 /* SAĞ PANEL */
 .content-panel {
@@ -446,6 +476,14 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     .content-panel > .hoi-tabs .hoi-tab.active { border-color:var(--border-gold); box-shadow:inset 3px 0 0 var(--border-gold); }
     .content-panel > .tab-content { grid-column:1; grid-row:3; padding:8px; width:100%; min-width:0; overflow-x:hidden; }
     .unit-grid { grid-template-columns: 1fr; }
+    #tab-content-asker > .unit-grid {
+        max-height: 780px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        padding-right: 4px;
+    }
     .cards { grid-template-columns: 1fr; }
     .formgrid { grid-template-columns: 1fr; }
     .political-header h1 { font-size: 18px; }
@@ -484,6 +522,20 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     .finance-dashboard .finance-panel .list-item b{white-space:normal;max-width:48%;overflow-wrap:anywhere;}
     input,select,textarea { min-width:0; max-width:100%; }
 }
+/* v88: PNG arka plan + sabit viewBox SVG veri katmanı */
+.ottoman-svg-card{width:100%;max-width:390px;height:auto;align-self:start;margin:0 auto;aspect-ratio:992/1586;background:#070809 url('assets/ottoman-management-textured-base-v1.png') center/100% 100% no-repeat;overflow:hidden;box-shadow:none}
+.ottoman-svg-card.detail-crimea{background-image:url('assets/crimea-management-textured-base-v1.png')}
+.ottoman-svg-card.detail-sun{background-image:url('assets/sun-management-textured-base-v1.png')}
+.theme-ottoman .state-card-ruler{color:#f0cf7b}.theme-crimea .state-card-ruler{color:#d18ac9}.theme-sun .state-card-ruler{color:#8cc8eb}
+.detail-crimea .ottoman-card-svg>g:first-of-type text{fill:#d5a0d1!important}
+.detail-crimea .ottoman-card-svg>g:first-of-type text:nth-of-type(5){font-size:58px}
+.detail-sun .ottoman-card-svg>g:first-of-type text{fill:#9fd3f2!important}
+.detail-crimea .ottoman-card-svg rect[y="948"]{fill:#a964a2!important}
+.detail-sun .ottoman-card-svg rect[y="948"]{fill:#5aa5d0!important}
+.detail-crimea .ottoman-card-svg image[clip-path*="omFinalFrameClip"]{filter:hue-rotate(250deg) saturate(.62)}
+.detail-sun .ottoman-card-svg image[clip-path*="omFinalFrameClip"]{filter:hue-rotate(175deg) saturate(.72)}
+.ottoman-card-svg{display:block;width:100%;height:100%;overflow:visible}.ottoman-card-svg text{paint-order:stroke;stroke:#080909;stroke-width:1.4px;stroke-linejoin:round}
+
 </style>
 </head>
 <body>
@@ -522,100 +574,20 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 <div id="modal" class="modal"><div class="modalbox"><div id="modalContent"></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
+<script src="config.js"></script>`r`n<script src="game-data.js"></script>
 <script>
-const SUPER_ADMINS = ["osman.baris.sarikaya1@gmail.com"]; 
 let currentUserEmail = null;
 let isAdmin = false;
 
 const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
-const LOCAL_MODE=false;
-const LOCAL_DB_KEY="osmoyun_exact_game_state_v1";
-let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, globalClockInterval=null;
-let mapSvgCache="",mapConfigCache=null,eventAssetCache=null,mapSaveDirty=false,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
+let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, mapSaveTimer=null, mapSaveInFlight=false, mapSavePending=false, globalClockInterval=null;
+let mapSvgCache="",mapConfigCache=null,eventAssetCache=null,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
+const mapSyncChannel=typeof BroadcastChannel==='function'?new BroadcastChannel('osmoyun-map-v57'):null;
+mapSyncChannel?.addEventListener('message',event=>{const payload=event.data;if(!payload||payload.type!=='map-saved')return;db.mapProvinceOwners=payload.owners||{};db.mapProvinceDetails=payload.details||{};db.mapOwnershipInitialized=true;refreshMapFortressCounts();if(document.getElementById('gameMapCanvas'))applyMapOwnership();});
 
 // 45 ÖZGÜN ADAY LİSTESİ (ÖMür ve Yıldız Sistemli)
-const DEFAULT_45_ADVISORS = [
-  // OSMANLI (15 Aday)
-  { id:"adv_os_1", name:"Kâtip Hamdi Efendi", role:"Defterhane Çırağı", stars:1, salary:12000, targetName:"Osmanlı İmparatorluğu", buff:"+%1 Vergi Geliri", debuff:"Bina yapımı +%1 pahalı.", taxBonus:1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-1, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:2, maxAge:15, yearsSinceUpgrade:0 },
-  { id:"adv_os_2", name:"Topçu Kalfası Veli", role:"Tophane Dökümcüsü", stars:1, salary:15000, targetName:"Osmanlı İmparatorluğu", buff:"-%2 Topçu Bakımı", debuff:"Ordu bakımı +%1.", taxBonus:0, milUpkeepDiscount:-1, navyUpkeepDiscount:0, artUpkeepDiscount:2, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:3, maxAge:18, yearsSinceUpgrade:0 },
-  { id:"adv_os_3", name:"Derviş Cemal", role:"Tekke Dervişi", stars:1, salary:10000, targetName:"Osmanlı İmparatorluğu", buff:"+1 Mutluluk", debuff:"Elverişli nüfus -200.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:22, yearsSinceUpgrade:0 },
-  { id:"adv_os_4", name:"Subaşı Bahadır Ağa", role:"Asayiş Zabiti", stars:2, salary:25000, targetName:"Osmanlı İmparatorluğu", buff:"Anarşistlerin zararını %25 azaltır.", debuff:"Mutluluk -1 puan.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:4, maxAge:20, yearsSinceUpgrade:0 },
-  { id:"adv_os_5", name:"Reis İlyas", role:"Kadırga Kaptanı", stars:2, salary:30000, targetName:"Osmanlı İmparatorluğu", buff:"-%3 Donanma Bakımı", debuff:"Ticaret -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:3, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:6, maxAge:25, yearsSinceUpgrade:0 },
-  { id:"adv_os_6", name:"Mimar Şükrü Çelebi", role:"Hassa Mimarı", stars:2, salary:28000, targetName:"Osmanlı İmparatorluğu", buff:"-%3 Bina Yapım Maliyeti", debuff:"Yıllık 3.000 TL şantiye masrafı.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:24, yearsSinceUpgrade:0 },
-  { id:"adv_os_7", name:"Defterdar Muhsin Paşa", role:"Sıkı Muhasebeci", stars:3, salary:50000, targetName:"Osmanlı İmparatorluğu", buff:"+%4 Vergi Geliri", debuff:"Mutluluk -2 puan.", taxBonus:4, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:7, maxAge:28, yearsSinceUpgrade:0 },
-  { id:"adv_os_8", name:"Kurt Ali Ağa", role:"Kışla Ağası", stars:3, salary:55000, targetName:"Osmanlı İmparatorluğu", buff:"-%5 Asker Satın Alma İndirimi", debuff:"Piyade bakımı +%2.", taxBonus:0, milUpkeepDiscount:-2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:8, maxAge:26, yearsSinceUpgrade:0 },
-  { id:"adv_os_9", name:"Kuşçubaşı Seyfi Efendi", role:"Divan İstihbaratçısı", stars:3, salary:48000, targetName:"Osmanlı İmparatorluğu", buff:"Casusluk Yanılmasını %10'a düşürür.", debuff:"İstihbarat bütçesi çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true, ageYears:4, maxAge:22, yearsSinceUpgrade:0 },
-  { id:"adv_os_10", name:"Kaptan-ı Derya Turgut Paşa", role:"Denizler Fatihi", stars:4, salary:85000, targetName:"Osmanlı İmparatorluğu", buff:"-%6 Donanma Bakımı & -%4 Gemi Alımı", debuff:"Ticaret geliri -%2.", taxBonus:-2, milUpkeepDiscount:0, navyUpkeepDiscount:6, artUpkeepDiscount:0, recruitDiscount:4, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:10, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_os_11", name:"Dökümcübaşı Urbanzade", role:"Büyük Şahi Topçusu", stars:4, salary:90000, targetName:"Osmanlı İmparatorluğu", buff:"-%7 Topçu Bakımı", debuff:"Top alım fiyatı +%3.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:7, recruitDiscount:-3, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:9, maxAge:28, yearsSinceUpgrade:0 },
-  { id:"adv_os_12", name:"Müderris Ebu Fazıl Efendi", role:"Ulema Başı", stars:4, salary:75000, targetName:"Osmanlı İmparatorluğu", buff:"+4 Mutluluk & -%3 Bina İndirimi", debuff:"Vergi toplama -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:4, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_os_13", name:"Veziriazam Demir Köprülü Paşa", role:"Mutlak Otorite", stars:5, salary:160000, targetName:"Osmanlı İmparatorluğu", buff:"+%8 Vergi Geliri & İsyanı %0 Yapar", debuff:"Mutluluk -3 puan.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_os_14", name:"Serdar-ı Ekrem Zafer Sinan Paşa", role:"Cihan Komutanı", stars:5, salary:150000, targetName:"Osmanlı İmparatorluğu", buff:"-%8 Ordu Bakımı & -%5 Sefer İkmali", debuff:"Yıllık paşa harcırahı ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:11, maxAge:29, yearsSinceUpgrade:0 },
-  { id:"adv_os_15", name:"Hazine Nazırı Karun Efendi", role:"Mali Deha", stars:5, salary:140000, targetName:"Osmanlı İmparatorluğu", buff:"+%10 Vergi Geliri", debuff:"Komisyon keser.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:13, maxAge:30, yearsSinceUpgrade:0 },
-
-  // KIRIM HANLIĞI (15 Aday)
-  { id:"adv_kr_1", name:"Otlakçı Timur Ağa", role:"Bozkır Seyisi", stars:1, salary:10000, targetName:"Kırım Hanlığı", buff:"-%2 Süvari/Ordu Bakımı", debuff:"Bina yapımı +%1.", taxBonus:0, milUpkeepDiscount:2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-1, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:3, maxAge:16, yearsSinceUpgrade:0 },
-  { id:"adv_kr_2", name:"Kefe Kâtibi Canbek", role:"Liman Kâtibi", stars:1, salary:12000, targetName:"Kırım Hanlığı", buff:"+%2 Sabit Ticaret Geliri", debuff:"Kâtip harcı çeker.", taxBonus:2, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:4, maxAge:18, yearsSinceUpgrade:0 },
-  { id:"adv_kr_3", name:"İzci Tohtamış", role:"Öncü İzci", stars:1, salary:11000, targetName:"Kırım Hanlığı", buff:"-%2 Asker Satın Alma İndirimi", debuff:"Ordu disiplini hafif düşer.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:2, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:2, maxAge:15, yearsSinceUpgrade:0 },
-  { id:"adv_kr_4", name:"Yay Ustası Cihanşa", role:"Bozkır Silahçısı", stars:2, salary:22000, targetName:"Kırım Hanlığı", buff:"-%3 Ordu Bakımı", debuff:"Asker alımı +%1 pahalanır.", taxBonus:0, milUpkeepDiscount:3, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:-1, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:22, yearsSinceUpgrade:0 },
-  { id:"adv_kr_5", name:"Arslan Bey", role:"Saray Sözcüsü", stars:2, salary:25000, targetName:"Kırım Hanlığı", buff:"+2 Mutluluk", debuff:"Ziyafet masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:6, maxAge:24, yearsSinceUpgrade:0 },
-  { id:"adv_kr_6", name:"Mamay Reis", role:"Nehir Kaptanı", stars:2, salary:26000, targetName:"Kırım Hanlığı", buff:"-%4 Donanma Bakımı", debuff:"Ticaret -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:4, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:7, maxAge:25, yearsSinceUpgrade:0 },
-  { id:"adv_kr_7", name:"Ataman Bahadır Mirza", role:"Bozkır Süvari Ağası", stars:3, salary:45000, targetName:"Kırım Hanlığı", buff:"-%5 Ordu Bakımı & -%4 Asker Alımı", debuff:"Otlak harcırahı ister.", taxBonus:0, milUpkeepDiscount:5, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:4, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:8, maxAge:26, yearsSinceUpgrade:0 },
-  { id:"adv_kr_8", name:"Hacı Mengli Sarraf", role:"Tüccar Başı", stars:3, salary:48000, targetName:"Kırım Hanlığı", buff:"+%5 Vergi Geliri", debuff:"Komisyon keser.", taxBonus:5, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:9, maxAge:27, yearsSinceUpgrade:0 },
-  { id:"adv_kr_9", name:"Gözcü Şahin Noyan", role:"Bozkır Casusu", stars:3, salary:42000, targetName:"Kırım Hanlığı", buff:"Casusluk Yanılmasını %10'a çeker.", debuff:"Mektup diplomasisi -%1.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true, ageYears:5, maxAge:23, yearsSinceUpgrade:0 },
-  { id:"adv_kr_10", name:"Nogay Beyi Korkut Han", role:"Çöl Kurdu", stars:4, salary:75000, targetName:"Kırım Hanlığı", buff:"-%6 Ordu Bakımı", debuff:"Ticaret -%2.", taxBonus:-2, milUpkeepDiscount:6, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:11, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_kr_11", name:"Mimar İlyas", role:"Tahkimat Ustası", stars:4, salary:70000, targetName:"Kırım Hanlığı", buff:"-%6 Bina Yapım İndirimi", debuff:"Şantiye gideri çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:6, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:10, maxAge:29, yearsSinceUpgrade:0 },
-  { id:"adv_kr_12", name:"Müftü Abdülmecid", role:"Bozkır Şeyhi", stars:4, salary:65000, targetName:"Kırım Hanlığı", buff:"+4 Mutluluk & İsyanı %50 Azaltır", debuff:"Vergi -%1.", taxBonus:-1, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:4, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_kr_13", name:"Han Naibi Mengli Atalık", role:"Hanlık Aklı", stars:5, salary:130000, targetName:"Kırım Hanlığı", buff:"+%8 Vergi Geliri & İsyanı %0 Yapar", debuff:"Saray ödeneği ister.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:true, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_kr_14", name:"Gazi Alp Serdar", role:"Efsane Akıncı", stars:5, salary:125000, targetName:"Kırım Hanlığı", buff:"-%9 Ordu Bakımı & -%5 Sefer İkmali", debuff:"Topçu bakımı +%3.", taxBonus:0, milUpkeepDiscount:9, navyUpkeepDiscount:0, artUpkeepDiscount:-3, recruitDiscount:5, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:11, maxAge:28, yearsSinceUpgrade:0 },
-  { id:"adv_kr_15", name:"Sarraf Karahan", role:"Altın Kervancısı", stars:5, salary:120000, targetName:"Kırım Hanlığı", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -2 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:13, maxAge:30, yearsSinceUpgrade:0 },
-
-  // GÜNEŞ DEVLETİ (15 Aday)
-  { id:"adv_gn_1", name:"Çavuş Bora", role:"Sert Kollukçu", stars:1, salary:10000, targetName:"Güneş Devleti", buff:"-%2 Ordu Bakımı", debuff:"Mutluluk -1 puan.", taxBonus:0, milUpkeepDiscount:2, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:3, maxAge:16, yearsSinceUpgrade:0 },
-  { id:"adv_gn_2", name:"Körük Ustası Kaya", role:"Küçük Ocakçı", stars:1, salary:12000, targetName:"Güneş Devleti", buff:"-%2 Topçu Bakımı", debuff:"Top alımı +%1.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:2, recruitDiscount:-1, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:4, maxAge:17, yearsSinceUpgrade:0 },
-  { id:"adv_gn_3", name:"Tellal Selim", role:"Halk Kışkırtıcısı", stars:1, salary:11000, targetName:"Güneş Devleti", buff:"+1 Mutluluk", debuff:"Şehir asayiş masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:2, maxAge:15, yearsSinceUpgrade:0 },
-  { id:"adv_gn_4", name:"Tahsildar Demir", role:"Acımasız Tahsildar", stars:2, salary:24000, targetName:"Güneş Devleti", buff:"+%3 Vergi Geliri", debuff:"Mutluluk -1 puan.", taxBonus:3, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-1, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:22, yearsSinceUpgrade:0 },
-  { id:"adv_gn_5", name:"Yaman Reis", role:"Kıyı Muhafızı", stars:2, salary:26000, targetName:"Güneş Devleti", buff:"-%3 Donanma Bakımı", debuff:"Gemi yapımı +%2.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:3, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:-2, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:6, maxAge:24, yearsSinceUpgrade:0 },
-  { id:"adv_gn_6", name:"Rükneddin Kalfa", role:"Cevher Arayıcı", stars:2, salary:25000, targetName:"Güneş Devleti", buff:"-%3 Bina Yapım İndirimi", debuff:"Şantiye masrafı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:3, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:5, maxAge:23, yearsSinceUpgrade:0 },
-  { id:"adv_gn_7", name:"Kara Kurt", role:"Korku Mimarı", stars:3, salary:48000, targetName:"Güneş Devleti", buff:"Anarşistlerin zararını %30 azaltır.", debuff:"Mutluluk -2 puan.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-2, stopAnarchy:false, spyAccuracyBonus:false, ageYears:8, maxAge:26, yearsSinceUpgrade:0 },
-  { id:"adv_gn_8", name:"Alp Erdem", role:"Disiplin Subayı", stars:3, salary:52000, targetName:"Güneş Devleti", buff:"-%5 Ordu Bakımı", debuff:"Asker alım fiyatı +%2.", taxBonus:0, milUpkeepDiscount:5, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:-2, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:9, maxAge:27, yearsSinceUpgrade:0 },
-  { id:"adv_gn_9", name:"Sarraf Leon", role:"Gölge Banker", stars:3, salary:46000, targetName:"Güneş Devleti", buff:"+%5 Vergi Geliri", debuff:"Faiz kesintisi yapar.", taxBonus:5, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:7, maxAge:25, yearsSinceUpgrade:0 },
-  { id:"adv_gn_10", name:"Sadrazam Oğuz Bey", role:"Devlet Direği", stars:4, salary:80000, targetName:"Güneş Devleti", buff:"Anarşiyi %0 Yapar & +%4 Vergi", debuff:"Mutluluk -3 puan.", taxBonus:4, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false, ageYears:11, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_gn_11", name:"Mühendis Hektor", role:"Top Döküm Üstadı", stars:4, salary:78000, targetName:"Güneş Devleti", buff:"-%7 Topçu Bakımı", debuff:"Top alım fiyatı +%3.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:7, recruitDiscount:-3, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:10, maxAge:29, yearsSinceUpgrade:0 },
-  { id:"adv_gn_12", name:"Baybars Casus Başı", role:"Gizli Ağ Ustası", stars:4, salary:72000, targetName:"Güneş Devleti", buff:"Casusluk Yanılmasını %5'e çeker.", debuff:"Casus maaşı çeker.", taxBonus:0, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:true, ageYears:9, maxAge:28, yearsSinceUpgrade:0 },
-  { id:"adv_gn_13", name:"Baş Vezir Nizamüddin", role:"Tiranlığın Mimarı", stars:5, salary:145000, targetName:"Güneş Devleti", buff:"+%8 Vergi & -%5 Bina İndirimi & İsyan %0", debuff:"Mutluluk -3 puan.", taxBonus:8, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:5, happinessBonus:-3, stopAnarchy:true, spyAccuracyBonus:false, ageYears:13, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_gn_14", name:"Cihangir Han Mareşal", role:"Yenilmez Mareşal", stars:5, salary:140000, targetName:"Güneş Devleti", buff:"-%8 Ordu Bakımı & -%6 Asker Alımı", debuff:"Sefer ikramiyesi ister.", taxBonus:0, milUpkeepDiscount:8, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:6, infraDiscount:0, happinessBonus:0, stopAnarchy:false, spyAccuracyBonus:false, ageYears:12, maxAge:30, yearsSinceUpgrade:0 },
-  { id:"adv_gn_15", name:"Karun Mirza", role:"Altın Simyacısı", stars:5, salary:130000, targetName:"Güneş Devleti", buff:"+%10 Vergi Geliri", debuff:"Mutluluk -3 puan.", taxBonus:10, milUpkeepDiscount:0, navyUpkeepDiscount:0, artUpkeepDiscount:0, recruitDiscount:0, infraDiscount:0, happinessBonus:-3, stopAnarchy:false, spyAccuracyBonus:false, ageYears:14, maxAge:30, yearsSinceUpgrade:0 }
-];
-
-
-// ---------------- RASTGELE OLAY SİSTEMİ ----------------
-const EVENT_CATEGORIES = [
- {name:"Kuraklık", title:["Büyük Kuraklık","Uzayan Kuraklık","Ambarları Zorlayan Kuraklık","Tarlalarda Su Sıkıntısı","Kuruyan Nehirler"]},
- {name:"Ticaret", title:["Ticaret Kervanları","Liman Ticareti","Yeni Pazarlar","Tüccarların Şikâyeti","Ticaret Fırsatı"]},
- {name:"Halk", title:["Halk Şenliği","Vergi İsyanı","Esnaf Grevi","Şehir Kalabalığı","Halkın Talebi"]},
- {name:"Askeri", title:["Sınır Çatışması","Askeri Depo Sorunu","Hudut Garnizonu","Silah Ustalarının Talebi","Orduda Disiplin Sorunu"]},
- {name:"Doğa", title:["Büyük Sel","Şiddetli Fırtına","Erken Kış","Deprem Sarsıntısı","Orman Yangını"]},
- {name:"Diplomasi", title:["Yabancı Elçiler","Komşu Devletin Teklifi","Sınır Anlaşmazlığı","Tüccar Elçileri","Diplomatik Kriz"]},
- {name:"Üretim", title:["Maden Damarlari","Zanaatkârların Talebi","Yeni Atölyeler","Tahıl Fazlası","Üretim Darboğazı"]},
- {name:"Saray", title:["Saray Masrafları","Soylu Ailelerin Talebi","Taç Töreni","Saray Ziyafeti","Divan Tartışması"]},
- {name:"Sağlık", title:["Şehirde Hastalık","Hekimlerin Uyarısı","Şifa Evleri","Temizlik Kampanyası","Karantina Tartışması"]},
- {name:"Altyapı", title:["Köprü Hasarı","Yol Bakımı","Liman Onarımı","Su Kemerleri","Pazar Meydanı"]},
- {name:"Eğitim", title:["Müderrislerin Talebi","Yeni Mektep","Kütüphane Fırsatı","Bilginlerin Gelişi","Âlimlerin İsteği"]},
- {name:"Güvenlik", title:["Eşkiya Baskını","Şehir Güvenliği","Gece Devriyeleri","Kaçakçılık","Sınırda Haydutlar"]},
- {name:"Tarım", title:["Bereketli Hasat","Çiftçi Borçları","Tohum Sıkıntısı","Hayvan Salgını","Yeni Tarım Usulü"]},
- {name:"Maliye", title:["Hazine Açığı","Vergi Tahsildarları","Sikke Sorunu","Borç Talebi","Beklenmedik Gelir"]},
- {name:"Denizcilik", title:["Fırtınalı Sefer","Tersane İhtiyacı","Deniz Tüccarları","Gemi Kazası","Yeni Deniz Rotası"]},
- {name:"Kültür", title:["Büyük Şenlik","Sanatkârların Gelişi","Saray Sanatçıları","Anıt Talebi","Halk Oyunları"]},
- {name:"Din", title:["Manevi Yardım","İbadethane Talebi","Din Âlimleri","Vakıf İsteği","Bayram Hazırlıkları"]},
- {name:"Nüfus", title:["Göçmenler Geldi","Şehirden Göç","Yeni Mahalle","Nüfus Baskısı","Yerleşim Fırsatı"]},
- {name:"Casusluk", title:["Şüpheli Haberler","Yabancı Casuslar","Gizli Belgeler","İstihbarat Fırsatı","Saraydaki Fısıltılar"]},
- {name:"İsyan", title:["Taşrada Huzursuzluk","Yerel İsyan","Soylu Muhalefeti","Köylülerin Protestosu","Şehir Ayaklanması"]}
-];
-const EVENT_A_TEXTS=["Kaynak ayır ve halkı destekle","Hemen müdahale et","Devlet hazinesinden ödeme yap","Uzlaşma yolunu seç","Devlet desteğini artır"];
-const EVENT_B_TEXTS=["Masrafı reddet ve bekle","Sert tedbirler uygula","Harcamayı sınırlı tut","Talebi geri çevir","Yerel yöneticilere bırak"];
 function buildDefaultEvents(){
  let arr=[];
  for(let i=0;i<100;i++){
@@ -832,13 +804,13 @@ function getAdvisorEffects(s) {
     if(hired.length > 0 && db.advisors) {
         db.advisors.forEach(a => {
             if(hired.includes(a.id)) {
-                eff.taxBonus += Math.max(0,Number(a.taxBonus || 0));
-                eff.milUpkeepDiscount += Math.max(0,Number(a.milUpkeepDiscount || 0));
-                eff.navyUpkeepDiscount += Math.max(0,Number(a.navyUpkeepDiscount || 0));
-                eff.artUpkeepDiscount += Math.max(0,Number(a.artUpkeepDiscount || 0));
-                eff.recruitDiscount += Math.max(0,Number(a.recruitDiscount || 0));
-                eff.infraDiscount += Math.max(0,Number(a.infraDiscount || 0));
-                eff.happinessBonus += Math.max(0,Number(a.happinessBonus || 0));
+                eff.taxBonus += Number(a.taxBonus || 0);
+                eff.milUpkeepDiscount += Number(a.milUpkeepDiscount || 0);
+                eff.navyUpkeepDiscount += Number(a.navyUpkeepDiscount || 0);
+                eff.artUpkeepDiscount += Number(a.artUpkeepDiscount || 0);
+                eff.recruitDiscount += Number(a.recruitDiscount || 0);
+                eff.infraDiscount += Number(a.infraDiscount || 0);
+                eff.happinessBonus += Number(a.happinessBonus || 0);
                 if(a.stopAnarchy) eff.stopAnarchy = true;
                 if(a.spyAccuracyBonus) eff.spyAccuracyBonus = true;
             }
@@ -846,28 +818,18 @@ function getAdvisorEffects(s) {
     }
     return eff;
 }
-function advisorBuffText(a){
- const parts=[];
- const add=(value,text)=>{const n=Math.max(0,Number(value)||0);if(n>0)parts.push(text(n));};
- add(a.taxBonus,n=>`Vergi geliri +%${n}`);
- add(a.milUpkeepDiscount,n=>`Ordu bakımı -%${n}`);
- add(a.navyUpkeepDiscount,n=>`Donanma bakımı -%${n}`);
- add(a.artUpkeepDiscount,n=>`Topçu bakımı -%${n}`);
- add(a.recruitDiscount,n=>`Asker alımı -%${n}`);
- add(a.infraDiscount,n=>`Bina maliyeti -%${n}`);
- add(a.happinessBonus,n=>`Mutluluk +${n}`);
- if(a.stopAnarchy)parts.push('Anarşiyi durdurur');
- if(a.spyAccuracyBonus)parts.push('İstihbaratı kesinleştirir');
- return parts.join(' • ')||'Sayısal bonusu bulunmuyor';
+
+function restoreOriginalAdvisorEffects(){
+ if(db.advisorEffectVersion===2)return;
+ const effectKeys=['taxBonus','milUpkeepDiscount','navyUpkeepDiscount','artUpkeepDiscount','recruitDiscount','infraDiscount','happinessBonus','stopAnarchy','spyAccuracyBonus','buff','debuff'];
+ (db.advisors||[]).forEach(a=>{const original=DEFAULT_45_ADVISORS.find(x=>x.id===a.id);if(original)effectKeys.forEach(key=>a[key]=structuredClone(original[key]));});
+ db.advisorEffectVersion=2;
+ delete db.advisorStarBalanceVersion;
 }
 
 async function init(){
  try{
-  if(LOCAL_MODE){
-   await showApp({user:{email:SUPER_ADMINS[0]}});
-   startGlobalClock();
-   return;
-  }
+  
   initSupabase();
   const {data:{session},error}=await sb.auth.getSession();
   if(error) throw error;
@@ -1008,7 +970,7 @@ document.getElementById("authBtn").onclick=async()=>{
  }
 };
 
-async function logout(){if(LOCAL_MODE){renderHome();toast("Yerel yönetici modu",true);return}await sb.auth.signOut()}
+async function logout(){await sb.auth.signOut()}
 
 async function loadDB(){
  toast("Veriler yükleniyor…");
@@ -1044,6 +1006,7 @@ async function loadDB(){
     if(!db.advisors || db.advisors.length !== 45) {
         db.advisors = structuredClone(DEFAULT_45_ADVISORS);
     }
+    restoreOriginalAdvisorEffects();
     
     db.states.forEach(s => { 
         s.customLedger = s.customLedger || []; 
@@ -1072,21 +1035,36 @@ async function loadDB(){
 
 async function saveDB(){
  if(!sb) return false;
- if(!mapSaveDirty){
-  const latest=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
-  if(latest.data?.data){
-   db.mapProvinceOwners=latest.data.data.mapProvinceOwners||db.mapProvinceOwners||{};
-   db.mapProvinceDetails=latest.data.data.mapProvinceDetails||db.mapProvinceDetails||{};
-   db.mapOwnershipInitialized=latest.data.data.mapOwnershipInitialized??db.mapOwnershipInitialized;
-  }
+ const latest=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+ if(latest.data?.data){
+  db.mapProvinceOwners=latest.data.data.mapProvinceOwners||db.mapProvinceOwners||{};
+  db.mapProvinceDetails=latest.data.data.mapProvinceDetails||db.mapProvinceDetails||{};
+  db.mapOwnershipInitialized=latest.data.data.mapOwnershipInitialized??db.mapOwnershipInitialized;
+  db.purchaseLog=mergePurchaseLogs(latest.data.data.purchaseLog,db.purchaseLog);
  }
- const savingMap=mapSaveDirty;
- mapSaveDirty=false;
  const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
- if(error){if(savingMap)mapSaveDirty=true;toast("Kayıt hatası: "+error.message);return false} toast("Kaydedildi • "+new Date().toLocaleTimeString("tr-TR"),true);return true
+ if(error){toast("Kayit hatasi: "+error.message);return false} toast("Kaydedildi "+new Date().toLocaleTimeString("tr-TR"),true);return true
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
-function queueMapSave(){mapSaveDirty=true;queueSave()}
+async function saveMapDB(){
+ if(!sb)return false;
+ if(mapSaveInFlight){mapSavePending=true;return false;}
+ mapSaveInFlight=true;
+ const owners=structuredClone(db.mapProvinceOwners||{}),details=structuredClone(db.mapProvinceDetails||{});
+ try{
+  const latest=await sb.from('game_state').select('data').eq('id',1).maybeSingle();
+  if(latest.error)throw latest.error;
+  const merged={...(latest.data?.data||db),mapProvinceOwners:owners,mapProvinceDetails:details,mapOwnershipInitialized:true,purchaseLog:mergePurchaseLogs(latest.data?.data?.purchaseLog,db.purchaseLog)};
+  const write=await sb.from('game_state').upsert({id:1,data:merged,updated_at:new Date().toISOString()});
+  if(write.error)throw write.error;
+  mapSyncChannel?.postMessage({type:'map-saved',owners,details});
+ toast('Harita kaydedildi',true);
+  queueSave();
+  return true;
+ }catch(error){toast('Harita kayıt hatası: '+(error.message||error));return false}
+ finally{mapSaveInFlight=false;if(mapSavePending){mapSavePending=false;queueMapSave();}}
+}
+function queueMapSave(){mapSavePending=true;clearTimeout(mapSaveTimer);mapSaveTimer=setTimeout(()=>{mapSavePending=false;saveMapDB();},250)}
 
 function normalizeMapName(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('tr-TR').replace(/[^a-z0-9]+/g,'')}
 function normalizeMapColor(value,fallback='#c5a059'){const v=String(value||'').trim();if(/^#[0-9a-f]{6}$/i.test(v))return v;if(/^#[0-9a-f]{3}$/i.test(v))return '#'+v.slice(1).split('').map(x=>x+x).join('');const m=v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);if(m)return '#'+[m[1],m[2],m[3]].map(x=>Math.max(0,Math.min(255,Number(x))).toString(16).padStart(2,'0')).join('');return fallback;}
@@ -1379,26 +1357,14 @@ function renderHome(){
   const accent=s.color||"#c5a059";
   const rulerImgClean = cleanUrl(s.rulerImage);
   const unreadLetters = (db.letters||[]).filter(l => l.toStateId === s.id && !l.read).length;
+  const stateKey=`${s.id||''} ${s.name||''}`.toLocaleLowerCase('tr-TR');
+  const cardTheme=stateKey.includes('kırım')||stateKey.includes('kirim')||stateKey.includes('crimea')?'theme-crimea':stateKey.includes('güneş')||stateKey.includes('gunes')||stateKey.includes('sun')?'theme-sun':'theme-ottoman';
+  const medallion=cardTheme==='theme-crimea'?'T':cardTheme==='theme-sun'?'☀':'☾';
 
-  return `<div class="state-card" style="border-left: 3px solid ${esc(accent)};">
-   <div class="state-head">
-     <div style="display:flex; align-items:center;">
-       ${rulerImgClean ? `<img src="${esc(rulerImgClean)}" class="home-ruler-img">` : ''}
-       <div><h2 style="color:${esc(accent)}; font-size:16px;">${esc(s.name)}</h2><div class="sub">${esc(s.ruler||"Lider Yok")} ${isMine ? '<span style="color:var(--gold)">(Sen)</span>' : ''}</div></div>
-     </div>
-     <div style="display:flex; align-items:center; gap:5px;">
-       ${unreadLetters > 0 ? `<span class="badge-count" title="Yeni Mektup!">✉ ${unreadLetters}</span>` : ''}
-       <span class="badge">${esc(s.title||"Devlet")}</span>
-     </div>
-   </div>
-   <div class="stats-grid">
-    <div><span class="muted">HAZİNE:</span> <span class="money">${money(s.treasury)}</span></div>
-    <div><span class="muted">NÜFUS:</span> ${num(s.population)}</div>
-    <div><span class="muted">ORDU:</span> ${num(army)}</div>
-    <div><span class="muted">TOP/GEMİ:</span> ${num(guns)} / ${num(ships)}</div>
-   </div>
-   <div style="margin-top:10px;"><button class="btn blue" style="width:100%; padding:8px;" onclick="openDetail('${s.id}')">YÖNETİME GİR →</button></div>
-  </div>`
+  return `<div class="state-card premium-state-card ${cardTheme}">
+   <div class="state-frame-line"></div><div class="state-portrait-shell${rulerImgClean?'':' empty'}">${rulerImgClean?`<img src="${esc(rulerImgClean)}" alt="">`:''}</div><div class="state-medallion">${medallion}</div>
+   <div class="state-card-identity"><h2>${esc(s.name)}</h2><div class="state-card-ruler">${esc(s.ruler||'Lider Yok')} ${isMine?'<span class="mine">(SEN)</span>':''}</div></div><div class="state-card-badge">${esc(s.title||'Devlet')}</div>
+   ${unreadLetters>0?`<span class="badge-count" style="position:absolute;right:4%;top:28%;z-index:6">✉ ${unreadLetters}</span>`:''}<div class="state-card-stats"><div class="state-card-stat money-stat"><small>HAZİNE</small><b>${money(s.treasury)}</b></div><div class="state-card-stat"><small>NÜFUS</small><b>${num(s.population)}</b></div><div class="state-card-stat"><small>ORDU</small><b>${num(army)}</b></div><div class="state-card-stat"><small>TOP/GEMİ</small><b>${num(guns)} / ${num(ships)}</b></div></div><button class="state-card-enter" onclick="openDetail('${s.id}')">YÖNETİME GİR &nbsp;→</button></div>`
  }).join("")
 }
 
@@ -1453,7 +1419,7 @@ function buildUnitCard(s, key, name, imgUrl, basePrice, baseUpkeep, capStr, canM
 }
 
 function buildPopulationBuildingCard(s,key,name,imgUrl,canManage){
- const safeImg=cleanUrl(imgUrl)||(key==="hastane"?"assets/building-hospital.png":"");
+ const safeImg=cleanUrl(imgUrl)||"";
  const growth=Math.max(0,Number(db.settings.populationBuildingGrowth?.[key])||0);
  const costPerPerson=Math.max(0,Number(db.settings.populationBuildingCostPerPerson?.[key])||0);
  const price=Math.max(0,Math.round((Number(s.population)||0)*costPerPerson));
@@ -1669,7 +1635,8 @@ function openDetail(id){
                     <span style="color:var(--gold); font-weight:bold;">${money(a.salary)}/yıl</span>
                 </div>
                 <div style="font-size:10px; color:var(--muted); margin:2px 0;">Hizmet Süresi: <b>${hiredYears} Yıl</b> | Kalan Ömür: ${Math.max(0, (a.maxAge||20) - (a.ageYears||5))} Yıl</div>
-                <div class="adv-buff"><b>Güncel bonus:</b> ${esc(advisorBuffText(a))}</div>
+                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
+                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;">
                     ${locked ? '<span style="color:var(--gold); font-size:11px; font-weight:bold; margin-right:8px;">🔒 1 Yıl Sözleşme Sürüyor</span>' : ''}
                     <button class="btn red small" onclick="fireAdvisor('${s.id}','${a.id}')" ${locked ? 'disabled title="Aynı yıl içinde iade edilemez!" style="opacity:0.5;"' : ''}>AZLET (İADE ET)</button>
@@ -1694,7 +1661,8 @@ function openDetail(id){
                     <span style="color:var(--gold); font-weight:bold;">Maaş: ${money(a.salary)}/yıl</span>
                 </div>
                 <div style="font-size:10px; color:var(--muted); margin:2px 0;">Yaş: ${a.ageYears||5} | Ömür Beklentisi: ${a.maxAge||20} Yıl</div>
-                <div class="adv-buff"><b>Güncel bonus:</b> ${esc(advisorBuffText(a))}</div>
+                <div class="adv-buff"><b>Artı:</b> ${esc(a.buff)}</div>
+                <div class="adv-debuff"><b>Götürü:</b> ${esc(a.debuff)}</div>
                 ${canManage ? `<div style="text-align:right; margin-top:6px;"><button class="btn green small" onclick="hireAdvisor('${s.id}','${a.id}')" ${activeAdvisors.length >= maxSlots ? 'disabled title="Kontenjan Dolu!" style="opacity:0.5;"' : ''}>DİVANA ATA (GÖREVE ÇAĞIR)</button></div>` : ''}
             </div>
         </div>
@@ -1837,6 +1805,22 @@ function openDetail(id){
    <div class="unit-grid population-building-grid">${populationBuildingsHtml}</div>
  </div>`;
 
+ const detailStateKey = `${s.id||''} ${s.name||''}`.toLocaleLowerCase('tr-TR');
+ const isOttomanDetail = detailStateKey.includes('osmanlı') || detailStateKey.includes('osmanli') || detailStateKey.includes('osmalı') || detailStateKey.includes('osmali') || detailStateKey.includes('ottoman');
+ const isCrimeaDetail = detailStateKey.includes('kırım') || detailStateKey.includes('kirim') || detailStateKey.includes('crimea');
+ const isSunDetail = detailStateKey.includes('güneş') || detailStateKey.includes('gunes') || detailStateKey.includes('sun');
+ const isPremiumDetail = isOttomanDetail || isCrimeaDetail || isSunDetail;
+ const detailCardClass = isCrimeaDetail?'detail-crimea':isSunDetail?'detail-sun':'detail-ottoman';
+ const detailCardAsset = isCrimeaDetail?'assets/crimea-management-textured-base-v1.png':isSunDetail?'assets/sun-management-textured-base-v1.png':'assets/ottoman-management-textured-base-v1.png';
+ const detailAccent = isCrimeaDetail?'#d5a0d1':isSunDetail?'#9fd3f2':'#f0cf82';
+ const happinessNow=Math.max(0,Math.min(100,s.happiness+adv.happinessBonus));
+ const omGClr=happinessNow>=60?'var(--green)':happinessNow>=30?'#d4a940':'var(--red)';
+ const educatedRateText=Number(p.eduRate||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const leftPoliticalHtml=isPremiumDetail?`
+   <div class="ottoman-svg-card"><svg class="ottoman-card-svg" viewBox="0 0 979 1618" role="img" aria-label="${esc(s.name)} yönetim özeti"><defs><clipPath id="omPortraitClip"><rect x="92" y="148" width="795" height="438" rx="5"/></clipPath></defs>${rulerImgClean?`<image href="${esc(rulerImgClean)}" x="92" y="148" width="795" height="438" preserveAspectRatio="xMidYMid slice" clip-path="url(#omPortraitClip)"/>`:''}<g font-family="'Playfair Display',Georgia,serif" text-anchor="middle"><text x="489.5" y="98" fill="#dfbe72" font-size="47" font-weight="800">${esc(s.name)}</text><text x="489.5" y="635" fill="#dfbe72" font-size="39" font-weight="800">${esc(s.ruler||'Lider Yok')}</text><text x="489.5" y="674" fill="#aaa399" font-family="Oswald,sans-serif" font-size="22" font-weight="700">${esc(s.title||'Devlet')}${isOwner?' (SEN)':''}</text><text x="489.5" y="757" fill="#cdb06d" font-size="30" font-weight="700">HALK MUTLULUĞU</text><text x="489.5" y="870" fill="${omGClr}" font-family="'Roboto Condensed',sans-serif" font-size="66" font-weight="900">${num(happinessNow)}%</text>${adv.happinessBonus!==0?`<text x="489.5" y="914" fill="#d4a940" font-family="'Roboto Condensed',sans-serif" font-size="30" font-weight="800">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</text>`:''}</g><rect x="111" y="956" width="757" height="14" rx="3" fill="#090b09"/><rect x="111" y="956" width="${(757*happinessNow/100).toFixed(1)}" height="14" rx="3" fill="${omGClr}"/><g font-family="Oswald,sans-serif" text-anchor="middle"><text x="225" y="1055" fill="#c89d4d" font-size="45">⚖</text><text x="330" y="1032" fill="#b9b0a0" font-size="22">VERGİ ORANI</text><text x="330" y="1082" fill="#dfbe72" font-size="42" font-weight="800">%${num(s.tax)}</text><text x="585" y="1055" fill="#c89d4d" font-size="36">♟♟♟</text><text x="735" y="1032" fill="#b9b0a0" font-size="22">TOPLAM NÜFUS</text><text x="735" y="1082" fill="#dfbe72" font-size="39" font-weight="800">${num(s.population)}</text><text x="489.5" y="1185" fill="#cdb06d" font-family="'Playfair Display',Georgia,serif" font-size="29" font-weight="700">NÜFUS VE SINIF DAĞILIMI</text></g><g font-family="'Roboto Condensed',Arial,sans-serif" font-size="25" dominant-baseline="middle"><text x="105" y="1270" fill="#c89d4d" font-size="29">▤</text><text x="155" y="1270" fill="#d0cbc2">Eğitimli Sınıf (%${educatedRateText})</text><text x="875" y="1270" text-anchor="end" fill="#e2ddd2" font-weight="800">${num(p.edu)}</text><text x="105" y="1334" fill="#c89d4d" font-size="29">♟</text><text x="155" y="1334" fill="#d0cbc2">Sıradan Halk</text><text x="875" y="1334" text-anchor="end" fill="#e2ddd2" font-weight="800">${num(p.other)}</text><text x="105" y="1398" fill="#c89d4d" font-size="29">♜</text><text x="155" y="1398" fill="#d0cbc2">Boştaki Elverişli Asker</text><text x="875" y="1398" text-anchor="end" fill="#28d17c" font-weight="800">${num(p.elig)}</text><text x="105" y="1462" fill="#c89d4d" font-size="29">⚔</text><text x="155" y="1462" fill="#d0cbc2">Silahaltındaki Ordu</text><text x="875" y="1462" text-anchor="end" fill="#e2ddd2" font-weight="800">${num(p.armySize)}</text><text x="105" y="1526" fill="#cf4138" font-size="29">Ⓐ</text><text x="155" y="1526" fill="#d0cbc2">Anarşistler</text><text x="875" y="1526" text-anchor="end" fill="#cf4138" font-size="22" font-weight="800">${adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)}</text></g></svg></div>
+  `:`
+ <div class="political-panel"><div class="political-header"><h1 style="color:${esc(s.color||'var(--border-gold)')};">${esc(s.name)}</h1></div><div class="ruler-portrait-container">${rulerImgClean?`<img src="${esc(rulerImgClean)}" class="big-portrait">`:'<div class="sub">Portre Yok</div>'}<div class="ruler-name-plate"><strong>${esc(s.ruler||'Lider Yok')}</strong><span>${esc(s.title||'Devlet')} ${isOwner?'<b style="color:var(--green)">(SEN)</b>':''}</span></div></div><div class="pol-stats"><div style="text-align:center;margin-bottom:10px;"><div class="sub">HALK MUTLULUĞU</div><div style="font-size:20px;font-weight:bold;color:var(--green)">${num(happinessNow)}%</div><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${happinessNow}%"></div></div></div><div class="pol-stat-row"><span class="muted">Vergi Oranı</span><span style="color:var(--gold)">%${num(s.tax)}</span></div><div class="pol-stat-row"><span class="muted">Toplam Nüfus</span><span>${num(s.population)}</span></div><div class="population-section-title">NÜFUS VE SINIF DAĞILIMI</div><div class="pol-stat-row"><span class="muted">Eğitimli Sınıf (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div><div class="pol-stat-row"><span class="muted">Sıradan Halk</span><span>${num(p.other)}</span></div><div class="pol-stat-row"><span class="muted">Boştaki Elverişli Asker</span><span>${num(p.elig)}</span></div><div class="pol-stat-row"><span class="muted">Silahaltındaki Ordu</span><span>${num(p.armySize)}</span></div><div class="pol-stat-row"><span class="muted">Anarşistler</span><span>${adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)}</span></div></div></div>`;
+
  // ANA DETAY DÜZENİ
  document.getElementById("detail").innerHTML = `
  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -1846,6 +1830,8 @@ function openDetail(id){
  
  <div class="detail-layout">
     <!-- SOL PANEL: LİDER & SİYASET & NÜFUS -->
+    ${leftPoliticalHtml}
+    <!--
     <div class="political-panel">
         <div class="political-header">
             <h1 style="color:${esc(s.color||"var(--border-gold)")};">${esc(s.name)}</h1>
@@ -1859,23 +1845,25 @@ function openDetail(id){
         </div>
         
         <div class="pol-stats">
-            <div style="text-align:center; margin-bottom:10px;">
-                <div style="color:var(--muted); font-size:10px; font-family:'Oswald';">HALK MUTLULUĞU</div>
-                <div style="font-size:20px; font-weight:bold; color:var(--green);">${num(s.happiness + adv.happinessBonus)}% ${adv.happinessBonus!==0?`<small style="font-size:12px; color:var(--gold)">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</small>`:''}</div>
+            <div class="happiness-panel" style="text-align:center; margin-bottom:10px;">
+                <div class="happiness-label" style="color:var(--muted); font-size:10px; font-family:'Oswald';">HALK MUTLULUĞU</div>
+                <div class="happiness-value" style="font-size:20px; font-weight:bold; color:var(--green);">${num(s.happiness + adv.happinessBonus)}% ${adv.happinessBonus!==0?`<small style="font-size:12px; color:var(--gold)">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</small>`:''}</div>
                 <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${Math.max(0,Math.min(100,s.happiness+adv.happinessBonus))}%;"></div></div>
             </div>
 
-            <div class="pol-stat-row"><span class="muted">Vergi Oranı</span><span style="color:var(--gold)">%${num(s.tax)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Toplam Nüfus</span><span>${num(s.population)}</span></div>
+            <div class="summary-grid">
+              <div class="pol-stat-row summary-stat"><span class="muted">Vergi Oranı</span><span style="color:var(--gold)">%${num(s.tax)}</span></div>
+              <div class="pol-stat-row summary-stat"><span class="muted">Toplam Nüfus</span><span>${num(s.population)}</span></div>
+            </div>
             
-            <div style="color:var(--border-gold); margin:12px 0 4px; font-size:11px; font-family:'Oswald'; border-bottom:1px solid var(--line);">👥 NÜFUS VE SINIF DAĞILIMI</div>
-            <div class="pol-stat-row"><span class="muted">Eğitimli Sınıf (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Sıradan Halk</span><span>${num(p.other)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Boştaki Elverişli Asker</span><span style="color:var(--green)">${num(p.elig)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Silahaltındaki Ordu</span><span>${num(p.armySize)}</span></div>
-            <div class="pol-stat-row"><span class="muted">Anarşistler</span><span style="color:var(--red)">${adv.stopAnarchy ? '0 (Nizam Sağlandı)' : num(p.anar)}</span></div>
+            <div class="population-section-title">NÜFUS VE SINIF DAĞILIMI</div>
+            <div class="pol-stat-row class-row educated-row"><span class="muted">Eğitimli Sınıf (%${num(p.eduRate)})</span><span>${num(p.edu)}</span></div>
+            <div class="pol-stat-row class-row ordinary-row"><span class="muted">Sıradan Halk</span><span>${num(p.other)}</span></div>
+            <div class="pol-stat-row class-row eligible-row"><span class="muted">Boştaki Elverişli Asker</span><span style="color:var(--green)">${num(p.elig)}</span></div>
+            <div class="pol-stat-row class-row army-row"><span class="muted">Silahaltındaki Ordu</span><span>${num(p.armySize)}</span></div>
+            <div class="pol-stat-row class-row anarchy-row"><span class="muted">Anarşistler</span><span style="color:var(--red)">${adv.stopAnarchy ? '0 (Nizam Sağlandı)' : num(p.anar)}</span></div>
         </div>
-    </div>
+    </div> -->
 
     <!-- SAĞ PANEL: SEKMELER -->
     <div class="content-panel">
@@ -1923,6 +1911,66 @@ function openDetail(id){
     </div>
  </div>
  `;
+ if(isPremiumDetail){
+   const svg=document.querySelector('.ottoman-card-svg');
+   if(svg){
+     svg.parentElement.classList.add(detailCardClass);
+     const rulerTitle=svg.querySelector('text[y="674"]');
+     if(rulerTitle){rulerTitle.setAttribute('fill','#dfbe72');rulerTitle.textContent='';const titlePart=document.createElementNS('http://www.w3.org/2000/svg','tspan');titlePart.textContent=s.title||'Devlet';rulerTitle.appendChild(titlePart);if(isOwner){const minePart=document.createElementNS('http://www.w3.org/2000/svg','tspan');minePart.setAttribute('fill','#28d17c');minePart.textContent=' (SEN)';rulerTitle.appendChild(minePart)}}
+     const happinessText=svg.querySelector('text[y="870"]');if(happinessText)happinessText.setAttribute('fill','#dfbe72');
+     [['225','205','1062'],['330','325','1045'],['585','575','1062'],['735','735','1045']].forEach(([oldX,newX,newY])=>{const el=svg.querySelector(`text[x="${oldX}"][y="${oldX==='330'||oldX==='735'?'1032':'1055'}"]`);if(el){el.setAttribute('x',newX);el.setAttribute('y',newY);if(oldX==='330'||oldX==='735')el.setAttribute('fill','#cdb06d')}});
+     svg.querySelectorAll('text[y="1082"]').forEach(el=>el.setAttribute('y','1093'));
+     const portrait=svg.querySelector('image');if(portrait){portrait.setAttribute('x','108');portrait.setAttribute('y','165');portrait.setAttribute('width','763');portrait.setAttribute('height','395');portrait.setAttribute('preserveAspectRatio','xMidYMid slice')}
+     if(happinessText){happinessText.setAttribute('y','862');happinessText.setAttribute('font-family',"'Playfair Display',Georgia,serif");happinessText.setAttribute('font-size','61');happinessText.setAttribute('stroke','#3b280d');happinessText.setAttribute('stroke-width','1')}
+     const barRects=[...svg.querySelectorAll('rect[y="956"]')];if(barRects[0])barRects[0].setAttribute('fill','transparent');if(barRects[1]){barRects[1].setAttribute('x','121');barRects[1].setAttribute('y','966');barRects[1].setAttribute('width',String((737*happinessNow/100).toFixed(1)));barRects[1].setAttribute('height','9');barRects[1].setAttribute('rx','2');barRects[1].setAttribute('fill','#c89a3f');barRects[1].setAttribute('stroke','#6e4a18');barRects[1].setAttribute('stroke-width','1')}
+     const taxIcon=svg.querySelector('text[x="205"][y="1062"]');if(taxIcon){taxIcon.setAttribute('x','190');taxIcon.setAttribute('y','1068')}
+     const taxLabel=svg.querySelector('text[x="325"][y="1045"]');if(taxLabel){taxLabel.setAttribute('x','315');taxLabel.setAttribute('y','1042')}
+     const taxValue=svg.querySelector('text[x="330"][y="1093"],text[x="325"][y="1093"]');if(taxValue){taxValue.setAttribute('x','315');taxValue.setAttribute('y','1090')}
+     const popIcon=svg.querySelector('text[x="575"][y="1062"]');if(popIcon){popIcon.setAttribute('x','565');popIcon.setAttribute('y','1068')}
+     const popLabel=svg.querySelector('text[x="735"][y="1045"]');if(popLabel)popLabel.setAttribute('y','1042');const popValue=svg.querySelector('text[x="735"][y="1093"]');if(popValue)popValue.setAttribute('y','1090');
+     if(portrait){portrait.setAttribute('x','100');portrait.setAttribute('y','155');portrait.setAttribute('width','779');portrait.setAttribute('height','430')}
+     if(happinessText){happinessText.setAttribute('y','862');happinessText.setAttribute('font-family','Georgia,serif');happinessText.setAttribute('font-size','58');happinessText.setAttribute('stroke','none');happinessText.setAttribute('paint-order','normal')}
+     if(barRects[1]){barRects[1].setAttribute('x','114');barRects[1].setAttribute('y','958');barRects[1].setAttribute('width',String((751*happinessNow/100).toFixed(1)));barRects[1].setAttribute('height','8');barRects[1].setAttribute('rx','1');barRects[1].setAttribute('stroke','none')}
+     const svgTexts=[...svg.querySelectorAll('text')],textByValue=value=>svgTexts.find(el=>el.textContent.trim()===value);
+     const taxLabelFinal=textByValue('VERGİ ORANI');if(taxLabelFinal){taxLabelFinal.setAttribute('x','318');taxLabelFinal.setAttribute('y','1052')}
+     const populationLabelFinal=textByValue('TOPLAM NÜFUS');if(populationLabelFinal){populationLabelFinal.setAttribute('x','735');populationLabelFinal.setAttribute('y','1052')}
+     const taxValueFinal=svgTexts.find(el=>el.textContent.trim()===`%${num(s.tax)}`);if(taxValueFinal){taxValueFinal.setAttribute('x','318');taxValueFinal.setAttribute('y','1098')}
+     const populationValueFinal=svgTexts.find(el=>el.textContent.trim()===num(s.population));if(populationValueFinal){populationValueFinal.setAttribute('x','735');populationValueFinal.setAttribute('y','1098')}
+     if(taxIcon){taxIcon.setAttribute('x','195');taxIcon.setAttribute('y','1080')}if(popIcon){popIcon.setAttribute('x','575');popIcon.setAttribute('y','1080')}
+     if(portrait){portrait.setAttribute('x','94');portrait.setAttribute('y','148');portrait.setAttribute('width','791');portrait.setAttribute('height','455')}
+     if(happinessText){happinessText.textContent=`%${num(happinessNow)}`;happinessText.setAttribute('x','489.5');happinessText.setAttribute('y','862');happinessText.setAttribute('text-anchor','middle');happinessText.setAttribute('dominant-baseline','middle')}
+     if(taxLabelFinal){taxLabelFinal.setAttribute('x','315');taxLabelFinal.setAttribute('text-anchor','middle')}if(taxValueFinal){taxValueFinal.setAttribute('x','315');taxValueFinal.setAttribute('text-anchor','middle')}
+     if(populationLabelFinal){populationLabelFinal.setAttribute('x','735');populationLabelFinal.setAttribute('text-anchor','middle')}if(populationValueFinal){populationValueFinal.setAttribute('x','735');populationValueFinal.setAttribute('text-anchor','middle')}
+     if(taxLabelFinal){taxLabelFinal.setAttribute('x','264');taxLabelFinal.setAttribute('y','1052');taxLabelFinal.setAttribute('text-anchor','middle')}if(taxValueFinal){taxValueFinal.setAttribute('x','264');taxValueFinal.setAttribute('y','1098');taxValueFinal.setAttribute('text-anchor','middle')}
+     if(populationLabelFinal){populationLabelFinal.setAttribute('x','714');populationLabelFinal.setAttribute('y','1052');populationLabelFinal.setAttribute('text-anchor','middle')}if(populationValueFinal){populationValueFinal.setAttribute('x','714');populationValueFinal.setAttribute('y','1098');populationValueFinal.setAttribute('text-anchor','middle')}
+     if(taxIcon){taxIcon.setAttribute('x','112');taxIcon.setAttribute('y','1080');taxIcon.setAttribute('text-anchor','middle')}if(popIcon){popIcon.setAttribute('x','540');popIcon.setAttribute('y','1080');popIcon.setAttribute('text-anchor','middle')}
+     if(taxLabelFinal){taxLabelFinal.setAttribute('x','315')}if(taxValueFinal){taxValueFinal.setAttribute('x','315')}
+     if(populationLabelFinal){populationLabelFinal.setAttribute('x','755')}if(populationValueFinal){populationValueFinal.setAttribute('x','755')}
+     if(taxIcon)taxIcon.setAttribute('x','115');if(popIcon)popIcon.setAttribute('x','555');
+     /* v16 onaylı Osmanlı SVG yerleşimi: tüm eski düzeltmelerden sonra uygulanır. */
+     svg.setAttribute('viewBox','0 0 992 1586');
+     const finalText=value=>[...svg.querySelectorAll('text')].find(el=>el.textContent.trim()===String(value));
+     const finalSet=(el,attrs)=>{if(el)Object.entries(attrs).forEach(([key,value])=>el.setAttribute(key,String(value)))};
+     const finalPortrait=svg.querySelector('image');
+     const finalClip=svg.querySelector('clipPath rect');
+     finalSet(finalClip,{x:96,y:140,width:800,height:412,rx:3});
+     finalSet(finalPortrait,{x:96,y:140,width:800,height:412,preserveAspectRatio:'xMidYMin slice'});
+     finalSet(finalText(s.name),{x:496,y:99,'text-anchor':'middle','font-size':36,fill:'#f0cf82','font-family':"'Playfair Display',Georgia,serif"});
+     finalSet(finalText(s.ruler||'Lider Yok'),{x:496,y:620,'text-anchor':'middle','font-size':34,fill:'#f0cf82'});
+     if(rulerTitle){rulerTitle.textContent=s.title||'Devlet';finalSet(rulerTitle,{x:496,y:653,'text-anchor':'middle','font-size':19,fill:'#f0cf82'});}
+     finalSet(finalText('HALK MUTLULUĞU'),{x:496,y:712,'text-anchor':'middle','font-size':23,fill:'#f0cf82'});
+     if(happinessText){happinessText.textContent=`%${num(happinessNow)}`;finalSet(happinessText,{x:496,y:812,'text-anchor':'middle','dominant-baseline':'middle','font-size':70,fill:'#f0cf82','font-family':"'Playfair Display',Georgia,serif"});}
+     const finalBonus=[...svg.querySelectorAll('text')].find(el=>/^\([+-]\d/.test(el.textContent.trim()));finalSet(finalBonus,{x:496,y:862,'text-anchor':'middle','font-size':25,fill:'#f0cf82'});
+     if(barRects[0])finalSet(barRects[0],{fill:'transparent'});if(barRects[1])finalSet(barRects[1],{x:111,y:948,width:(770*happinessNow/100).toFixed(1),height:7,rx:3.5,fill:'#d4a744',stroke:'none'});
+     finalSet(finalText('VERGİ ORANI'),{x:262,y:1039,'text-anchor':'middle','font-size':20,fill:'#f0cf82'});
+     finalSet(taxValueFinal,{x:262,y:1090,'text-anchor':'middle','font-size':43,fill:'#f0cf82'});
+     finalSet(finalText('TOPLAM NÜFUS'),{x:730,y:1039,'text-anchor':'middle','font-size':20,fill:'#f0cf82'});
+     finalSet(populationValueFinal,{x:730,y:1090,'text-anchor':'middle','font-size':23,fill:'#e7dcc1','font-family':"'Roboto Condensed',Arial,sans-serif",'font-weight':800});
+     finalSet(finalText('NÜFUS VE SINIF DAĞILIMI'),{x:496,y:1172,'text-anchor':'middle','font-size':21,fill:'#f0cf82'});
+     [['Eğitimli Sınıf',1242,num(p.edu)],['Sıradan Halk',1309,num(p.other)],['Boştaki Elverişli Asker',1377,num(p.elig)],['Silahaltındaki Ordu',1445,num(p.armySize)],['Anarşistler',1512,adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)]].forEach(([label,y,value])=>{const labelEl=[...svg.querySelectorAll('text')].find(el=>el.textContent.includes(label));const valueEl=[...svg.querySelectorAll('text')].find(el=>el!==labelEl&&el.textContent.trim()===String(value));finalSet(labelEl,{x:108,y});finalSet(valueEl,{x:881,y,'text-anchor':'end',fill:label==='Anarşistler'?'#cf4138':'#e7dcc1','font-family':"'Roboto Condensed',Arial,sans-serif",'font-size':23});});
+     svg.parentElement.innerHTML=`<svg class="ottoman-card-svg" viewBox="0 0 992 1586" role="img" aria-label="${esc(s.name)} yönetim özeti"><defs><clipPath id="omFinalPortraitClip"><rect x="96" y="140" width="800" height="412" rx="3"/></clipPath><clipPath id="omFinalFrameClip"><rect x="66" y="105" width="860" height="47"/><rect x="66" y="105" width="48" height="535"/><rect x="878" y="105" width="48" height="535"/><rect x="66" y="545" width="213" height="95"/><rect x="713" y="545" width="213" height="95"/><rect x="258" y="558" width="476" height="34"/><rect x="258" y="558" width="38" height="118"/><rect x="696" y="558" width="38" height="118"/><rect x="258" y="665" width="476" height="11"/></clipPath><linearGradient id="omGoldBar" x1="0" x2="1"><stop stop-color="#6f4814"/><stop offset=".45" stop-color="#d4a744"/><stop offset="1" stop-color="#f0d47e"/></linearGradient></defs>${rulerImgClean?`<image href="${esc(rulerImgClean)}" x="96" y="140" width="800" height="412" preserveAspectRatio="xMidYMin slice" clip-path="url(#omFinalPortraitClip)"/>`:''}<g font-family="Georgia,'Times New Roman',serif" text-anchor="middle"><text x="496" y="99" fill="#f0cf82" font-size="36" font-weight="700">${esc(s.name)}</text><text x="496" y="620" fill="#f0cf82" font-size="34" font-weight="700">${esc(s.ruler||'Lider Yok')}</text><text x="496" y="653" fill="#f0cf82" font-size="19" font-weight="700">${esc(s.title||'Devlet')}</text><text x="496" y="712" fill="#f0cf82" font-size="23" font-weight="700">HALK MUTLULUĞU</text><text x="496" y="812" dominant-baseline="middle" fill="#f0cf82" font-size="70" font-weight="700">%${num(happinessNow)}</text>${adv.happinessBonus!==0?`<text x="496" y="862" fill="#f0cf82" font-size="25" font-weight="700">(${adv.happinessBonus>0?'+':''}${adv.happinessBonus})</text>`:''}<rect x="111" y="948" width="${(770*happinessNow/100).toFixed(1)}" height="7" rx="3.5" fill="url(#omGoldBar)"/><text x="262" y="1039" fill="#f0cf82" font-size="20">VERGİ ORANI</text><text x="262" y="1090" fill="#f0cf82" font-size="43" font-weight="700">%${num(s.tax)}</text><text x="730" y="1039" fill="#f0cf82" font-size="20">TOPLAM NÜFUS</text><text x="730" y="1090" fill="#f0cf82" font-size="39" font-weight="700">${num(s.population)}</text><text x="496" y="1172" fill="#f0cf82" font-size="21">NÜFUS VE SINIF DAĞILIMI</text></g><g font-family="'Roboto Condensed',Arial,sans-serif" font-size="23"><text x="108" y="1242" fill="#e7dcc1">▣  Eğitimli Sınıf (%${educatedRateText})</text><text x="881" y="1242" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.edu)}</text><text x="108" y="1309" fill="#e7dcc1">♟  Sıradan Halk</text><text x="881" y="1309" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.other)}</text><text x="108" y="1377" fill="#e7dcc1">♜  Boştaki Elverişli Asker</text><text x="881" y="1377" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.elig)}</text><text x="108" y="1445" fill="#e7dcc1">⚔  Silahaltındaki Ordu</text><text x="881" y="1445" text-anchor="end" fill="#e7dcc1" font-weight="800">${num(p.armySize)}</text><text x="108" y="1512" fill="#cf4138">Ⓐ  Anarşistler</text><text x="881" y="1512" text-anchor="end" fill="#cf4138" font-weight="800">${adv.stopAnarchy?'0 (Nizam Sağlandı)':num(p.anar)}</text></g><image href="assets/ottoman-management-textured-base-v1.png" x="0" y="0" width="992" height="1586" preserveAspectRatio="none" clip-path="url(#omFinalFrameClip)"/></svg>`;
+   }
+ }
 }
 
 function saveCountryManagement(stateId){
@@ -2349,6 +2397,7 @@ function addLog(data) {
     const dateStr = new Date().toLocaleDateString("tr-TR") + " " + new Date().toLocaleTimeString("tr-TR", {hour:'2-digit', minute:'2-digit'});
     
     db.purchaseLog.unshift({
+        logId: crypto.randomUUID(),
         stateId: data.stateId || "",
         state: data.stateName || "Bilinmeyen Devlet",
         item: data.action || "",
@@ -2367,6 +2416,16 @@ function addLog(data) {
         eventChanges: Array.isArray(data.eventChanges) ? data.eventChanges : []
     });
     if(db.purchaseLog.length > 300) db.purchaseLog.pop();
+}
+function mergePurchaseLogs(remoteLogs,localLogs){
+ const result=[],seen=new Set();
+ for(const log of [...(localLogs||[]),...(remoteLogs||[])]){
+  const key=log.logId||[log.stateId,log.state,log.item,log.date,log.user,log.qty,log.cost].join('|');
+  if(seen.has(key))continue;
+  seen.add(key);result.push(log);
+  if(result.length>=300)break;
+ }
+ return result;
 }
 
 function buyEdict(id, edictId) {
