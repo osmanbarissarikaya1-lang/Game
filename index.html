@@ -756,6 +756,7 @@ const defaultSettings={
  garrisonUpkeep:{fortress:8},
  populationBuildingGrowth:{hastane:0.5,asevi:0.4,su_degirmeni:0.6,kervansaray:0.3,pazar:0.4},
  populationBuildingCostPerPerson:{hastane:0.10,asevi:0.05,su_degirmeni:0.08,kervansaray:0.12,pazar:0.10},
+ populationBuildingUpkeep:{hastane:0,asevi:0,su_degirmeni:0,kervansaray:0,pazar:0},
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
@@ -988,6 +989,7 @@ async function loadDB(){
     delete db.settings.garrisonUpkeep.city;
     db.settings.populationBuildingGrowth={...defaultSettings.populationBuildingGrowth,...(db.settings?.populationBuildingGrowth||{})};
     db.settings.populationBuildingCostPerPerson={...defaultSettings.populationBuildingCostPerPerson,...(db.settings?.populationBuildingCostPerPerson||{})};
+    db.settings.populationBuildingUpkeep={...defaultSettings.populationBuildingUpkeep,...(db.settings?.populationBuildingUpkeep||{})};
     db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.images={...defaultSettings.images,...(db.settings?.images||{})};
@@ -1463,6 +1465,7 @@ function openDetail(id){
  const cusUpkeep = calcCustomUpkeep(s);
  const advSalary = calcAdvisorExpenses(s);
  const fortressGarrisonExpense = calcFortressGarrisonExpense(s);
+ const populationBuildingExpense = calcPopulationBuildingExpense(s);
  const totalExpenses = calcExpenses(s);
  
  let tempLedgerTotal = 0;
@@ -1560,6 +1563,7 @@ function openDetail(id){
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Özel Birim Giderleri</span><b style="color:var(--red)">-${money(cusUpkeep)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Danışman / Vezir Maaşları</span><b style="color:var(--red)">-${money(advSalary)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Kale Garnizonu (${num(s.fortressGarrison||0)} asker)</span><b style="color:var(--red)">-${money(fortressGarrisonExpense)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Nüfus Binaları Yıllık Gideri</span><b style="color:var(--red)">-${money(populationBuildingExpense)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sivil Saray / Kamu Gideri</span><b style="color:var(--red)">-${money(s.civilExpense)}</b></div>
         <div class="finance-total">
             <span>TOPLAM OTOMATİK GİDER:</span>
@@ -2388,8 +2392,13 @@ function calcAdvisorExpenses(s){
 function calcFortressGarrisonExpense(s){
   return Math.max(0,Number(s.fortressGarrison)||0)*Math.max(0,Number(db.settings.garrisonUpkeep?.fortress)||0);
 }
+function calcPopulationBuildingExpense(s){
+  const upkeep=db.settings.populationBuildingUpkeep||{};
+  return ["hastane","asevi","su_degirmeni","kervansaray","pazar"].reduce((total,key)=>
+    total + Math.max(0,Number(s[key])||0)*Math.max(0,Number(upkeep[key])||0),0);
+}
 function calcExpenses(s){
-  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcFortressGarrisonExpense(s) + Number(s.civilExpense||0);
+  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcFortressGarrisonExpense(s) + calcPopulationBuildingExpense(s) + Number(s.civilExpense||0);
 }
 
 function addLog(data) {
@@ -2650,13 +2659,17 @@ function openStateForm(id=null){
  ${field("kucuk_ocak","Küçük Top Ocağı",s.kucuk_ocak,"number")}${field("orta_ocak","Orta Top Ocağı",s.orta_ocak,"number")}${field("buyuk_ocak","Büyük Top Ocağı",s.buyuk_ocak,"number")}
  ${field("okul","Okul",s.okul,"number")}
  ${field("istihbarat_binasi","İstihbarat Dairesi (Bina Sayısı)",s.istihbarat_binasi||0,"number")}
+ <div class="full"><h4 style="margin:8px 0 4px; border-bottom:1px solid var(--line); color:var(--border-gold);">NÜFUS BİNALARI</h4></div>
+ ${field("hastane","Hastane",s.hastane||0,"number")}${field("asevi","Aşevi",s.asevi||0,"number")}
+ ${field("su_degirmeni","Su Değirmeni",s.su_degirmeni||0,"number")}${field("kervansaray","Kervansaray",s.kervansaray||0,"number")}
+ ${field("pazar","Pazar",s.pazar||0,"number")}
  ${customFields}
  <div class="full actions" style="margin-top:10px;"><button class="btn" onclick="closeModal()">VAZGEÇ</button><button class="btn green" onclick="saveState('${id||""}')">KAYDET</button>${id?`<button class="btn red" onclick="deleteState('${id}')">SİL</button>`:""}</div></div>`);
 }
 function field(k,l,v,t="text"){return `<div><label>${l}</label><input id="f_${k}" type="${t}" value="${esc(v)}"></div>`}
 
 function saveState(id){
- const keys=["name","ownerEmail","ruler","rulerImage","bgImage","title","color","treasury","population","tax","education","baseTaxPerPerson","civilExpense","advisorSlots","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul","istihbarat_binasi"];
+ const keys=["name","ownerEmail","ruler","rulerImage","bgImage","title","color","treasury","population","tax","education","baseTaxPerPerson","civilExpense","advisorSlots","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul","istihbarat_binasi","hastane","asevi","su_degirmeni","kervansaray","pazar"];
  if(db.settings.customItems) { db.settings.customItems.forEach(item => keys.push(item.id)); }
  const o={};
  keys.forEach(k=>o[k]=["name","ownerEmail","ruler","rulerImage","bgImage","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
@@ -2953,7 +2966,7 @@ function organizeAdminTabs(){
 
 function openAdmin(){
  if(!isAdmin) return; 
- const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost,gu=db.settings.garrisonUpkeep,pg=db.settings.populationBuildingGrowth,pc=db.settings.populationBuildingCostPerPerson;
+ const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost,gu=db.settings.garrisonUpkeep,pg=db.settings.populationBuildingGrowth,pc=db.settings.populationBuildingCostPerPerson,pbu=db.settings.populationBuildingUpkeep;
  const img=db.settings.images||{};
  const stateOpts = `<option value="">🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
  
@@ -3071,6 +3084,14 @@ function openAdmin(){
    ${field("pg_su_degirmeni","Su Değirmeni Nüfus Artışı (%)",pg.su_degirmeni,"number")}
    ${field("pg_kervansaray","Kervansaray Nüfus Artışı (%)",pg.kervansaray,"number")}
    ${field("pg_pazar","Pazar Nüfus Artışı (%)",pg.pazar,"number")}
+ </div>
+ <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">NÜFUS BİNALARI YILLIK GİDERLERİ (Bina Başı)</h4>
+ <div class="formgrid">
+   ${field("pbu_hastane","Hastane Yıllık Gideri",pbu.hastane,"number")}
+   ${field("pbu_asevi","Aşevi Yıllık Gideri",pbu.asevi,"number")}
+   ${field("pbu_su_degirmeni","Su Değirmeni Yıllık Gideri",pbu.su_degirmeni,"number")}
+   ${field("pbu_kervansaray","Kervansaray Yıllık Gideri",pbu.kervansaray,"number")}
+   ${field("pbu_pazar","Pazar Yıllık Gideri",pbu.pazar,"number")}
  </div>
  <h4 style="margin-top:10px; color:var(--blue); font-family:'Oswald';">HARİTA İSTİHBARATI</h4>
  <div class="formgrid">${field("map_intel_cost","İstihbaratsız Oyuncu Rapor Ücreti",db.settings.mapIntelReportCost||0,"number")}</div>
@@ -3277,6 +3298,7 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.garrisonUpkeep).forEach(k=>{ const el=document.getElementById("f_gu_"+k); if(el) db.settings.garrisonUpkeep[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.populationBuildingGrowth).forEach(k=>{ const el=document.getElementById("f_pg_"+k); if(el) db.settings.populationBuildingGrowth[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.populationBuildingCostPerPerson).forEach(k=>{ const el=document.getElementById("f_pc_"+k); if(el) db.settings.populationBuildingCostPerPerson[k]=Math.max(0,Number(el.value||0)); });
+ Object.keys(db.settings.populationBuildingUpkeep).forEach(k=>{ const el=document.getElementById("f_pbu_"+k); if(el) db.settings.populationBuildingUpkeep[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
  Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
  
