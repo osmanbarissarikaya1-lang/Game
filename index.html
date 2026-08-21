@@ -1069,7 +1069,7 @@ async function saveMapDB(){
  try{
   const latest=await sb.from('game_state').select('data').eq('id',1).maybeSingle();
   if(latest.error)throw latest.error;
-  const merged={...(latest.data?.data||db),mapProvinceOwners:owners,mapProvinceDetails:details,valuableRegions,mapOwnershipInitialized:true,purchaseLog:mergePurchaseLogs(latest.data?.data?.purchaseLog,db.purchaseLog)};
+  const merged={...(latest.data?.data||db),mapProvinceOwners:owners,mapProvinceDetails:details,valuableRegions:structuredClone(db.valuableRegions||{}),mapOwnershipInitialized:true,purchaseLog:mergePurchaseLogs(latest.data?.data?.purchaseLog,db.purchaseLog)};
   const write=await sb.from('game_state').upsert({id:1,data:merged,updated_at:new Date().toISOString()});
   if(write.error)throw write.error;
   mapSyncChannel?.postMessage({type:'map-saved',owners,details,valuableRegions});
@@ -1082,7 +1082,16 @@ async function saveMapDB(){
 function queueMapSave(){mapSavePending=true;clearTimeout(mapSaveTimer);mapSaveTimer=setTimeout(()=>{mapSavePending=false;saveMapDB();},250)}
 
 const MAP_TURKISH_NAMES = {"Achaea":"Achaia","Adana":"Adana","Aden":"Aden","Agadir":"Agadir","Ajlun":"Ajlun","Aksaray":"Aksaray","Aleppo":"Halep","Alexandria":"İskenderiye","Ankara":"Ankara","Ancona":"Ankona","Antioch":"Antakya","Arbil":"Erbil","Ardabil":"Erdebil","Ardalan":"Erdelan","Ardakan":"Ardakan","Aydin":"Aydın","Baghdad":"Bağdat","Bursa":"Bursa","Cairo":"Kahire","Constantinople":"Konstantiniyye (İstanbul)","Damascus":"Şam","Edirne":"Edirne","Isfahan":"İsfahan","Jerusalem":"Kudüs","Konya":"Konya","Mecca":"Mekke","Medina":"Medine","Mosul":"Musul","Sivas":"Sivas","Tabriz":"Tebriz","Trebizond":"Trabzon","Urfa":"Urfa","Basra":"Basra","Smyrna":"İzmir","Smyrna/İzmir":"İzmir","Belgrade":"Belgrad","Gallipoli":"Gelibolu","Rhodes":"Rodos","Chios":"Sakız","Tunis":"Tunus","Karbala":"Kerbela","Najaf":"Necef","Trabzon":"Trabzon","Tokat":"Tokat","Kayseri":"Kayseri","Diyarbakir":"Diyarbakır","Damietta":"Dimyat","Suez":"Süveyş","Jeddah":"Cidde","Aqaba":"Akabe","Muscat":"Maskat","Hormuz":"Hürmüz","Kabul":"Kabil","Kandahar":"Kandahar","Samarkand":"Semerkant","Bukhara":"Buhara","Kashgar":"Kaşgar","Lahore":"Lahor","Multan":"Multan","Shiraz":"Şiraz","Yazd":"Yezd","Kerman":"Kirman","Kashan":"Kaşan","Herat":"Herat","Amasya":"Amasya","Hüdavendigar":"Hüdavendigar"};
-function getTurkishMapName(value){const raw=String(value||'').replaceAll('_',' ').trim();return MAP_TURKISH_NAMES[raw]||raw;}
+function getTurkishMapName(value){
+ const raw=String(value||'').replaceAll('_',' ').trim();
+ if(MAP_TURKISH_NAMES[raw])return MAP_TURKISH_NAMES[raw];
+ return raw
+   .replace(/\bProvince\b/gi,'')
+   .replace(/\bCounty\b/gi,'')
+   .replace(/\bRegion\b/gi,'')
+   .replace(/\s{2,}/g,' ')
+   .trim();
+}
 function normalizeMapName(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('tr-TR').replace(/[^a-z0-9]+/g,'')}
 function normalizeMapColor(value,fallback='#c5a059'){const v=String(value||'').trim();if(/^#[0-9a-f]{6}$/i.test(v))return v;if(/^#[0-9a-f]{3}$/i.test(v))return '#'+v.slice(1).split('').map(x=>x+x).join('');const m=v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);if(m)return '#'+[m[1],m[2],m[3]].map(x=>Math.max(0,Math.min(255,Number(x))).toString(16).padStart(2,'0')).join('');return fallback;}
 function getProvinceDisplayColor(provinceId,detail={},owner=null){const path=document.getElementById(provinceId);return normalizeMapColor(path?.style.fill||path?.getAttribute('fill')||detail.color||owner?.color,normalizeMapColor(detail.color||owner?.color));}
@@ -1122,13 +1131,21 @@ function getStrategicRegionList(){
  const groups=mapConfigCache?.groups||{};
  Object.values(groups).forEach(group=>{
    (group.paths||[]).forEach(provinceId=>{
-     if(!seen.has(provinceId)){seen.add(provinceId);out.push({id:provinceId,name:provinceId.replaceAll('_',' ')});}
+     if(!seen.has(provinceId)){
+       seen.add(provinceId);
+       out.push({id:provinceId,name:getTurkishMapName(provinceId)});
+     }
    });
  });
  if(!out.length){
-   Object.keys(db.mapProvinceOwners||{}).forEach(provinceId=>{if(!seen.has(provinceId)){seen.add(provinceId);out.push({id:provinceId,name:provinceId.replaceAll('_',' ')});}});
+   Object.keys(db.mapProvinceOwners||{}).forEach(provinceId=>{
+     if(!seen.has(provinceId)){
+       seen.add(provinceId);
+       out.push({id:provinceId,name:getTurkishMapName(provinceId)});
+     }
+   });
  }
- return out.sort((a,b)=>a.name.localeCompare(b.name,'tr'));
+ return out.sort((a,b)=>a.name.localeCompare(b.name,'tr-TR'));
 }
 function strategicDomKey(id){return encodeURIComponent(id).replace(/%/g,'_');}
 function getStrategicRegionConfig(provinceId){return db.valuableRegions?.[provinceId]||{};}
@@ -1137,7 +1154,7 @@ function filterStrategicRegions(){
   const input=document.getElementById('strategicRegionSearch');
   const q=String(input?.value||'').trim().toLocaleLowerCase('tr-TR');
   document.querySelectorAll('[data-strategic-region-row]').forEach(row=>{
-    const hay=String(row.dataset.search||'').toLocaleLowerCase('tr-TR');
+    const hay=String(row.dataset.search||row.textContent||'').toLocaleLowerCase('tr-TR');
     row.style.display=(!q||hay.includes(q))?'':'none';
   });
 }
@@ -1170,8 +1187,8 @@ function openStrategicRegionAdmin(){
  const regions=getStrategicRegionList();
  const rows=regions.map((r,i)=>{
    const cfg=getStrategicRegionConfig(r.id),k=strategicDomKey(r.id);
-   return `<div class="list-item" style="display:block;margin-bottom:7px;padding:8px;">
-     <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><input id="f_sr_enabled_${k}" type="checkbox" ${cfg.enabled?'checked':''} style="width:auto;"><label for="f_sr_enabled_${k}" style="margin:0;cursor:pointer;"><b>${esc(r.name)}</b></label><span class="sub" style="margin-left:auto;">${esc(r.id)}</span></div>
+   return `<div class="list-item strategic-region-row" data-strategic-region-row data-search="${esc(r.name)}" style="display:block;margin-bottom:7px;padding:8px;">
+     <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><input id="f_sr_enabled_${k}" type="checkbox" ${cfg.enabled?'checked':''} style="width:auto;"><label for="f_sr_enabled_${k}" style="margin:0;cursor:pointer;"><b>${esc(r.name)}</b></label></div>
      <div class="formgrid" style="margin:0;">
        ${field(`sr_url_${k}`,'Sticker URL',cfg.url||'','text')}
        ${field(`sr_desc_${k}`,'Açıklama',cfg.description||'','text')}
@@ -1180,7 +1197,7 @@ function openStrategicRegionAdmin(){
    </div>`;
  }).join('');
  modal(`<h2>⭐ DEĞERLİ / STRATEJİK BÖLGELER</h2><div style="margin:8px 0 10px;">
-<input id="strategicRegionSearch" type="search" placeholder="Bölge ara (Türkçe veya eski ad)..." oninput="filterStrategicRegions()" style="width:100%;box-sizing:border-box;">
+<input id="strategicRegionSearch" type="search" placeholder="Bölge ara..." oninput="filterStrategicRegions()" style="width:100%;box-sizing:border-box;">
 </div>
  <p class="sub">Stratejik Görünüm açıkken işaretlenen topraklarda sticker görünür. Sticker boyutu bölgenin büyüklüğüne göre otomatik ayarlanır; ölçek alanı ile ince ayar yapabilirsin. Oyuncu bölgeye tıkladığında mevcut sahip/garnizon bilgisinin altında açıklamayı görür.</p>
  <div style="max-height:58vh;overflow:auto;padding-right:4px;">${rows||'<p class="sub">Harita bölgeleri yüklenemedi.</p>'}</div>
@@ -1374,14 +1391,14 @@ function handleProvinceClick(provinceId){
  if(mapBrush){paintProvinceWithBrush(provinceId);return;}
  const currentColor=getProvinceDisplayColor(provinceId,detail,owner);
  const options=`<option value="">Sahipsiz / atanmamış</option>`+db.states.map(s=>`<option value="${s.id}" ${owner?.id===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
- modal(`<h2>🗺️ TOPRAK YÖNETİMİ</h2><div class="event-result"><b>Toprak:</b> ${esc(provinceId.replaceAll('_',' '))}<br><b>Gösterilen ülke:</b> ${esc(detail.countryName||owner?.name||'Sahipsiz / atanmadı')}<br><b>Bu topraktaki garnizon:</b> ${num(detail.garrison??owner?.fortressGarrison??0)} asker</div><div class="formgrid" style="margin-top:10px;"><div class="full"><label>Devlet Kartına Bağla (İsteğe Bağlı)</label><select id="province_owner" onchange="syncProvinceOwnerFields(this.value)">${options}</select></div>${field('province_country_name','Ülke Adı (Kart olmadan yazılabilir)',detail.countryName||owner?.name||'','text')}${field('province_garrison','Bu Topraktaki Garnizon Sayısı',detail.garrison??owner?.fortressGarrison??0,'number')}${field('province_color','Toprak Rengi',currentColor,'color')}<div><label style="display:flex;align-items:center;gap:7px;margin-top:20px;"><input id="province_apply_all" type="checkbox" style="width:auto;"> Aynı ülke adlı bütün topraklara rengi uygula</label></div></div><div class="actions" style="margin-top:12px;"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn green" onclick="saveProvinceOwner('${esc(provinceId)}')">KAYDET</button></div>`);
+ modal(`<h2>🗺️ TOPRAK YÖNETİMİ</h2><div class="event-result"><b>Toprak:</b> ${esc(getTurkishMapName(provinceId))}<br><b>Gösterilen ülke:</b> ${esc(detail.countryName||owner?.name||'Sahipsiz / atanmadı')}<br><b>Bu topraktaki garnizon:</b> ${num(detail.garrison??owner?.fortressGarrison??0)} asker</div><div class="formgrid" style="margin-top:10px;"><div class="full"><label>Devlet Kartına Bağla (İsteğe Bağlı)</label><select id="province_owner" onchange="syncProvinceOwnerFields(this.value)">${options}</select></div>${field('province_country_name','Ülke Adı (Kart olmadan yazılabilir)',detail.countryName||owner?.name||'','text')}${field('province_garrison','Bu Topraktaki Garnizon Sayısı',detail.garrison??owner?.fortressGarrison??0,'number')}${field('province_color','Toprak Rengi',currentColor,'color')}<div><label style="display:flex;align-items:center;gap:7px;margin-top:20px;"><input id="province_apply_all" type="checkbox" style="width:auto;"> Aynı ülke adlı bütün topraklara rengi uygula</label></div></div><div class="actions" style="margin-top:12px;"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn green" onclick="saveProvinceOwner('${esc(provinceId)}')">KAYDET</button></div>`);
 }
 
 function syncProvinceOwnerFields(ownerId){const owner=getState(ownerId);if(!owner)return;const nameEl=document.getElementById('f_province_country_name'),garrisonEl=document.getElementById('f_province_garrison'),colorEl=document.getElementById('f_province_color');if(nameEl)nameEl.value=owner.name||'';if(garrisonEl)garrisonEl.value=owner.fortressGarrison||0;if(colorEl)colorEl.value=owner.color||'#c5a059';}
 
 function openPlayerProvinceIntel(provinceId,owner){
  const viewer=getCurrentPlayerState();
- const provinceName=provinceId.replaceAll('_',' ');
+ const provinceName=getTurkishMapName(provinceId);
  const detail=db.mapProvinceDetails?.[provinceId]||{};
  const countryName=detail.countryName||owner?.name||'';
  const realGarrison=detail.garrison??owner?.fortressGarrison??0;
@@ -1408,7 +1425,7 @@ function buyProvinceIntelReport(provinceId,viewerId){
  const report=getGarrisonIntelReport(viewer,realGarrison);
  addLog({stateId:viewer.id,stateName:viewer.name,action:`Toprak istihbaratı satın alındı: ${getTurkishMapName(provinceId)}`,qty:1,cost,oldTreasury,newTreasury:viewer.treasury});
  queueSave();
- modal(`<h2>🕵️ MUHBİR RAPORU</h2><div class="event-result"><b>Toprak:</b> ${esc(provinceId.replaceAll('_',' '))}<br><b>Sahibi:</b> ${esc(countryName)}<br><b>${report.exact?'Kesin':'Tahmini'} toprak garnizonu:</b> ${report.exact?'':'~'}${num(report.value)} asker</div><p class="sub">${esc(report.note)} Hazineden ${money(cost)} ödendi.</p><div class="actions"><button class="btn" onclick="closeModal()">KAPAT</button></div>`);
+ modal(`<h2>🕵️ MUHBİR RAPORU</h2><div class="event-result"><b>Toprak:</b> ${esc(getTurkishMapName(provinceId))}<br><b>Sahibi:</b> ${esc(countryName)}<br><b>${report.exact?'Kesin':'Tahmini'} toprak garnizonu:</b> ${report.exact?'':'~'}${num(report.value)} asker</div><p class="sub">${esc(report.note)} Hazineden ${money(cost)} ödendi.</p><div class="actions"><button class="btn" onclick="closeModal()">KAPAT</button></div>`);
 }
 
 function saveProvinceOwner(provinceId){
