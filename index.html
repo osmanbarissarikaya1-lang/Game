@@ -1349,15 +1349,17 @@ function renderStrategicMapLabels(){
    const items=country.items,n=items.length,parent=items.map((_,i)=>i),find=i=>parent[i]===i?i:(parent[i]=find(parent[i])),join=(a,b)=>{a=find(a);b=find(b);if(a!==b)parent[b]=a;};
    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const scale=Math.max(1,Math.min(4,(Math.sqrt(items[i].area)+Math.sqrt(items[j].area))*.18));if(bboxGap(items[i].b,items[j].b)<=scale)join(i,j);}
    const components=new Map();items.forEach((item,i)=>{const root=find(i);if(!components.has(root))components.set(root,[]);components.get(root).push(item);});
-   const largestComponent=[...components.values()].sort((a,b)=>b.reduce((sum,p)=>sum+p.area,0)-a.reduce((sum,p)=>sum+p.area,0))[0];
+   // Ülkenin tüm topraklarını tek etiket alanı olarak kullan.
+   components.clear();components.set(0,items);
    components.forEach((points,componentIndex)=>{
-     if(points!==largestComponent)return;
-     const anchor=points.slice().sort((a,b)=>b.area-a.area)[0];const cx=anchor.x,cy=anchor.y;
+     const minX=Math.min(...points.map(p=>p.b.x)),maxX=Math.max(...points.map(p=>p.b.x+p.b.width));
+     const minY=Math.min(...points.map(p=>p.b.y)),maxY=Math.max(...points.map(p=>p.b.y+p.b.height));
+     const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
      let xx=0,yy=0,xy=0;points.forEach(p=>{const dx=p.x-cx,dy=p.y-cy;xx+=p.area*dx*dx;yy+=p.area*dy*dy;xy+=p.area*dx*dy;});
      let angle=0;
      const rad=angle*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad);let along=0,cross=0;
      points.forEach(p=>[[p.b.x,p.b.y],[p.b.x+p.b.width,p.b.y],[p.b.x,p.b.y+p.b.height],[p.b.x+p.b.width,p.b.y+p.b.height]].forEach(([x,y])=>{const dx=x-cx,dy=y-cy;along=Math.max(along,Math.abs(dx*cos+dy*sin));cross=Math.max(cross,Math.abs(-dx*sin+dy*cos));}));
-     const usableLength=Math.max(2,anchor.b.width*.82),usableHeight=Math.max(2,anchor.b.height*.72);let fontSize=Math.max(1.2,Math.min(16,usableLength/Math.max(3,country.name.length*.66),usableHeight*.72));
+     const usableLength=Math.max(2,(maxX-minX)*.78),usableHeight=Math.max(2,(maxY-minY)*.68);let fontSize=Math.max(1.2,Math.min(16,usableLength/Math.max(3,country.name.length*.66),usableHeight*.72));
      let defs=svg.querySelector('defs');if(!defs){defs=document.createElementNS('http://www.w3.org/2000/svg','defs');svg.insertBefore(defs,svg.firstChild);}
      const clipId=`strategic-country-${String(country.name).replace(/[^a-z0-9]/gi,'-')}-${componentIndex}-${Math.random().toString(36).slice(2,7)}`;
      const clip=document.createElementNS('http://www.w3.org/2000/svg','clipPath');clip.setAttribute('id',clipId);clip.setAttribute('class','strategic-country-clip');points.forEach(point=>{const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#'+point.pathId);clip.appendChild(use);});defs.appendChild(clip);
