@@ -761,7 +761,7 @@ function initSupabase(){
  if(!window.supabase || typeof window.supabase.createClient!=="function") throw new Error("Supabase kütüphanesi yüklenemedi.");
  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
 }
-function applyAppBackground(){const url=cleanUrl(db?.settings?.images?.appBackground||'');document.body.style.backgroundImage=url?`linear-gradient(rgba(7,9,12,.62),rgba(7,9,12,.78)),url("${url.replace(/"/g,'%22')}")`:'';document.body.style.backgroundSize=url?'cover':'';document.body.style.backgroundAttachment=url?'fixed':'';document.body.style.backgroundPosition=url?'center':'';}
+function applyAppBackground(){const url=cleanUrl(db?.settings?.images?.appBackground||'https://i.hizliresim.com/nbm2rtts.png');document.body.style.backgroundImage=url?`linear-gradient(rgba(7,9,12,.62),rgba(7,9,12,.78)),url("${url.replace(/"/g,'%22')}")`:'';document.body.style.backgroundSize=url?'cover':'';document.body.style.backgroundAttachment=url?'fixed':'';document.body.style.backgroundPosition=url?'center':'';}
 
 const defaultSettings={
  prices:{piyade:21,suvari:40,nisanci:30,kucuk_top:10000,orta_top:25000,buyuk_top:45000,kucuk_gemi:65000,orta_gemi:95000,buyuk_gemi:130000,kucuk_liman:100000,orta_liman:180000,buyuk_liman:300000,kucuk_ocak:80000,orta_ocak:150000,buyuk_ocak:250000,okul:120000,istihbarat_binasi:200000},
@@ -779,7 +779,7 @@ const defaultSettings={
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
  mapIntelReportCost:100000,
- images:{piyade:"",suvari:"",nisanci:"",kucuk_top:"",orta_top:"",buyuk_top:"",kucuk_gemi:"",orta_gemi:"",buyuk_gemi:"",kucuk_liman:"",orta_liman:"",buyuk_liman:"",kucuk_ocak:"",orta_ocak:"",buyuk_ocak:"",okul:"",istihbarat_binasi:"",fortress:"",fortress_garrison:"",hastane:"",asevi:"",su_degirmeni:"",kervansaray:"",pazar:"",appBackground:""},
+ images:{piyade:"",suvari:"",nisanci:"",kucuk_top:"",orta_top:"",buyuk_top:"",kucuk_gemi:"",orta_gemi:"",buyuk_gemi:"",kucuk_liman:"",orta_liman:"",buyuk_liman:"",kucuk_ocak:"",orta_ocak:"",buyuk_ocak:"",okul:"",istihbarat_binasi:"",fortress:"",fortress_garrison:"",hastane:"",asevi:"",su_degirmeni:"",kervansaray:"",pazar:"",appBackground:"https://i.hizliresim.com/nbm2rtts.png"},
  customItems: [] 
 };
 
