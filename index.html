@@ -1082,6 +1082,7 @@ async function loadDB(){
  }
  dbBaseSnapshot=structuredClone(db);
  dbServerRevision=Number(result.data?.revision||1);
+ if(isAdmin&&ensureBattleDemoStates()){await saveDB();}
  toast("Sistem Aktif",true);
 }
 
@@ -2636,6 +2637,15 @@ function calcInfrastructureExpense(s){
 function calcExpenses(s){
   const schoolExpense = Math.max(0, Number(s.okul)||0) * Math.max(0, Number(db.settings.schoolUpkeep)||0);
   return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcFortressGarrisonExpense(s) + calcPopulationBuildingExpense(s) + calcInfrastructureExpense(s) + schoolExpense + Number(s.civilExpense||0);
+}
+function ensureBattleDemoStates(){
+ if(db.battleDemoSeeded)return false;
+ const owner=(SUPER_ADMINS&&SUPER_ADMINS[0])||'';
+ const base={ownerEmail:owner,rulerImage:'',bgImage:'',title:'Deneme Devleti',color:'#c5a059',treasury:5000000,population:250000,tax:25,happiness:75,education:30,educatedPopulation:0,educatedPopulationBonus:0,anarchistPopulationBonus:0,eligiblePopulationBonus:0,baseTaxPerPerson:5,civilExpense:0,advisorSlots:3,piyade:12000,suvari:3500,nisanci:5000,kucuk_top:12,orta_top:5,buyuk_top:2,okul:2,fortressGarrison:1500,fortressCount:0,fortressPopulationCount:0,hiredAdvisors:[],advisorHiredYears:{},customLedger:[],permanentLedger:[]};
+ db.states.push({id:crypto.randomUUID(),name:'Deneme Devleti A',ruler:'Test Hükümdarı A',...structuredClone(base)});
+ db.states.push({id:crypto.randomUUID(),name:'Deneme Devleti B',ruler:'Test Hükümdarı B',color:'#4f8edb',...structuredClone(base),piyade:10000,suvari:4500,nisanci:6500,kucuk_top:10,orta_top:6,buyuk_top:1});
+ db.battleDemoSeeded=true;
+ return true;
 }
 function hasTreasuryDebt(s){return Number(s?.treasury||0)<0;}
 function rejectDebtPurchase(s){if(hasTreasuryDebt(s)){alert("Bu devlet borçlu olduğu için yeni alım veya inşa yapamaz.");return true;}return false;}
