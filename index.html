@@ -1084,12 +1084,22 @@ async function saveDB(){
   const conflicts=[];
   const merged=mergeStateThreeWay(base,db,remote,"",conflicts);
   if(conflicts.length){
+   // Ayar/form kayıtlarında uzak taraftaki değişikliklerle birlikte yerel
+   // ayarları koru. Eski davranış yerel fiyatları atıp kullanıcıyı ana sayfaya
+   // gönderiyordu.
+   const conflictMerged=structuredClone(remote);
+   if(!valuesEqual(db?.settings,base?.settings)) conflictMerged.settings=preferLocalChangedFields(base?.settings,db.settings,remote?.settings);
+   const retry=await sb.rpc("save_game_state",{expected_revision:Number(latest.data?.revision||1),next_data:conflictMerged});
+   if(retry.error)throw retry.error;
+   if(retry.data&&retry.data.length){
+     db=conflictMerged;
+     dbBaseSnapshot=structuredClone(conflictMerged);
+     dbServerRevision=Number(retry.data[0].saved_revision||dbServerRevision+1);
+     toast("Çakışma çözüldü; değişikliklerin kaydedildi.",true);
+     return true;
+   }
    await sb.from("game_state_snapshots").insert({game_state_id:1,data:db,source:"conflict_unsaved"});
-   db=remote;
-   dbBaseSnapshot=structuredClone(remote);
-   dbServerRevision=Number(latest.data?.revision||1);
-   toast("Çakışma algılandı; eski verin snapshot olarak korundu. Güncel oyun yüklendi.");
-   if(currentId)openDetail(currentId);else renderHome();
+   toast("Çakışma çözülemedi; tekrar kaydetmeyi deneyin.");
    return false;
   }
   const write=await sb.rpc("save_game_state",{expected_revision:Number(latest.data?.revision||1),next_data:merged});
@@ -2582,6 +2592,15 @@ function calcPopulationBuildingExpense(s){
   const upkeep=db.settings.populationBuildingUpkeep||{};
   return ["hastane","asevi","su_degirmeni","kervansaray","pazar"].reduce((total,key)=>
     total + Math.max(0,Number(s[key])||0)*Math.max(0,Number(upkeep[key])||0),0);
+}
+function preferLocalChangedFields(base,local,remote){
+ if(valuesEqual(local,base))return structuredClone(remote);
+ if(valuesEqual(remote,base))return structuredClone(local);
+ if(Array.isArray(local)||Array.isArray(remote))return structuredClone(remote);
+ if(local===null||typeof local!=="object"||remote===null||typeof remote!=="object")return structuredClone(local);
+ const result=structuredClone(remote||{});
+ Object.keys(local||{}).forEach(key=>{result[key]=preferLocalChangedFields(base?.[key],local[key],remote?.[key]);});
+ return result;
 }
 function calcInfrastructureExpense(s){
   const upkeep=db.settings.infrastructureUpkeep||{};
