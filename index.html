@@ -455,8 +455,7 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
 .error{color:var(--red);font-size:12px;margin-top:8px}.success{color:var(--green);font-size:12px;margin-top:8px}
 
 @media(max-width:1100px), (hover:none) and (pointer:coarse){
-    html,body { width:100%; max-width:100%; overflow-x:hidden; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-    body { background-attachment:scroll !important; }
+    html,body { width:100%; max-width:100%; overflow-x:hidden; }
     .container { width:100%; max-width:100%; padding: 5px; overflow-x:hidden; }
     .top { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; }
     .top .actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; width:100%; }
@@ -478,9 +477,11 @@ input:focus, select:focus, textarea:focus { border-color:var(--border-gold); }
     .content-panel > .tab-content { grid-column:1; grid-row:3; padding:8px; width:100%; min-width:0; overflow-x:hidden; }
     .unit-grid { grid-template-columns: 1fr; }
     #tab-content-asker > .unit-grid {
-        max-height: none;
-        overflow-y: visible;
+        max-height: 780px;
+        overflow-y: auto;
         overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
         padding-right: 4px;
     }
     .cards { grid-template-columns: 1fr; }
