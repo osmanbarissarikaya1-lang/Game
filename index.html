@@ -774,7 +774,6 @@ const defaultSettings={
  schoolUpkeep:10000,
  educatedTaxMultiplier:1.5,
  infrastructureUpkeep:{kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,istihbarat_binasi:0},
- battleMultipliers:{fieldInfantry:1,fieldCavalry:1.3,fieldArcher:1.2,siegeInfantry:1,siegeCavalry:.7,siegeArcher:1.3,smallGun:100,mediumGun:125,largeGun:160,fortressDefense:.3},
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
@@ -805,7 +804,7 @@ function getState(id){return db.states.find(s=>s.id===id)}
 function valuesEqual(a,b){return JSON.stringify(a)===JSON.stringify(b)}
 function normalizeSettings(settings){
  const s={...defaultSettings,...(settings||{})};
- ["prices","capacity","upkeep","garrisonUpkeep","populationBuildingGrowth","populationBuildingCostPerPerson","populationBuildingUpkeep","infrastructureUpkeep","battleMultipliers","edictCost","campaignCost","images"].forEach(k=>{s[k]={...defaultSettings[k],...(s[k]||{})};});
+ ["prices","capacity","upkeep","garrisonUpkeep","populationBuildingGrowth","populationBuildingCostPerPerson","populationBuildingUpkeep","infrastructureUpkeep","edictCost","campaignCost","images"].forEach(k=>{s[k]={...defaultSettings[k],...(s[k]||{})};});
  s.customItems=Array.isArray(s.customItems)?s.customItems:[];
  return s;
 }
@@ -3361,8 +3360,6 @@ async function openAdmin(){
  </div>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">ALTYAPI BİNALARI YILLIK GİDERLERİ (Bina Başı)</h4>
  <div class="formgrid">${Object.keys(iu).map(k=>field("iu_"+k,k,iu[k],"number")).join("")}</div>
- <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">SAVAŞ HASAR ÇARPANLARI</h4>
- <div class="formgrid">${Object.keys(db.settings.battleMultipliers).map(k=>field("bm_"+k,k,db.settings.battleMultipliers[k],"number")).join("")}</div>
  <p class="sub">Eğitimli nüfus artık yüzdeyle değil, okul kapasitesiyle kişi olarak hesaplanır. Çarpan 1,5 ise eğitimli kişi normal verginin 1,5 katını verir.</p>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">GARNİZON YILLIK GİDERLERİ (Asker Başı)</h4>
  <div class="formgrid">
@@ -3615,7 +3612,6 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.populationBuildingCostPerPerson).forEach(k=>{ const el=document.getElementById("f_pc_"+k); if(el) db.settings.populationBuildingCostPerPerson[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.populationBuildingUpkeep).forEach(k=>{ const el=document.getElementById("f_pbu_"+k); if(el) db.settings.populationBuildingUpkeep[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.infrastructureUpkeep).forEach(k=>{ const el=document.getElementById("f_iu_"+k); if(el) db.settings.infrastructureUpkeep[k]=Math.max(0,Number(el.value||0)); });
- Object.keys(db.settings.battleMultipliers).forEach(k=>{ const el=document.getElementById("f_bm_"+k); if(el) db.settings.battleMultipliers[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
  Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
  
@@ -3629,14 +3625,6 @@ function saveAdmin(doClose = true){
  if(doClose){ closeModal(); queueSave(); if(currentId) openDetail(currentId); } else { queueSave(); openAdmin(); }
 }
 
-let activeBattle=null;
-const BATTLE_MESSAGES=["Öncü birlikler temas etti; iki taraf da mevzisini yokluyor.","Topçu ateşi başladı, cephe hattında ilk boşluklar oluştu.","Süvariler kanatta baskı kurdu ve savunma hattını zorladı.","Nişancılar yoğun ateşle ilerlemeyi yavaşlattı.","Birlikler kısa süreli geri çekilip yeniden düzen aldı.","Komutanlar merkez hattına takviye gönderdi.","Şiddetli çatışma iki tarafın da moralini sarstı.","Savunma hattında dar bir gedik açıldı.","Süvari saldırısı beklenenden erken sonuç verdi.","Topçu mevzileri karşılıklı ateş altında kaldı.","İkmal birlikleri cepheye ulaştı ve saldırı yeniden hızlandı.","Bir kanat çözüldü ancak merkez direnmeye devam ediyor.","Nişancılar yüksek araziden etkili atış yaptı.","Kale savunması saldırının hızını kesti.","Saldıran taraf yeni bir saldırı hattı oluşturdu.","Savunmacılar karşı taarruzla kaybedilen mevziyi geri aldı.","Yorgunluk arttı; komutanlar riskli karar vermek zorunda.","Cephede kısa bir sessizlik yaşandı.","Ağır kayıplara rağmen iki taraf da savaşı sürdürüyor.","Son savunma hattı için birlikler yeniden toplandı."];
-function openBattleSimulator(){if(!isAdmin)return;const opts=db.states.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');modal(`<h2>🤖 AI SAVAŞ SİMÜLASYONU</h2><div class="formgrid"><div><label>Saldıran</label><select id="battle_attacker">${opts}</select></div><div><label>Savunan</label><select id="battle_defender">${opts}</select></div><div><label>Savaş Türü</label><select id="battle_type"><option value="field">Meydan Muharebesi</option><option value="siege">Kale Kuşatması</option></select></div></div><div class="actions"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn red" onclick="runBattleSimulation()">1. TURU BAŞLAT</button></div>`);}
-function runBattleSimulation(){const a=getState(document.getElementById('battle_attacker')?.value),d=getState(document.getElementById('battle_defender')?.value),type=document.getElementById('battle_type')?.value||'field';if(!a||!d||a.id===d.id){alert('İki farklı devlet seçmelisin.');return;}const m=db.settings.battleMultipliers||defaultSettings.battleMultipliers;const power=s=>Math.max(0,Number(s.piyade)||0)*(type==='siege'?m.siegeInfantry:m.fieldInfantry)+Math.max(0,Number(s.suvari)||0)*(type==='siege'?m.siegeCavalry:m.fieldCavalry)+Math.max(0,Number(s.nisanci)||0)*(type==='siege'?m.siegeArcher:m.fieldArcher)+Math.max(0,Number(s.kucuk_top)||0)*m.smallGun+Math.max(0,Number(s.orta_top)||0)*m.mediumGun+Math.max(0,Number(s.buyuk_top)||0)*m.largeGun+(type==='siege'?Math.max(0,Number(d.fortressCount)||0)*1000*(1+m.fortressDefense):0);activeBattle={attackerId:a.id,defenderId:d.id,type,turn:0,maxTurns:10,aPower:power(a),dPower:power(d),aLoss:0,dLoss:0,rounds:[]};renderActiveBattle();}
-function renderActiveBattle(){const a=getState(activeBattle.attackerId),d=getState(activeBattle.defenderId);modal(`<h2>⚔️ ${esc(a.name)} — ${esc(d.name)}</h2><div class="event-result"><b>${activeBattle.type==='siege'?'Kale Kuşatması':'Meydan Muharebesi'}</b><br>Tur: ${activeBattle.turn}/${activeBattle.maxTurns}<br>${activeBattle.rounds.length?esc(activeBattle.rounds[activeBattle.rounds.length-1]):'Savaş başlamak üzere.'}</div><div style="max-height:30vh;overflow:auto;margin-top:8px;">${activeBattle.rounds.map((x,i)=>`<div><b>Tur ${i+1}:</b> ${esc(x)}</div>`).join('')}</div><div class="actions"><button class="btn red" onclick="retreatBattle()">GERİ ÇEKİL</button><button class="btn green" onclick="advanceBattleTurn()">${activeBattle.turn?'DEVAM ET':'1. TURU OYNAT'}</button></div>`);}
-function advanceBattleTurn(){if(!activeBattle)return;const total=Math.max(1,activeBattle.aPower+activeBattle.dPower),aHit=Math.max(1,Math.round(activeBattle.aPower/total*activeBattle.dPower*.16*(.85+Math.random()*.3))),dHit=Math.max(1,Math.round(activeBattle.dPower/total*activeBattle.aPower*.16*(.85+Math.random()*.3)));activeBattle.aLoss+=dHit;activeBattle.dLoss+=aHit;activeBattle.aPower=Math.max(0,activeBattle.aPower-dHit);activeBattle.dPower=Math.max(0,activeBattle.dPower-aHit);activeBattle.turn++;activeBattle.rounds.push(`${BATTLE_MESSAGES[Math.floor(Math.random()*BATTLE_MESSAGES.length)]} ${num(dHit)} / ${num(aHit)} asker kaybı.`);if(activeBattle.turn>=activeBattle.maxTurns||activeBattle.aPower<=0||activeBattle.dPower<=0)finishBattle(false);else renderActiveBattle();}
-function retreatBattle(){finishBattle(true);}
-function finishBattle(retreated){if(!activeBattle)return;const a=getState(activeBattle.attackerId),d=getState(activeBattle.defenderId);const army=s=>Math.max(0,Number(s.piyade)||0)+Math.max(0,Number(s.suvari)||0)+Math.max(0,Number(s.nisanci)||0);const remove=(s,n)=>{let left=Math.min(army(s),Math.max(0,Math.floor(n)));for(const k of ['piyade','nisanci','suvari']){const take=Math.min(Math.max(0,Number(s[k])||0),Math.ceil(left/2));s[k]=Math.max(0,(Number(s[k])||0)-take);left-=take;if(left<=0)break;}};remove(a,activeBattle.aLoss);remove(d,activeBattle.dLoss);const winner=retreated?d:(activeBattle.aPower>=activeBattle.dPower?a:d);db.battleHistory=db.battleHistory||[];db.battleHistory.unshift({id:crypto.randomUUID(),date:new Date().toLocaleString('tr-TR'),attackerId:a.id,defenderId:d.id,type:activeBattle.type,tours:activeBattle.turn,winnerId:winner.id,attackerLoss:activeBattle.aLoss,defenderLoss:activeBattle.dLoss,retreated,rounds:activeBattle.rounds});queueSave();const result=activeBattle;activeBattle=null;modal(`<h2>⚔️ SAVAŞ SONUCU</h2><div class="event-result"><b>Kazanan:</b> ${esc(winner.name)}<br><b>Tur:</b> ${result.turn}<br><b>${esc(a.name)} kaybı:</b> ${num(result.aLoss)}<br><b>${esc(d.name)} kaybı:</b> ${num(result.dLoss)}${retreated?'<br>⚠️ Saldıran taraf geri çekildi.':''}</div><div class="actions"><button class="btn blue" onclick="closeModal();openAdmin()">KAPAT</button></div>`);}
 window.addEventListener("load",init);
 </script>
 </body>
