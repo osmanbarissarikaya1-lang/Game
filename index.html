@@ -1112,10 +1112,15 @@ function setupGameRealtime(){
  gameSyncChannel=sb.channel("game-state-sync").on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_state",filter:"id=eq.1"},payload=>{
    const remote=payload.new?.data;
    if(!remote)return;
+   // Supabase kendi kaydımızı da realtime üzerinden geri yayınlar. Aynı
+   // revision zaten bu istemcide işlendi ise bunu başka oyuncu değişikliği
+   // sayma ve gereksiz bildirim gösterme.
+   const incomingRevision=Number(payload.new?.revision||0);
+   if(incomingRevision && incomingRevision<=Number(dbServerRevision||0))return;
    if(valuesEqual(db,dbBaseSnapshot)){
      db=remote;
      dbBaseSnapshot=structuredClone(remote);
-     dbServerRevision=Number(payload.new?.revision||dbServerRevision);
+     dbServerRevision=incomingRevision||dbServerRevision;
      if(currentId)openDetail(currentId);else renderHome();
      toast("Başka bir oyuncunun değişikliği anlık olarak yüklendi.",true);
    }
