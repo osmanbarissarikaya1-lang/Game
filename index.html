@@ -802,6 +802,12 @@ function money(n){return Number(n||0).toLocaleString("tr-TR")+" TL"}
 function num(n){return Number(n||0).toLocaleString("tr-TR")}
 function getState(id){return db.states.find(s=>s.id===id)}
 function valuesEqual(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+function normalizeSettings(settings){
+ const s={...defaultSettings,...(settings||{})};
+ ["prices","capacity","upkeep","garrisonUpkeep","populationBuildingGrowth","populationBuildingCostPerPerson","populationBuildingUpkeep","infrastructureUpkeep","edictCost","campaignCost","images"].forEach(k=>{s[k]={...defaultSettings[k],...(s[k]||{})};});
+ s.customItems=Array.isArray(s.customItems)?s.customItems:[];
+ return s;
+}
 function mergeStateThreeWay(base,local,remote,path="",conflicts=[]){
  if(valuesEqual(local,base))return structuredClone(remote);
  if(valuesEqual(remote,base))return structuredClone(local);
@@ -1080,6 +1086,7 @@ async function saveDB(){
   const latest=await sb.from("game_state").select("data,revision").eq("id",1).maybeSingle();
   if(latest.error)throw latest.error;
   const remote=latest.data?.data||{};
+  remote.settings=normalizeSettings(remote.settings);
   const base=dbBaseSnapshot||remote;
   const conflicts=[];
   const merged=mergeStateThreeWay(base,db,remote,"",conflicts);
@@ -1139,12 +1146,14 @@ function setupGameRealtime(){
    // Modal açıkken formu yeniden oluşturma. Kullanıcının girdiği değerler
    // DOM'da duruyor; uzak veri bir sonraki kaydetmede üç-yollu birleştirilir.
    if(document.getElementById('modal')?.classList.contains('show')){
+     remote.settings=normalizeSettings(remote.settings);
      db=remote;
      dbBaseSnapshot=structuredClone(remote);
      dbServerRevision=incomingRevision||dbServerRevision;
      return;
    }
    if(valuesEqual(db,dbBaseSnapshot)){
+     remote.settings=normalizeSettings(remote.settings);
      const activeTab=document.querySelector('.hoi-tab.active')?.id?.replace('tab-btn-','');
      const scrollTop=window.scrollY;
      db=remote;
