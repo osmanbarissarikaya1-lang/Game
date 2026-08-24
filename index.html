@@ -3368,7 +3368,7 @@ async function openAdmin(){
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">ALTYAPI BİNALARI YILLIK GİDERLERİ (Bina Başı)</h4>
  <div class="formgrid">${Object.keys(iu).map(k=>field("iu_"+k,k,iu[k],"number")).join("")}</div>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">SAVAŞ HASAR ÇARPANLARI</h4>
- <div class="formgrid">${Object.keys(db.settings.battleMultipliers).map(k=>field("bm_"+k,({fieldInfantry:'Meydan piyade hasarı',fieldCavalry:'Meydan süvari hasarı',fieldArcher:'Meydan okçu/nişancı hasarı',siegeInfantry:'Kuşatma piyade hasarı',siegeCavalry:'Kuşatma süvari hasarı',siegeArcher:'Kuşatma okçu/nişancı hasarı',smallGun:'Küçük top hasarı',mediumGun:'Orta top hasarı',largeGun:'Büyük top hasarı',fortressDefense:'Kale savunma bonusu'}[k]||k),db.settings.battleMultipliers[k],"number")).join("")}</div>
+ <div class="formgrid">${Object.keys(db.settings.battleMultipliers).map(k=>field("bm_"+k,k,db.settings.battleMultipliers[k],"number")).join("")}</div>
  <p class="sub">Eğitimli nüfus artık yüzdeyle değil, okul kapasitesiyle kişi olarak hesaplanır. Çarpan 1,5 ise eğitimli kişi normal verginin 1,5 katını verir.</p>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">GARNİZON YILLIK GİDERLERİ (Asker Başı)</h4>
  <div class="formgrid">
