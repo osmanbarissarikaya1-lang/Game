@@ -773,6 +773,7 @@ const defaultSettings={
  schoolCapacityPerBuilding:500,
  schoolUpkeep:10000,
  educatedTaxMultiplier:1.5,
+ infrastructureUpkeep:{kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,buyuk_ocak:0,istihbarat_binasi:0},
  edictCost:{erzak:2, karakol:1.5, panayir:1, ibadethane:3, anit:2.5, denetim:0.5},
  campaignCost:{piyade:2, suvari:5, nisanci:3, kucuk_top:200, orta_top:500, buyuk_top:1000},
  schoolEducation:2,
@@ -1022,6 +1023,7 @@ async function loadDB(){
     db.settings.populationBuildingGrowth={...defaultSettings.populationBuildingGrowth,...(db.settings?.populationBuildingGrowth||{})};
     db.settings.populationBuildingCostPerPerson={...defaultSettings.populationBuildingCostPerPerson,...(db.settings?.populationBuildingCostPerPerson||{})};
     db.settings.populationBuildingUpkeep={...defaultSettings.populationBuildingUpkeep,...(db.settings?.populationBuildingUpkeep||{})};
+    db.settings.infrastructureUpkeep={...defaultSettings.infrastructureUpkeep,...(db.settings?.infrastructureUpkeep||{})};
     db.settings.edictCost={...defaultSettings.edictCost,...(db.settings?.edictCost||{})};
     db.settings.campaignCost={...defaultSettings.campaignCost,...(db.settings?.campaignCost||{})};
     db.settings.images={...defaultSettings.images,...(db.settings?.images||{})};
@@ -1650,6 +1652,8 @@ function openDetail(id){
  const advSalary = calcAdvisorExpenses(s);
  const fortressGarrisonExpense = calcFortressGarrisonExpense(s);
  const populationBuildingExpense = calcPopulationBuildingExpense(s);
+ const schoolExpense = Math.max(0,Number(s.okul)||0)*Math.max(0,Number(db.settings.schoolUpkeep)||0);
+ const infrastructureExpense = calcInfrastructureExpense(s);
  const totalExpenses = calcExpenses(s);
  
  let tempLedgerTotal = 0;
@@ -1728,7 +1732,7 @@ function openDetail(id){
     <!-- GELİR DETAYLARI -->
     <div class="finance-panel finance-income">
         <h4 style="color:var(--green); margin:0 0 6px; font-family:'Oswald';">📥 GELİR DETAYLARI</h4>
-        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Eğitimli Sınıf Vergisi (1.5x)</span><b style="color:var(--green)">${money(Math.floor(p.edu * actualBaseTax * 1.5))}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Eğitimli Sınıf Vergisi (${Number(db.settings.educatedTaxMultiplier??1.5)}x)</span><b style="color:var(--green)">${money(Math.floor(p.edu * actualBaseTax * Math.max(0,Number(db.settings.educatedTaxMultiplier??1.5))))}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sıradan Halk Vergisi (1.0x)</span><b style="color:var(--green)">${money(Math.floor(p.other * actualBaseTax))}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Boştaki Elverişli Vergisi (1.0x)</span><b style="color:var(--green)">${money(Math.floor(p.elig * actualBaseTax))}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sabit Antlaşma Gelirleri</span><b style="color:var(--green)">${money(permInc)}</b></div>
@@ -1748,6 +1752,8 @@ function openDetail(id){
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Danışman / Vezir Maaşları</span><b style="color:var(--red)">-${money(advSalary)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Kale Garnizonu (${num(s.fortressGarrison||0)} asker)</span><b style="color:var(--red)">-${money(fortressGarrisonExpense)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Nüfus Binaları Yıllık Gideri</span><b style="color:var(--red)">-${money(populationBuildingExpense)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Okul Bakımı (${num(s.okul||0)} okul)</span><b style="color:var(--red)">-${money(schoolExpense)}</b></div>
+        <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Diğer Altyapı Binaları</span><b style="color:var(--red)">-${money(infrastructureExpense)}</b></div>
         <div class="list-item" style="padding:4px 6px; font-size:12px;"><span>Sivil Saray / Kamu Gideri</span><b style="color:var(--red)">-${money(s.civilExpense)}</b></div>
         <div class="finance-total">
             <span>TOPLAM OTOMATİK GİDER:</span>
@@ -2505,6 +2511,13 @@ function calcPop(s){
   const storedEducated = Number.isFinite(Number(s.educatedPopulation)) ? Math.max(0, Math.floor(Number(s.educatedPopulation))) : legacyEducated;
   let eduCount = Math.min(remCount, storedEducated);
   let otherCount = remCount - eduCount;
+  const bonusAnar=Math.max(0,Math.floor(Number(s.anarchistPopulationBonus)||0));
+  const bonusElig=Math.max(0,Math.floor(Number(s.eligiblePopulationBonus)||0));
+  const bonusEdu=Math.max(0,Math.floor(Number(s.educatedPopulationBonus)||0));
+  anarCount=Math.min(pop,anarCount+bonusAnar);
+  eduCount=Math.min(Math.max(0,pop-anarCount),eduCount+bonusEdu);
+  otherCount=Math.max(0,remCount-eduCount);
+  availableElig=Math.min(Math.max(0,pop-anarCount),availableElig+bonusElig);
   return { anar: anarCount, anarRate, elig: availableElig, maxElig, eligRate: eligRate.toFixed(1), armySize: armySize, edu: eduCount, eduRate: edu, other: otherCount, remaining: remCount };
 }
 
@@ -2562,9 +2575,14 @@ function calcPopulationBuildingExpense(s){
   return ["hastane","asevi","su_degirmeni","kervansaray","pazar"].reduce((total,key)=>
     total + Math.max(0,Number(s[key])||0)*Math.max(0,Number(upkeep[key])||0),0);
 }
+function calcInfrastructureExpense(s){
+  const upkeep=db.settings.infrastructureUpkeep||{};
+  return ["kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","istihbarat_binasi"]
+    .reduce((total,key)=>total+Math.max(0,Number(s[key])||0)*Math.max(0,Number(upkeep[key])||0),0);
+}
 function calcExpenses(s){
   const schoolExpense = Math.max(0, Number(s.okul)||0) * Math.max(0, Number(db.settings.schoolUpkeep)||0);
-  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcFortressGarrisonExpense(s) + calcPopulationBuildingExpense(s) + schoolExpense + Number(s.civilExpense||0);
+  return calcMilitaryUpkeep(s) + calcArtilleryUpkeep(s) + calcNavyUpkeep(s) + calcCustomUpkeep(s) + calcAdvisorExpenses(s) + calcFortressGarrisonExpense(s) + calcPopulationBuildingExpense(s) + calcInfrastructureExpense(s) + schoolExpense + Number(s.civilExpense||0);
 }
 
 function addLog(data) {
@@ -2798,7 +2816,7 @@ function startCampaign(id) {
 function openStateForm(id=null){
  if(!isAdmin) return;
  const populationBreakdown=calcPop(id?getState(id):{population:0,happiness:0,education:0});
- const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",rulerImage:"",bgImage:"",title:"Devlet",color:"#c5a059",treasury:0,population:0,tax:20,happiness:75,education:30,educatedPopulation:0,baseTaxPerPerson:5,civilExpense:0,advisorSlots:3,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,okul:0,istihbarat_binasi:0};
+ const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",rulerImage:"",bgImage:"",title:"Devlet",color:"#c5a059",treasury:0,population:0,tax:20,happiness:75,education:30,educatedPopulation:0,educatedPopulationBonus:0,anarchistPopulationBonus:0,eligiblePopulationBonus:0,baseTaxPerPerson:5,civilExpense:0,advisorSlots:3,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,okul:0,istihbarat_binasi:0};
  let customFields = "";
  if(db.settings.customItems && db.settings.customItems.length > 0) {
     customFields += `<div class="full"><h4 style="margin:8px 0 4px; border-bottom:1px solid var(--line); color:var(--border-gold);">ÖZEL ÜRÜNLER</h4></div>`;
@@ -2817,7 +2835,7 @@ function openStateForm(id=null){
  </div>
  ${field("treasury","Hazine",s.treasury,"number")}${field("population","Toplam Nüfus",s.population,"number")}${field("tax","Vergi %",s.tax,"number")}
  ${field("happiness","Mutluluk %",s.happiness,"number")}${field("education","Eski Eğitim %",s.education,"number")}${field("educatedPopulation","Eğitimli Nüfus (Kişi)",s.educatedPopulation??0,"number")}${field("baseTaxPerPerson","Kişi Başı Temel Vergi",s.baseTaxPerPerson,"number")}${field("civilExpense","Sivil Gider (Yıllık)",s.civilExpense,"number")}
- <div class="full" style="background:rgba(52,152,219,.1);border:1px solid var(--blue);padding:8px;border-radius:3px;"><b style="color:var(--blue);">HESAPLANAN NÜFUS DAĞILIMI</b><div class="formgrid" style="margin-top:6px;">${field("calculatedEducatedPopulation","Eğitimli Nüfus",populationBreakdown.edu,"number")}${field("calculatedAnarchistPopulation","Anarşist Nüfus",populationBreakdown.anar,"number")}${field("calculatedEligiblePopulation","Elverişli Nüfus",populationBreakdown.elig,"number")}</div><p class="sub" style="margin:4px 0 0;">Bu değerler oyun kurallarına göre otomatik hesaplanır.</p></div>
+ <div class="full" style="background:rgba(52,152,219,.1);border:1px solid var(--blue);padding:8px;border-radius:3px;"><b style="color:var(--blue);">EK NÜFUS BONUSLARI</b><div class="formgrid" style="margin-top:6px;">${field("educatedPopulationBonus","Ek Eğitimli Nüfus",s.educatedPopulationBonus||0,"number")}${field("anarchistPopulationBonus","Ek Anarşist Nüfus",s.anarchistPopulationBonus||0,"number")}${field("eligiblePopulationBonus","Ek Elverişli Nüfus",s.eligiblePopulationBonus||0,"number")}</div><p class="sub" style="margin:4px 0 0;">Otomatik hesaplamaya eklenir; toplam nüfus sınırı korunur.</p></div>
  
  <div class="full" style="background:rgba(197, 160, 89, 0.15); border:1px solid var(--border-gold); padding:8px; border-radius:3px;">
     ${field("advisorSlots","Divan Üyesi Kotası (Kaç Danışman Seçebilir?)",s.advisorSlots||3,"number")}
@@ -2842,7 +2860,7 @@ function openStateForm(id=null){
 function field(k,l,v,t="text"){return `<div><label>${l}</label><input id="f_${k}" type="${t}" value="${esc(v)}"></div>`}
 
 function saveState(id){
- const keys=["name","ownerEmail","ruler","rulerImage","bgImage","title","color","treasury","population","tax","education","educatedPopulation","baseTaxPerPerson","civilExpense","advisorSlots","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul","istihbarat_binasi","hastane","asevi","su_degirmeni","kervansaray","pazar"];
+ const keys=["name","ownerEmail","ruler","rulerImage","bgImage","title","color","treasury","population","tax","education","educatedPopulation","educatedPopulationBonus","anarchistPopulationBonus","eligiblePopulationBonus","baseTaxPerPerson","civilExpense","advisorSlots","piyade","suvari","nisanci","kucuk_top","orta_top","buyuk_top","kucuk_gemi","orta_gemi","buyuk_gemi","kucuk_liman","orta_liman","buyuk_liman","kucuk_ocak","orta_ocak","buyuk_ocak","okul","istihbarat_binasi","hastane","asevi","su_degirmeni","kervansaray","pazar"];
  if(db.settings.customItems) { db.settings.customItems.forEach(item => keys.push(item.id)); }
  const o={};
  keys.forEach(k=>o[k]=["name","ownerEmail","ruler","rulerImage","bgImage","title","color"].includes(k)?document.getElementById("f_"+k).value:Number(document.getElementById("f_"+k).value||0));
@@ -3141,7 +3159,7 @@ function organizeAdminTabs(){
 async function openAdmin(){
  if(!isAdmin) return;
  try{if(!mapConfigCache)await loadMapAssets();}catch(_){} 
- const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost,gu=db.settings.garrisonUpkeep,pg=db.settings.populationBuildingGrowth,pc=db.settings.populationBuildingCostPerPerson,pbu=db.settings.populationBuildingUpkeep;
+ const p=db.settings.prices,u=db.settings.upkeep,c=db.settings.capacity,ec=db.settings.edictCost,cc=db.settings.campaignCost,gu=db.settings.garrisonUpkeep,pg=db.settings.populationBuildingGrowth,pc=db.settings.populationBuildingCostPerPerson,pbu=db.settings.populationBuildingUpkeep,iu=db.settings.infrastructureUpkeep;
  const img=db.settings.images||{};
  const stateOpts = `<option value="">🌍 Tümü (Herkes Alabilir)</option>` + db.states.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
  
@@ -3261,6 +3279,8 @@ async function openAdmin(){
    ${field("school_upkeep","Okul Başına Yıllık Gider",db.settings.schoolUpkeep||0,"number")}
    ${field("educated_tax_multiplier","Eğitimli Nüfus Vergi Çarpanı",db.settings.educatedTaxMultiplier??1.5,"number")}
  </div>
+ <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">ALTYAPI BİNALARI YILLIK GİDERLERİ (Bina Başı)</h4>
+ <div class="formgrid">${Object.keys(iu).map(k=>field("iu_"+k,k,iu[k],"number")).join("")}</div>
  <p class="sub">Eğitimli nüfus artık yüzdeyle değil, okul kapasitesiyle kişi olarak hesaplanır. Çarpan 1,5 ise eğitimli kişi normal verginin 1,5 katını verir.</p>
  <h4 style="margin-top:10px; color:var(--red); font-family:'Oswald';">GARNİZON YILLIK GİDERLERİ (Asker Başı)</h4>
  <div class="formgrid">
@@ -3494,6 +3514,7 @@ function saveAdmin(doClose = true){
  Object.keys(db.settings.populationBuildingGrowth).forEach(k=>{ const el=document.getElementById("f_pg_"+k); if(el) db.settings.populationBuildingGrowth[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.populationBuildingCostPerPerson).forEach(k=>{ const el=document.getElementById("f_pc_"+k); if(el) db.settings.populationBuildingCostPerPerson[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.populationBuildingUpkeep).forEach(k=>{ const el=document.getElementById("f_pbu_"+k); if(el) db.settings.populationBuildingUpkeep[k]=Math.max(0,Number(el.value||0)); });
+ Object.keys(db.settings.infrastructureUpkeep).forEach(k=>{ const el=document.getElementById("f_iu_"+k); if(el) db.settings.infrastructureUpkeep[k]=Math.max(0,Number(el.value||0)); });
  Object.keys(db.settings.edictCost).forEach(k=>{ const el=document.getElementById("f_ec_"+k); if(el) db.settings.edictCost[k]=Number(el.value||0); });
  Object.keys(db.settings.campaignCost).forEach(k=>{ const el=document.getElementById("f_cc_"+k); if(el) db.settings.campaignCost[k]=Number(el.value||0); });
  
