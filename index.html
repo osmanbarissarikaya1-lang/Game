@@ -1117,11 +1117,21 @@ function setupGameRealtime(){
    // sayma ve gereksiz bildirim gösterme.
    const incomingRevision=Number(payload.new?.revision||0);
    if(incomingRevision && incomingRevision<=Number(dbServerRevision||0))return;
+   // Bu veri zaten ekranda mevcutsa bu, kendi kaydımızın realtime yankısıdır.
+   // Ekranı yeniden çizme; aksi hâlde sekme ve scroll konumu sıfırlanır.
+   if(valuesEqual(remote,db)){
+     dbBaseSnapshot=structuredClone(remote);
+     dbServerRevision=incomingRevision||dbServerRevision;
+     return;
+   }
    if(valuesEqual(db,dbBaseSnapshot)){
+     const activeTab=document.querySelector('.hoi-tab.active')?.id?.replace('tab-btn-','');
+     const scrollTop=window.scrollY;
      db=remote;
      dbBaseSnapshot=structuredClone(remote);
      dbServerRevision=incomingRevision||dbServerRevision;
      if(currentId)openDetail(currentId);else renderHome();
+     if(currentId&&activeTab){switchTab(activeTab);window.scrollTo(0,scrollTop);}
      toast("Başka bir oyuncunun değişikliği anlık olarak yüklendi.",true);
    }
  }).subscribe();
