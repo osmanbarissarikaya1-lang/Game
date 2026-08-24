@@ -583,6 +583,7 @@ const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, mapSaveTimer=null, mapSaveInFlight=false, mapSavePending=false, globalClockInterval=null;
+let dbBaseSnapshot=null, dbServerRevision=1, saveInFlight=false, saveQueued=false;
 let mapSvgCache="",mapConfigCache=null,eventAssetCache=null,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
 const mapSyncChannel=typeof BroadcastChannel==='function'?new BroadcastChannel('osmoyun-map-v57'):null;
 mapSyncChannel?.addEventListener('message',event=>{const payload=event.data;if(!payload||payload.type!=='map-saved')return;db.mapProvinceOwners=payload.owners||{};db.mapProvinceDetails=payload.details||{};db.valuableRegions=payload.valuableRegions||db.valuableRegions||{};db.mapOwnershipInitialized=true;refreshMapFortressCounts();if(document.getElementById('gameMapCanvas'))applyMapOwnership();});
@@ -796,6 +797,21 @@ function cleanUrl(u){
 function money(n){return Number(n||0).toLocaleString("tr-TR")+" TL"}
 function num(n){return Number(n||0).toLocaleString("tr-TR")}
 function getState(id){return db.states.find(s=>s.id===id)}
+function valuesEqual(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+function mergeStateThreeWay(base,local,remote,path="",conflicts=[]){
+ if(valuesEqual(local,base))return structuredClone(remote);
+ if(valuesEqual(remote,base))return structuredClone(local);
+ if(valuesEqual(local,remote))return structuredClone(local);
+ if(Array.isArray(local)||Array.isArray(remote)||local===null||remote===null||typeof local!=="object"||typeof remote!=="object"){
+   conflicts.push(path||"root");return structuredClone(remote);
+ }
+ const merged={},keys=new Set([...Object.keys(base||{}),...Object.keys(local||{}),...Object.keys(remote||{})]);
+ keys.forEach(key=>{
+   const childPath=path?path+"."+key:key;
+   merged[key]=mergeStateThreeWay(base?.[key],local?.[key],remote?.[key],childPath,conflicts);
+ });
+ return merged;
+}
 function closeModal(){document.getElementById("modal").classList.remove("show")}
 function modal(html){document.getElementById("modalContent").innerHTML=html;document.getElementById("modal").classList.add("show")}
 function toast(msg,ok=false){document.getElementById("syncText").textContent=(ok?"✓ ":"⚠ ")+msg}
@@ -988,7 +1004,7 @@ async function logout(){await sb.auth.signOut()}
 async function loadDB(){
  toast("Veriler yükleniyor…");
  if(!sb){toast("Supabase bağlantısı kurulamadı.");return}
- const result=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
+ const result=await sb.from("game_state").select("data,revision").eq("id",1).maybeSingle();
  const data=result.data,error=result.error;
  if(error){toast("Supabase okuma hatası: "+error.message);return}
  if(data?.data){
@@ -1045,39 +1061,53 @@ async function loadDB(){
     await loadEventAssets();
     await saveDB();
  }
+ dbBaseSnapshot=structuredClone(db);
+ dbServerRevision=Number(result.data?.revision||1);
  toast("Sistem Aktif",true);
 }
 
 async function saveDB(){
- if(!sb) return false;
- const latest=await sb.from("game_state").select("data").eq("id",1).maybeSingle();
- if(latest.data?.data){
-  db.mapProvinceOwners=latest.data.data.mapProvinceOwners||db.mapProvinceOwners||{};
-  db.mapProvinceDetails=latest.data.data.mapProvinceDetails||db.mapProvinceDetails||{};
-  db.mapOwnershipInitialized=latest.data.data.mapOwnershipInitialized??db.mapOwnershipInitialized;
-  db.purchaseLog=mergePurchaseLogs(latest.data.data.purchaseLog,db.purchaseLog);
+ if(!sb)return false;
+ if(saveInFlight){saveQueued=true;return false;}
+ saveInFlight=true;
+ try{
+  const latest=await sb.from("game_state").select("data,revision").eq("id",1).maybeSingle();
+  if(latest.error)throw latest.error;
+  const remote=latest.data?.data||{};
+  const base=dbBaseSnapshot||remote;
+  const conflicts=[];
+  const merged=mergeStateThreeWay(base,db,remote,"",conflicts);
+  if(conflicts.length){
+   await sb.from("game_state_snapshots").insert({game_state_id:1,data:db,source:"conflict_unsaved"});
+   db=remote;
+   dbBaseSnapshot=structuredClone(remote);
+   dbServerRevision=Number(latest.data?.revision||1);
+   toast("Çakışma algılandı; eski verin snapshot olarak korundu. Güncel oyun yüklendi.");
+   if(currentId)openDetail(currentId);else renderHome();
+   return false;
+  }
+  const write=await sb.rpc("save_game_state",{expected_revision:Number(latest.data?.revision||1),next_data:merged});
+  if(write.error)throw write.error;
+  if(!write.data||!write.data.length){
+   saveQueued=true;
+   return false;
+  }
+  db=merged;
+  dbBaseSnapshot=structuredClone(merged);
+  dbServerRevision=Number(write.data[0].saved_revision||dbServerRevision+1);
+  toast("Kaydedildi "+new Date().toLocaleTimeString("tr-TR"),true);
+  return true;
+ }catch(error){toast("Kayit hatasi: "+(error.message||error));return false}
+ finally{
+  saveInFlight=false;
+  if(saveQueued){saveQueued=false;queueSave();}
  }
- const {error}=await sb.from("game_state").upsert({id:1,data:db,updated_at:new Date().toISOString()});
- if(error){toast("Kayit hatasi: "+error.message);return false} toast("Kaydedildi "+new Date().toLocaleTimeString("tr-TR"),true);return true
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
 async function saveMapDB(){
- if(!sb)return false;
- if(mapSaveInFlight){mapSavePending=true;return false;}
- mapSaveInFlight=true;
- const owners=structuredClone(db.mapProvinceOwners||{}),details=structuredClone(db.mapProvinceDetails||{});
- try{
-  const latest=await sb.from('game_state').select('data').eq('id',1).maybeSingle();
-  if(latest.error)throw latest.error;
-  const merged={...(latest.data?.data||db),mapProvinceOwners:owners,mapProvinceDetails:details,valuableRegions:structuredClone(db.valuableRegions||{}),mapOwnershipInitialized:true,purchaseLog:mergePurchaseLogs(latest.data?.data?.purchaseLog,db.purchaseLog)};
-  const write=await sb.from('game_state').upsert({id:1,data:merged,updated_at:new Date().toISOString()});
-  if(write.error)throw write.error;
-  mapSyncChannel?.postMessage({type:'map-saved',owners,details,valuableRegions});
- toast('Harita kaydedildi',true);
-  queueSave();
-  return true;
- }catch(error){toast('Harita kayıt hatası: '+(error.message||error));return false}
- finally{mapSaveInFlight=false;if(mapSavePending){mapSavePending=false;queueMapSave();}}
+ const ok=await saveDB();
+ if(ok)mapSyncChannel?.postMessage({type:"map-saved",owners:structuredClone(db.mapProvinceOwners||{}),details:structuredClone(db.mapProvinceDetails||{}),valuableRegions:structuredClone(db.valuableRegions||{})});
+ return ok;
 }
 function queueMapSave(){mapSavePending=true;clearTimeout(mapSaveTimer);mapSaveTimer=setTimeout(()=>{mapSavePending=false;saveMapDB();},250)}
 
