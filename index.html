@@ -1352,18 +1352,17 @@ function renderStrategicMapLabels(){
    // Ülkenin tüm topraklarını tek etiket alanı olarak kullan.
    components.clear();components.set(0,items);
    components.forEach((points,componentIndex)=>{
-     const minX=Math.min(...points.map(p=>p.b.x)),maxX=Math.max(...points.map(p=>p.b.x+p.b.width));
-     const minY=Math.min(...points.map(p=>p.b.y)),maxY=Math.max(...points.map(p=>p.b.y+p.b.height));
-     const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+     const anchor=points.slice().sort((a,b)=>b.area-a.area)[0];
+     const cx=anchor.x,cy=anchor.y;
      let xx=0,yy=0,xy=0;points.forEach(p=>{const dx=p.x-cx,dy=p.y-cy;xx+=p.area*dx*dx;yy+=p.area*dy*dy;xy+=p.area*dx*dy;});
      let angle=0;
      const rad=angle*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad);let along=0,cross=0;
      points.forEach(p=>[[p.b.x,p.b.y],[p.b.x+p.b.width,p.b.y],[p.b.x,p.b.y+p.b.height],[p.b.x+p.b.width,p.b.y+p.b.height]].forEach(([x,y])=>{const dx=x-cx,dy=y-cy;along=Math.max(along,Math.abs(dx*cos+dy*sin));cross=Math.max(cross,Math.abs(-dx*sin+dy*cos));}));
-     const usableLength=Math.max(2,(maxX-minX)*.78),usableHeight=Math.max(2,(maxY-minY)*.68);let fontSize=Math.max(1.2,Math.min(16,usableLength/Math.max(3,country.name.length*.66),usableHeight*.72));
+     const usableLength=Math.max(2,anchor.b.width*.82),usableHeight=Math.max(2,anchor.b.height*.72);let fontSize=Math.max(3,Math.min(28,usableLength/Math.max(3,country.name.length*.66),usableHeight*.72));
      let defs=svg.querySelector('defs');if(!defs){defs=document.createElementNS('http://www.w3.org/2000/svg','defs');svg.insertBefore(defs,svg.firstChild);}
      const clipId=`strategic-country-${String(country.name).replace(/[^a-z0-9]/gi,'-')}-${componentIndex}-${Math.random().toString(36).slice(2,7)}`;
      const clip=document.createElementNS('http://www.w3.org/2000/svg','clipPath');clip.setAttribute('id',clipId);clip.setAttribute('class','strategic-country-clip');points.forEach(point=>{const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#'+point.pathId);clip.appendChild(use);});defs.appendChild(clip);
-     const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('class','strategic-country-label');t.setAttribute('clip-path',`url(#${clipId})`);t.setAttribute('x',cx);t.setAttribute('y',cy);t.setAttribute('transform',`rotate(${angle} ${cx} ${cy})`);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Georgia, serif');t.setAttribute('font-size',fontSize);t.setAttribute('font-weight','800');t.setAttribute('letter-spacing',Math.max(.03,fontSize*.055));t.setAttribute('fill','#f4ead2');t.setAttribute('stroke','#111');t.setAttribute('stroke-width',Math.max(.08,Math.min(1.5,fontSize*.14)));t.setAttribute('paint-order','stroke');t.setAttribute('pointer-events','none');t.textContent=country.name.toLocaleUpperCase('tr-TR');svg.appendChild(t);for(let i=0;i<12;i++){const tb=t.getBBox();if(tb.width<=usableLength&&tb.height<=usableHeight)break;fontSize*=.88;t.setAttribute('font-size',fontSize);}
+     const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('class','strategic-country-label');t.setAttribute('x',cx);t.setAttribute('y',cy);t.setAttribute('transform',`rotate(${angle} ${cx} ${cy})`);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('font-family','Georgia, serif');t.setAttribute('font-size',fontSize);t.setAttribute('font-weight','800');t.setAttribute('letter-spacing',Math.max(.03,fontSize*.055));t.setAttribute('textLength',Math.max(2,usableLength*.9));t.setAttribute('lengthAdjust','spacingAndGlyphs');t.setAttribute('fill','#f4ead2');t.setAttribute('stroke','#111');t.setAttribute('stroke-width',Math.max(.08,Math.min(1.5,fontSize*.14)));t.setAttribute('paint-order','stroke');t.setAttribute('pointer-events','none');t.textContent=country.name.toLocaleUpperCase('tr-TR');svg.appendChild(t);for(let i=0;i<12;i++){const tb=t.getBBox();if(tb.width<=usableLength&&tb.height<=usableHeight)break;fontSize*=.88;t.setAttribute('font-size',fontSize);}
    });
  });
 }
