@@ -2824,7 +2824,7 @@ function calcCampCost(id) {
     });
     document.getElementById('campTotalCost').innerHTML = money(total);
 }
-function recallCampaign(id){const s=getState(id);if(!s)return;const c=s.campaignArmy||{};const total=Object.values(c).reduce((z,v)=>z+(Number(v)||0),0);if(!total){toast('Geri çağrılacak sefer askeri bulunmuyor.');return;}if(!confirm('Seferde kalan birlikler normal orduya geri çağrılsın mı?'))return;Object.keys(c).forEach(k=>{s[k]=(Number(s[k])||0)+(Number(c[k])||0);});s.campaignArmy={};queueSave();toast('Seferde kalan birlikler normal orduya geri çağrıldı.');openDetail(id);}
+function recallCampaign(id){const s=getState(id);if(!s)return;const c=s.campaignArmy||{};const total=Object.values(c).reduce((z,v)=>z+(Number(v)||0),0);if(!total){toast('Geri çağrılacak sefer askeri bulunmuyor.');return;}if(!confirm('Seferde kalan birlikler normal orduya geri çağrılsın mı?'))return;Object.keys(c).forEach(k=>{s[k]=(Number(s[k])||0)+(Number(c[k])||0);});s.campaignArmy={};queueSave();toast('Seferde kalan birlikler normal orduya geri çağrıldı.');setTimeout(()=>openDetail(id),350);}
 function openCampaign(id) {
     const s = getState(id);
     const cc = db.settings.campaignCost || {};
@@ -2882,7 +2882,7 @@ function startCampaign(id) {
         newTreasury: s.treasury
     });
 
-    const previous=s.campaignArmy||{}; Object.keys(previous).forEach(k=>{s[k]=(Number(s[k])||0)+(Number(previous[k])||0);}); Object.keys(selected).forEach(k=>{s[k]=Math.max(0,(Number(s[k])||0)-(Number(selected[k])||0));}); s.campaignArmy=selected; closeModal(); queueSave(); openDetail(id);
+    const previous=s.campaignArmy||{}; Object.keys(previous).forEach(k=>{s[k]=(Number(s[k])||0)+(Number(previous[k])||0);}); Object.keys(selected).forEach(k=>{s[k]=Math.max(0,(Number(s[k])||0)-(Number(selected[k])||0));}); s.campaignArmy=selected; closeModal(); queueSave(); setTimeout(()=>openDetail(id),350);
 }
 
 // ---------------- DEVLET FORMU (DİVAN KOTASI AYARLI) ----------------
