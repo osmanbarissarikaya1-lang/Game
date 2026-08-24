@@ -2797,6 +2797,7 @@ function startCampaign(id) {
 // ---------------- DEVLET FORMU (DİVAN KOTASI AYARLI) ----------------
 function openStateForm(id=null){
  if(!isAdmin) return;
+ const populationBreakdown=calcPop(id?getState(id):{population:0,happiness:0,education:0});
  const s=id?getState(id):{name:"",ownerEmail:"",ruler:"",rulerImage:"",bgImage:"",title:"Devlet",color:"#c5a059",treasury:0,population:0,tax:20,happiness:75,education:30,educatedPopulation:0,baseTaxPerPerson:5,civilExpense:0,advisorSlots:3,piyade:0,suvari:0,nisanci:0,kucuk_top:0,orta_top:0,buyuk_top:0,kucuk_gemi:0,orta_gemi:0,buyuk_gemi:0,kucuk_liman:0,orta_liman:0,buyuk_liman:0,kucuk_ocak:0,orta_ocak:0,okul:0,istihbarat_binasi:0};
  let customFields = "";
  if(db.settings.customItems && db.settings.customItems.length > 0) {
@@ -2816,6 +2817,7 @@ function openStateForm(id=null){
  </div>
  ${field("treasury","Hazine",s.treasury,"number")}${field("population","Toplam Nüfus",s.population,"number")}${field("tax","Vergi %",s.tax,"number")}
  ${field("happiness","Mutluluk %",s.happiness,"number")}${field("education","Eski Eğitim %",s.education,"number")}${field("educatedPopulation","Eğitimli Nüfus (Kişi)",s.educatedPopulation??0,"number")}${field("baseTaxPerPerson","Kişi Başı Temel Vergi",s.baseTaxPerPerson,"number")}${field("civilExpense","Sivil Gider (Yıllık)",s.civilExpense,"number")}
+ <div class="full" style="background:rgba(52,152,219,.1);border:1px solid var(--blue);padding:8px;border-radius:3px;"><b style="color:var(--blue);">HESAPLANAN NÜFUS DAĞILIMI</b><div class="formgrid" style="margin-top:6px;">${field("calculatedEducatedPopulation","Eğitimli Nüfus",populationBreakdown.edu,"number")}${field("calculatedAnarchistPopulation","Anarşist Nüfus",populationBreakdown.anar,"number")}${field("calculatedEligiblePopulation","Elverişli Nüfus",populationBreakdown.elig,"number")}</div><p class="sub" style="margin:4px 0 0;">Bu değerler oyun kurallarına göre otomatik hesaplanır.</p></div>
  
  <div class="full" style="background:rgba(197, 160, 89, 0.15); border:1px solid var(--border-gold); padding:8px; border-radius:3px;">
     ${field("advisorSlots","Divan Üyesi Kotası (Kaç Danışman Seçebilir?)",s.advisorSlots||3,"number")}
