@@ -1370,6 +1370,7 @@ function renderStrategicMapLabels(){
 function toggleStrategicMapView(){mapStrategicView=!mapStrategicView;const btn=document.getElementById('mapStrategicBtn');if(btn){btn.textContent=mapStrategicView?'✕ STRATEJİK GÖRÜNÜM':'🧭 STRATEJİK GÖRÜNÜM';btn.className=mapStrategicView?'btn red':'btn blue';}applyMapOwnership();}
 
 async function openGameMap(){
+ const screenBg=cleanUrl(db?.settings?.images?.appBackground||'https://i.hizliresim.com/nbm2rtts.png');document.getElementById('screen').style.backgroundImage=screenBg?`linear-gradient(rgba(7,9,12,.48),rgba(7,9,12,.62)),url("${screenBg}")`:'';document.getElementById('screen').style.backgroundSize='cover';document.getElementById('screen').style.backgroundAttachment='fixed';
  mapBrush=null;mapPickerMode=false;mapBatch=null;mapBatchSelection.clear();mapStrategicView=false;
  document.getElementById('home').classList.add('hidden');
  document.getElementById('detail').classList.add('hidden');
@@ -1558,6 +1559,7 @@ function saveProvinceOwner(provinceId){
 }
 
 function renderHome(){
+ const screenBg=cleanUrl(db?.settings?.images?.appBackground||'https://i.hizliresim.com/nbm2rtts.png');document.getElementById('screen').style.backgroundImage=screenBg?`linear-gradient(rgba(7,9,12,.48),rgba(7,9,12,.62)),url("${screenBg}")`:'';document.getElementById('screen').style.backgroundSize='cover';document.getElementById('screen').style.backgroundAttachment='fixed';
  currentId=null;
  document.getElementById("detail").classList.add("hidden");
  document.getElementById("mapScreen")?.classList.add("hidden");
@@ -1664,6 +1666,7 @@ function buildPopulationBuildingCard(s,key,name,imgUrl,canManage){
 }
 
 function openDetail(id){
+ document.getElementById('screen').style.backgroundImage='';
  const s=getState(id);
  if(!s) return;
  if(!isAdmin && s.ownerEmail !== currentUserEmail) { alert("Bu devleti görüntüleme yetkiniz yok!"); return; }
