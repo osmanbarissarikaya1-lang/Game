@@ -1334,7 +1334,7 @@ function applyMapOwnership(){
    if(!title){title=document.createElementNS('http://www.w3.org/2000/svg','title');path.appendChild(title);}
    title.textContent=`${getTurkishMapName(path.id)} — ${displayOwner}`;
  });
- if(mapStrategicView){renderStrategicMapLabels();renderStrategicRegionStickers();}
+ if(mapStrategicView){renderStrategicRegionStickers();}
 }
 function renderStrategicMapLabels(){
  const canvas=document.getElementById('gameMapCanvas'),svg=canvas?.querySelector('svg');if(!canvas||!svg)return;
@@ -1378,7 +1378,7 @@ async function openGameMap(){
    await loadMapAssets();
    initializeMapOwnersFromConfig();
    screen.innerHTML=`<div class="map-toolbar"><button class="btn" onclick="renderHome()">← DEVLETLERE DÖN</button><button class="btn" onclick="changeMapZoom(-0.25)">−</button><button class="btn" onclick="changeMapZoom(0.25)">+</button><button class="btn blue" onclick="resetMapZoom()">%500</button>${isAdmin?'<button id="mapPickerBtn" class="btn blue" onclick="toggleMapPicker()">💧 RENK/ÜLKE SEÇ</button><button id="mapBrushBtn" class="btn gold" onclick="openMapBrushSetup()">🖌️ FIRÇA</button><button id="mapBatchBtn" class="btn green" onclick="openMapBatchSetup()">☑ ÇOKLU ATAMA</button>':''}<button id="mapStrategicBtn" class="btn blue" onclick="toggleStrategicMapView()">🧭 STRATEJİK GÖRÜNÜM</button><span id="mapZoomLabel" class="badge">%500</span><span id="mapBrushStatus" class="sub">${isAdmin?'Toprağa dokun: düzenle, damlalıkla seç veya fırça kullan.':'Toprağa dokun: sahibini gör.'}</span></div><div id="gameMapViewport" class="game-map-viewport"><div id="gameMapCanvas" class="game-map-canvas">${mapSvgCache}</div></div><div class="sub" style="margin-top:6px;text-align:right;">Harita: MapChart.net — CC BY-SA 4.0</div>`;
-   mapZoom=5;changeMapZoom(0);applyMapOwnership();initMapTouchControls();
+   mapZoom=5;changeMapZoom(0);applyMapOwnership();const mapViewport=document.getElementById('gameMapViewport');if(mapViewport){mapViewport.scrollLeft=Math.max(0,(mapViewport.scrollWidth-mapViewport.clientWidth)*.52);mapViewport.scrollTop=Math.max(0,(mapViewport.scrollHeight-mapViewport.clientHeight)*.5);}initMapTouchControls();
  }catch(error){screen.innerHTML=`<button class="btn" onclick="renderHome()">← DEVLETLERE DÖN</button><p class="error">❌ ${esc(error.message||error)}</p>`;}
 }
 
