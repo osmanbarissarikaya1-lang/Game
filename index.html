@@ -583,7 +583,7 @@ const SUPABASE_URL=String(window.SUPABASE_URL||"").trim();
 const SUPABASE_KEY=String(window.SUPABASE_KEY||"").trim();
 let sb=null;
 let db={states:[],settings:null,transfers:[], purchaseLog:[], letters:[], advisors:[], timerSeconds:0, timerRunning:false, gameYear:1453, pendingEvents:[], eventHistory:[]}, currentId=null, authMode="login", saveTimer=null, mapSaveTimer=null, mapSaveInFlight=false, mapSavePending=false, globalClockInterval=null;
-let dbBaseSnapshot=null, dbServerRevision=1, saveInFlight=false, saveQueued=false;
+let dbBaseSnapshot=null, dbServerRevision=1, saveInFlight=false, saveQueued=false, gameSyncChannel=null;
 let mapSvgCache="",mapConfigCache=null,eventAssetCache=null,mapZoom=5,mapBrush=null,mapPickerMode=false,mapBatch=null,mapBatchSelection=new Set(),mapStrategicView=false;
 const mapSyncChannel=typeof BroadcastChannel==='function'?new BroadcastChannel('osmoyun-map-v57'):null;
 mapSyncChannel?.addEventListener('message',event=>{const payload=event.data;if(!payload||payload.type!=='map-saved')return;db.mapProvinceOwners=payload.owners||{};db.mapProvinceDetails=payload.details||{};db.valuableRegions=payload.valuableRegions||db.valuableRegions||{};db.mapOwnershipInitialized=true;refreshMapFortressCounts();if(document.getElementById('gameMapCanvas'))applyMapOwnership();});
@@ -935,6 +935,7 @@ async function showApp(session){
  document.getElementById("app").classList.remove("hidden");
  
  await loadDB();
+ setupGameRealtime();
  renderTopActions();
  renderHome();
 }
@@ -1102,6 +1103,20 @@ async function saveDB(){
   saveInFlight=false;
   if(saveQueued){saveQueued=false;queueSave();}
  }
+}
+function setupGameRealtime(){
+ if(!sb||gameSyncChannel)return;
+ gameSyncChannel=sb.channel("game-state-sync").on("postgres_changes",{event:"UPDATE",schema:"public",table:"game_state",filter:"id=eq.1"},payload=>{
+   const remote=payload.new?.data;
+   if(!remote)return;
+   if(valuesEqual(db,dbBaseSnapshot)){
+     db=remote;
+     dbBaseSnapshot=structuredClone(remote);
+     dbServerRevision=Number(payload.new?.revision||dbServerRevision);
+     if(currentId)openDetail(currentId);else renderHome();
+     toast("Başka bir oyuncunun değişikliği anlık olarak yüklendi.",true);
+   }
+ }).subscribe();
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
 async function saveMapDB(){
