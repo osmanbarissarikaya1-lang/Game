@@ -3259,7 +3259,7 @@ async function openAdmin(){
  }).join("");
 
  modal(`<h2 style="display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:var(--panel);padding:8px 0;margin-top:0;">⚙ KÜRESEL AYARLAR <button class="btn red" style="font-size:18px;line-height:1;padding:7px 11px;" onclick="closeModal()" title="Küresel ayarları kapat">✕</button></h2>
- <div class="actions" style="margin:8px 0;"><button class="btn red" onclick="openWarGarrisonModal()">⚔️ SAVAŞ</button><button class="btn red" onclick="openBattleSimulator()">🤖 AI SAVAŞ SİMÜLASYONU</button><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button><button class="btn blue" onclick="openAdminLetters()">✉️ MEKTUPLAR</button></div>
+ <div class="actions" style="margin:8px 0;"><button class="btn red" onclick="openWarGarrisonModal()">⚔️ SAVAŞ</button><button class="btn gold" onclick="openEventHistoryAdmin()">🎲 OLAY GEÇMİŞİ / SEÇİMLER</button><button class="btn blue" onclick="openEventPoolAdmin()">🗂️ 100 OLAY HAVUZU</button><button class="btn blue" onclick="openAdminLetters()">✉️ MEKTUPLAR</button></div>
 
  <h4 style="color:var(--border-gold); margin:12px 0 6px; font-family:'Oswald';">👑 DİVAN PAŞALARI YÖNETİMİ (${(db.advisors||[]).length} Paşa)</h4>
  <p class="sub" style="margin-bottom:8px;">Paşaların ömürlerini, yıldızlarını, maaşlarını ve çarpanlarını düzenleyin.</p>
@@ -3388,23 +3388,6 @@ async function openAdmin(){
  organizeAdminTabs();
 }
 
-function openBattleSimulator(){
- if(!isAdmin)return;
- const opts=db.states.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
- modal(`<h2>🤖 AI SAVAŞ SİMÜLASYONU</h2><div class="formgrid"><div><label>Saldıran</label><select id="battle_attacker">${opts}</select></div><div><label>Savunan</label><select id="battle_defender">${opts}</select></div><div><label>Savaş Türü</label><select id="battle_type"><option value="field">Meydan Muharebesi</option><option value="siege">Kale Kuşatması</option></select></div></div><p class="sub">Mevcut ordu ve top kayıtları kullanılır; sonuç eski kayıtların üzerine yazılmaz, kayıplar düşülür ve savaş geçmişine eklenir.</p><div class="actions"><button class="btn" onclick="closeModal()">İPTAL</button><button class="btn red" onclick="runBattleSimulation()">SAVAŞI BAŞLAT</button></div>`);
-}
-function runBattleSimulation(){
- const attacker=getState(document.getElementById('battle_attacker')?.value),defender=getState(document.getElementById('battle_defender')?.value),type=document.getElementById('battle_type')?.value||'field';
- if(!attacker||!defender||attacker.id===defender.id){alert('İki farklı devlet seçmelisin.');return;}
- const army=s=>Math.max(0,Number(s.piyade)||0)+Math.max(0,Number(s.suvari)||0)+Math.max(0,Number(s.nisanci)||0);
- const guns=s=>Math.max(0,Number(s.kucuk_top)||0)*100+Math.max(0,Number(s.orta_top)||0)*125+Math.max(0,Number(s.buyuk_top)||0)*160;
- const baseA=army(attacker)+(guns(attacker)*(type==='siege'?1.25:.45)),baseD=army(defender)+(guns(defender)*(type==='siege'?1.05:.45))+(type==='siege'?Math.max(0,Number(defender.fortressCount)||0)*120:0);
- let a=baseA,d=baseD,tours=Math.max(1,Math.min(10,Math.round(10-Math.abs(baseA-baseD)/Math.max(1,baseA+baseD)*8))),rounds=[],casA=0,casD=0;
- for(let i=1;i<=tours;i++){const aHit=Math.max(1,Math.round((a/(a+d))*(type==='siege'?.16:.22)*(0.85+Math.random()*.3)*d));const dHit=Math.max(1,Math.round((d/(a+d))*(type==='siege'?.14:.2)*(0.85+Math.random()*.3)*a));casA+=dHit;casD+=aHit;a=Math.max(0,a-dHit);d=Math.max(0,d-aHit);rounds.push(`Tur ${i}: ${attacker.name} ${num(dHit)} kayıp verdi; ${defender.name} ${num(aHit)} kayıp verdi.`);if(a<1||d<1)break;}
- const winner=a>=d?attacker:defender,loser=winner.id===attacker.id?defender:attacker;const lossA=Math.min(army(attacker),casA),lossD=Math.min(army(defender),casD);
- const remove=(s,loss)=>{let left=loss;for(const k of ['piyade','nisanci','suvari']){const take=Math.min(Math.max(0,Number(s[k])||0),Math.ceil(left/2));s[k]=Math.max(0,(Number(s[k])||0)-take);left-=take;if(left<=0)break;}};remove(attacker,lossA);remove(defender,lossD);
- db.battleHistory=db.battleHistory||[];db.battleHistory.unshift({id:crypto.randomUUID(),date:new Date().toLocaleString('tr-TR'),attackerId:attacker.id,defenderId:defender.id,type,tours:rounds.length,winnerId:winner.id,attackerLoss:lossA,defenderLoss:lossD,rounds});queueSave();modal(`<h2>⚔️ SAVAŞ SONUCU</h2><div class="event-result"><b>Kazanan:</b> ${esc(winner.name)}<br><b>Savaş türü:</b> ${type==='siege'?'Kale kuşatması':'Meydan muharebesi'}<br><b>Tur:</b> ${rounds.length}<br><b>${esc(attacker.name)} kaybı:</b> ${num(lossA)}<br><b>${esc(defender.name)} kaybı:</b> ${num(lossD)}</div><div style="max-height:35vh;overflow:auto;margin-top:10px;">${rounds.map(esc).join('<br>')}</div><div class="actions"><button class="btn blue" onclick="closeModal();openAdmin()">KAPAT</button></div>`);
-}
 // ---------------- SAVAŞTA GARNİZON KAYIPLARI (ADMİN) ----------------
 function openWarGarrisonModal(){
  if(!isAdmin) return;
