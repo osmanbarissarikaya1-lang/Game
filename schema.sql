@@ -55,3 +55,6 @@ as $$
 $$;
 
 grant execute on function public.save_game_state(bigint, jsonb) to authenticated;
+
+-- Realtime ile oyuncuların güncel değişikliklerini yayınla
+alter publication supabase_realtime add table public.game_state;
