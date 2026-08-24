@@ -1989,11 +1989,11 @@ function openDetail(id){
  // 7. SİYASET / EYLEMLER SEKMESİ
  let eylemHtml = `<div>`;
  let tActs = ``;
- if (isAdmin) tActs = `<button class="btn red" style="flex:1; padding:10px;" onclick="openCampaign('${s.id}')">⚔️ SEFER HAZIRLIĞI</button>
+ if (isAdmin) tActs = `<button class="btn red" style="flex:1; padding:10px;" onclick="openCampaign('${s.id}')">⚔️ SEFER HAZIRLIĞI</button><button class="btn gold" style="flex:1; padding:10px;" onclick="recallCampaign('${s.id}')">↩️ SEFERDEN GERİ ÇAĞIR</button>
                        <button class="btn gold" style="flex:1; padding:10px;" onclick="openAdminGrantModal('${s.id}')">💸 PARA GÖNDER</button>
                        <button class="btn red" style="flex:1; padding:10px;" onclick="openDeduct('${s.id}')">💰 HAZİNEDEN KES</button>
                        <button class="btn blue" style="flex:1; padding:10px;" onclick="openTransfer('${s.id}')">✉️ PARA AKTAR</button>`;
- else if (isOwner) tActs = `<button class="btn red" style="flex:1; padding:10px;" onclick="openCampaign('${s.id}')">⚔️ SEFER HAZIRLIĞI</button>
+ else if (isOwner) tActs = `<button class="btn red" style="flex:1; padding:10px;" onclick="openCampaign('${s.id}')">⚔️ SEFER HAZIRLIĞI</button><button class="btn gold" style="flex:1; padding:10px;" onclick="recallCampaign('${s.id}')">↩️ SEFERDEN GERİ ÇAĞIR</button>
                             <button class="btn blue" style="flex:1; padding:10px;" onclick="openTransfer('${s.id}')">✉️ PARA AKTAR</button>`;
  
  eylemHtml += `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">${tActs}</div>`;
@@ -2824,6 +2824,7 @@ function calcCampCost(id) {
     });
     document.getElementById('campTotalCost').innerHTML = money(total);
 }
+function recallCampaign(id){const s=getState(id);if(!s)return;const c=s.campaignArmy||{};const total=Object.values(c).reduce((z,v)=>z+(Number(v)||0),0);if(!total){toast('Geri çağrılacak sefer askeri bulunmuyor.');return;}if(!confirm('Seferde kalan birlikler normal orduya geri çağrılsın mı?'))return;/* Sefer birlikleri ana ordudan ayrılmadığı için burada yalnızca rezerv kaydı temizlenir. */s.campaignArmy={};queueSave();toast('Seferde kalan birlikler geri çağrıldı.');openDetail(id);}
 function openCampaign(id) {
     const s = getState(id);
     const cc = db.settings.campaignCost || {};
