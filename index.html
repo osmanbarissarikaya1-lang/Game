@@ -1095,6 +1095,9 @@ async function saveDB(){
  if(saveInFlight){saveQueued=true;return false;}
  saveInFlight=true;
  try{
+  const cap=(arr)=>Array.isArray(arr)?arr.slice(0,200):[];
+  db.purchaseLog=cap(db.purchaseLog); db.eventHistory=cap(db.eventHistory); db.battleHistory=cap(db.battleHistory); db.transfers=cap(db.transfers); db.letters=cap(db.letters);
+  (db.states||[]).forEach(s=>{s.customLedger=cap(s.customLedger);s.permanentLedger=cap(s.permanentLedger);s.logs=cap(s.logs);});
   const latest=await sb.from("game_state").select("data,revision").eq("id",1).maybeSingle();
   if(latest.error)throw latest.error;
   const remote=latest.data?.data||{};
@@ -1177,7 +1180,7 @@ function setupGameRealtime(){
    }
  }).subscribe();
 }
-function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveDB,250)}
+function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{saveDB();},600)}
 async function saveMapDB(){
  const ok=await saveDB();
  if(ok)mapSyncChannel?.postMessage({type:"map-saved",owners:structuredClone(db.mapProvinceOwners||{}),details:structuredClone(db.mapProvinceDetails||{}),valuableRegions:structuredClone(db.valuableRegions||{})});
