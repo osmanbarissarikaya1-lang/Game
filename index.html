@@ -1126,6 +1126,14 @@ function setupGameRealtime(){
      dbServerRevision=incomingRevision||dbServerRevision;
      return;
    }
+   // Modal açıkken formu yeniden oluşturma. Kullanıcının girdiği değerler
+   // DOM'da duruyor; uzak veri bir sonraki kaydetmede üç-yollu birleştirilir.
+   if(document.getElementById('modal')?.classList.contains('show')){
+     db=remote;
+     dbBaseSnapshot=structuredClone(remote);
+     dbServerRevision=incomingRevision||dbServerRevision;
+     return;
+   }
    if(valuesEqual(db,dbBaseSnapshot)){
      const activeTab=document.querySelector('.hoi-tab.active')?.id?.replace('tab-btn-','');
      const scrollTop=window.scrollY;
