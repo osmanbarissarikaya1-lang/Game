@@ -819,7 +819,7 @@ function mergeStateThreeWay(base,local,remote,path="",conflicts=[]){
    return merged;
  }
  if(local===null||remote===null||typeof local!=="object"||typeof remote!=="object"){
-   conflicts.push(path||"root");return structuredClone(remote);
+   conflicts.push(path||"root");return structuredClone(local);
  }
  const merged={},keys=new Set([...Object.keys(base||{}),...Object.keys(local||{}),...Object.keys(remote||{})]);
  keys.forEach(key=>{
@@ -1098,11 +1098,7 @@ async function saveDB(){
   const conflicts=[];
   const merged=mergeStateThreeWay(base,db,remote,"",conflicts);
   if(conflicts.length){
-   // Ayar/form kayıtlarında uzak taraftaki değişikliklerle birlikte yerel
-   // ayarları koru. Eski davranış yerel fiyatları atıp kullanıcıyı ana sayfaya
-   // gönderiyordu.
-   const conflictMerged=structuredClone(remote);
-   if(!valuesEqual(db?.settings,base?.settings)) conflictMerged.settings=preferLocalChangedFields(base?.settings,db.settings,remote?.settings);
+   const conflictMerged=merged;
    const retry=await sb.rpc("save_game_state",{expected_revision:Number(latest.data?.revision||1),next_data:conflictMerged});
    if(retry.error)throw retry.error;
    if(retry.data&&retry.data.length){
@@ -1153,12 +1149,11 @@ function setupGameRealtime(){
    // Modal açıkken formu yeniden oluşturma. Kullanıcının girdiği değerler
    // DOM'da duruyor; uzak veri bir sonraki kaydetmede üç-yollu birleştirilir.
    if(document.getElementById('modal')?.classList.contains('show')){
-     remote.settings=normalizeSettings(remote.settings);
-     db=remote;
-     dbBaseSnapshot=structuredClone(remote);
-     dbServerRevision=incomingRevision||dbServerRevision;
+     window.pendingRemoteState={data:structuredClone(remote),revision:incomingRevision};
+     toast('Diğer oyuncunun değişikliği bekleyen işlemler korunarak sıraya alındı.');
      return;
    }
+   if(!valuesEqual(db,dbBaseSnapshot)){window.pendingRemoteState={data:structuredClone(remote),revision:incomingRevision};return;}
    if(valuesEqual(db,dbBaseSnapshot)){
      remote.settings=normalizeSettings(remote.settings);
      const activeTab=document.querySelector('.hoi-tab.active')?.id?.replace('tab-btn-','');
